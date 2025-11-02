@@ -1,0 +1,93 @@
+{
+  "name": "hub-frontend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/hub-frontend/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/hub-frontend",
+        "browser": "apps/hub-frontend/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/hub-frontend/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/hub-frontend/public"
+          }
+        ],
+        "styles": ["apps/hub-frontend/src/styles.css"]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "hub-frontend:build:production"
+        },
+        "development": {
+          "buildTarget": "hub-frontend:build:development"
+        }
+      },
+      "defaultConfiguration": "development",
+      "dependsOn": ["hub-backend:serve"],
+      "options": {
+        "proxyConfig": "apps/hub-frontend/proxy.conf.json"
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "hub-frontend:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/hub-frontend"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "hub-frontend:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/hub-frontend/browser",
+        "spa": true
+      }
+    }
+  }
+}
