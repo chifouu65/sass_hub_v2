@@ -4,28 +4,28 @@
 
 ### 🏗️ Architecture et Infrastructure
 - [x] Initialiser le workspace Nx avec preset 'apps' pour structure monorepo
-- [ ] Ajouter les plugins @nx/angular et @nx/nest pour support Angular et NestJS
-- [ ] Créer la structure de dossiers de base (apps/, services/, libs/, docker/)
-- [ ] Configurer TailwindCSS pour Angular
-- [ ] Créer les applications de base : hub-frontend et hub-backend
+- [x] Ajouter les plugins @nx/angular et @nx/nest pour support Angular et NestJS
+- [x] Créer la structure de dossiers de base (apps/, services/, libs/, docker/)
+- [x] Configurer TailwindCSS pour Angular
+- [x] Créer les applications de base : hub-frontend et hub-backend
 
 ### 🔐 Authentification et Hub Backend
-- [ ] Créer le hub-backend (NestJS)
-- [ ] Mettre en place le service d'authentification (JWT/OAuth2/SSO)
-- [ ] Configurer la base de données "hub" (MySQL)
+- [x] Créer le hub-backend (NestJS)
+- [x] Mettre en place le service d'authentification (JWT/OAuth2/SSO)
+- [x] Configurer la base de données "hub" (MySQL)
 - [ ] Implémenter la gestion des organisations (tenants)
 - [ ] Implémenter la gestion des utilisateurs et rôles
 - [ ] Créer l'API Gateway (NestJS)
 
 ### 🗄️ Base de données Multi-Tenant
-- [ ] Mettre en place le système de multi-tenant MySQL
+- [x] Mettre en place le système de multi-tenant MySQL (structure de base)
 - [ ] Créer le tenant-service pour gestion dynamique des bases
 - [ ] Implémenter le pool de connexions par organisation
-- [ ] Configurer la base "hub" pour les métadonnées globales
+- [x] Configurer la base "hub" pour les métadonnées globales
 
 ### 🎨 Hub Frontend (Angular)
-- [ ] Créer le hub-frontend (Angular 20)
-- [ ] Configurer TailwindCSS
+- [x] Créer le hub-frontend (Angular 20)
+- [x] Configurer TailwindCSS
 - [ ] Mettre en place l'authentification (SSO)
 - [ ] Créer le dashboard principal
 - [ ] Implémenter la gestion des organisations
@@ -47,16 +47,16 @@
 - [ ] Créer notification-service (Mails / alertes)
 
 ### 📚 Bibliothèques Partagées
-- [ ] Créer libs/shared-types (Types partagés entre services)
-- [ ] Créer libs/utils (Fonctions utilitaires)
-- [ ] Créer libs/sdk (SDK front ↔ backend)
+- [x] Créer libs/shared-types (Types partagés entre services)
+- [x] Créer libs/utils (Fonctions utilitaires)
+- [x] Créer libs/sdk (SDK front ↔ backend)
 
 ### 🐳 Docker et Infrastructure
-- [ ] Créer docker-compose.yml
-- [ ] Configurer MySQL (multi-tenant)
-- [ ] Configurer Redis
-- [ ] Configurer RabbitMQ
-- [ ] Créer les Dockerfiles pour les services
+- [x] Créer docker-compose.yml
+- [x] Configurer MySQL (multi-tenant)
+- [x] Configurer Redis
+- [x] Configurer RabbitMQ
+- [x] Créer les Dockerfiles pour les services
 
 ### 🔄 Communication Inter-Services
 - [ ] Configurer gRPC pour communication inter-services
@@ -79,7 +79,7 @@
 
 ## 🚧 En cours
 
-- Installation des plugins Nx (Angular et NestJS)
+- Aucune tâche en cours actuellement
 
 ---
 
@@ -87,6 +87,23 @@
 
 - [x] Création du fichier TODO.md pour suivi de l'avancement
 - [x] Initialisation du workspace Nx avec preset 'apps'
+- [x] Installation des plugins @nx/angular et @nx/nest
+- [x] Création de la structure de dossiers (apps/, services/, libs/, docker/)
+- [x] Configuration TailwindCSS pour Angular (automatique lors de la création)
+- [x] Création de hub-frontend (Angular 20 avec routing, standalone, TailwindCSS)
+- [x] Création de hub-backend (NestJS avec proxy configuré vers frontend)
+- [x] Installation et configuration de TypeORM avec MySQL
+- [x] Création des entités TypeORM (Organization, User, UserOrganization, Application, Subscription)
+- [x] Configuration ConfigModule et variables d'environnement
+- [x] Création de docker-compose.yml avec MySQL (hub + tenant), Redis, RabbitMQ
+- [x] Création des Dockerfiles pour hub-backend et hub-frontend
+- [x] Configuration Nginx pour le frontend en production
+- [x] Script SQL d'initialisation de la base de données hub
+- [x] Création du fichier .env.example avec toutes les variables nécessaires
+- [x] Création des bibliothèques partagées (shared-types, utils, sdk)
+- [x] Création des scripts de démarrage local (start-local.sh, stop-local.sh, check-ports.sh)
+- [x] Configuration de l'environnement de développement sans Nginx
+- [x] Correction du proxy Angular pour éviter les erreurs WebSocket sur /api/health
 
 ---
 

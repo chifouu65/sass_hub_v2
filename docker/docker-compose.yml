@@ -1,0 +1,141 @@
+services:
+  # MySQL Hub Database (métadonnées globales)
+  mysql-hub:
+    image: mysql:8.0
+    container_name: saas-hub-mysql-hub
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hub_db
+      MYSQL_USER: hub_user
+      MYSQL_PASSWORD: hub_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_hub_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL Tenant Databases (pour les bases multi-tenant)
+  mysql-tenant:
+    image: mysql:8.0
+    container_name: saas-hub-mysql-tenant
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tenant_template
+      MYSQL_USER: tenant_user
+      MYSQL_PASSWORD: tenant_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_tenant_data:/var/lib/mysql
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (cache et sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: saas-hub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # RabbitMQ (messaging)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: saas-hub-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Hub Backend (NestJS)
+  hub-backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.hub-backend
+    container_name: saas-hub-backend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql-hub
+      DB_PORT: 3306
+      DB_USERNAME: hub_user
+      DB_PASSWORD: hub_password
+      DB_DATABASE: hub_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      mysql-hub:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - saas-hub-network
+    volumes:
+      - ../apps/hub-backend:/app/apps/hub-backend
+      - /app/node_modules
+
+  # Hub Frontend (Angular)
+  hub-frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.hub-frontend
+    container_name: saas-hub-frontend
+    ports:
+      - "4200:4200"
+    environment:
+      NODE_ENV: development
+      API_URL: http://hub-backend:3000
+    depends_on:
+      - hub-backend
+    networks:
+      - saas-hub-network
+    volumes:
+      - ../apps/hub-frontend:/app/apps/hub-frontend
+      - /app/node_modules
+
+volumes:
+  mysql_hub_data:
+  mysql_tenant_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  saas-hub-network:
+    driver: bridge
+

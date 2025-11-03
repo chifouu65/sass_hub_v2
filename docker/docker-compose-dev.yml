@@ -1,0 +1,87 @@
+services:
+  # MySQL Hub Database (métadonnées globales)
+  mysql-hub:
+    image: mysql:8.0
+    container_name: saas-hub-mysql-hub
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hub_db
+      MYSQL_USER: hub_user
+      MYSQL_PASSWORD: hub_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_hub_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (cache et sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: saas-hub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # RabbitMQ (messaging)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: saas-hub-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - saas-hub-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx comme reverse proxy pour Angular serve et API
+  nginx-frontend:
+    image: nginx:alpine
+    container_name: saas-hub-nginx-dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./nginx-dev.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - saas-hub-network
+    depends_on:
+      - mysql-hub
+      - redis
+      - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  mysql_hub_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  saas-hub-network:
+    driver: bridge
+

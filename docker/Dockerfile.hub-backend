@@ -1,0 +1,37 @@
+# Dockerfile pour hub-backend (NestJS)
+FROM node:20-alpine AS base
+
+# Stage 1: Dépendances
+FROM base AS dependencies
+WORKDIR /app
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
+RUN npm ci
+
+# Stage 2: Build
+FROM base AS build
+WORKDIR /app
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/nx.json ./nx.json
+COPY --from=dependencies /app/tsconfig.base.json ./tsconfig.base.json
+COPY . .
+RUN npx nx build hub-backend
+
+# Stage 3: Production
+FROM base AS production
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copier les dépendances de production
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY package*.json ./
+COPY nx.json ./
+
+# Exposer le port
+EXPOSE 3000
+
+# Commande pour démarrer l'application
+CMD ["node", "dist/apps/hub-backend/main.js"]
+

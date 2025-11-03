@@ -58,7 +58,6 @@
         }
       },
       "defaultConfiguration": "development",
-      "dependsOn": ["hub-backend:serve"],
       "options": {
         "proxyConfig": "apps/hub-frontend/proxy.conf.json"
       }
