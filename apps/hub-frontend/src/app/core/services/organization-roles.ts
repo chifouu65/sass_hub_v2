@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { EMPTY, forkJoin, Observable, throwError } from 'rxjs';
-import { catchError, finalize, map, tap } from 'rxjs/operators';
+import {
+  computed,
+  effect,
+  inject,
+  Injectable,
+  resource,
+  signal,
+} from '@angular/core';
+import { firstValueFrom, forkJoin, Observable, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth';
 
 export interface OrganizationSummary {
@@ -64,6 +71,18 @@ export interface UpdateRolePayload {
   permissions?: string[];
 }
 
+type OrganizationContext = {
+  roles: OrganizationRoleView[];
+  permissions: PermissionView[];
+  members: OrganizationMemberView[];
+};
+
+const EMPTY_CONTEXT: OrganizationContext = {
+  roles: [],
+  permissions: [],
+  members: [],
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -72,95 +91,95 @@ export class OrganizationRolesStore {
   private readonly authService = inject(AuthService);
   private readonly baseUrl = '/api/organizations';
 
-  private readonly _organizations = signal<OrganizationSummary[]>([]);
-  private readonly _roles = signal<OrganizationRoleView[]>([]);
-  private readonly _permissions = signal<PermissionView[]>([]);
-  private readonly _members = signal<OrganizationMemberView[]>([]);
   private readonly _selectedOrganizationId = signal<string | null>(null);
-  private readonly _loading = signal<boolean>(false);
-  private readonly _membersLoading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
 
-  organizations = this._organizations.asReadonly();
-  roles = this._roles.asReadonly();
-  permissions = this._permissions.asReadonly();
-  members = this._members.asReadonly();
+  private readonly organizationsResource = resource<OrganizationSummary[], undefined>({
+    loader: () => this.fetchOrganizations(),
+    defaultValue: [],
+  });
+
+  private readonly organizationContextResource = resource<OrganizationContext, string | null>({
+    params: () => this._selectedOrganizationId(),
+    loader: ({ params }) =>
+      params ? this.fetchOrganizationContext(params) : Promise.resolve(EMPTY_CONTEXT),
+    defaultValue: EMPTY_CONTEXT,
+  });
+
+  organizations = computed(() => this.organizationsResource.value() ?? []);
+  roles = computed(() => this.organizationContextResource.value()?.roles ?? []);
+  permissions = computed(
+    () => this.organizationContextResource.value()?.permissions ?? [],
+  );
+  members = computed(
+    () => this.organizationContextResource.value()?.members ?? [],
+  );
+
   selectedOrganizationId = this._selectedOrganizationId.asReadonly();
-  loading = this._loading.asReadonly();
-  membersLoading = this._membersLoading.asReadonly();
   error = this._error.asReadonly();
 
-  loadOrganizations(): void {
-    this._loading.set(true);
-    this._error.set(null);
+  loading = computed(() => {
+    const organizationsLoading = this.organizationsResource.isLoading();
+    const contextLoading =
+      !!this._selectedOrganizationId() &&
+      this.organizationContextResource.isLoading();
+    return organizationsLoading || contextLoading;
+  });
 
-    this.http
-      .get<OrganizationSummary[]>(`${this.baseUrl}/my`, {
-        headers: this.authService.getAuthHeaders(),
-      })
-      .pipe(
-        tap((organizations) => {
-          this._organizations.set(organizations);
+  membersLoading = computed(
+    () =>
+      !!this._selectedOrganizationId() &&
+      this.organizationContextResource.isLoading(),
+  );
 
-          if (!organizations.length) {
-            this._selectedOrganizationId.set(null);
-            this._roles.set([]);
-            this._permissions.set([]);
-            this._loading.set(false);
-            return;
-          }
+  constructor() {
+    effect(() => {
+      const organizations = this.organizations();
+      const current = this._selectedOrganizationId();
 
-          const currentSelection = this._selectedOrganizationId();
-          const selectionExists = currentSelection
-            ? organizations.some((org) => org.id === currentSelection)
-            : false;
-
-          const nextSelection = selectionExists
-            ? currentSelection
-            : organizations[0]?.id ?? null;
-
-          if (nextSelection) {
-            this._selectedOrganizationId.set(nextSelection);
-            this.fetchOrganizationContext(nextSelection);
-          } else {
-            this._loading.set(false);
-          }
-        }),
-        catchError((error) => {
-          this._error.set(this.resolveError(error));
-          this._organizations.set([]);
-          this._roles.set([]);
-          this._permissions.set([]);
+      if (!organizations.length) {
+        if (current !== null) {
           this._selectedOrganizationId.set(null);
-          this._loading.set(false);
-          return EMPTY;
-        }),
-      )
-      .subscribe();
+        }
+        return;
+      }
+
+      if (!current || !organizations.some((org) => org.id === current)) {
+        this._selectedOrganizationId.set(organizations[0].id);
+      }
+    });
+  }
+
+  loadOrganizations(): void {
+    this.organizationsResource.reload();
   }
 
   selectOrganization(organizationId: string): void {
-    if (!organizationId || organizationId === this._selectedOrganizationId()) {
-      if (organizationId) {
-        this.fetchOrganizationContext(organizationId);
-      }
+    if (!organizationId) {
+      this._selectedOrganizationId.set(null);
+      return;
+    }
+
+    if (organizationId === this._selectedOrganizationId()) {
+      this.organizationContextResource.reload();
       return;
     }
 
     this._selectedOrganizationId.set(organizationId);
-    this.fetchOrganizationContext(organizationId);
   }
 
   refreshSelection(): void {
-    const current = this._selectedOrganizationId();
-    if (current) {
-      this.fetchOrganizationContext(current);
-    } else {
-      this.loadOrganizations();
+    this.organizationsResource.reload();
+    if (this._selectedOrganizationId()) {
+      this.organizationContextResource.reload();
     }
   }
 
-  createOrganization(payload: { name: string; slug: string; databaseName?: string | null }): Observable<void> {
+  createOrganization(payload: {
+    name: string;
+    slug: string;
+    databaseName?: string | null;
+  }): Observable<void> {
     this._error.set(null);
     return this.http
       .post<OrganizationSummary>(`${this.baseUrl}`, payload, {
@@ -168,9 +187,9 @@ export class OrganizationRolesStore {
       })
       .pipe(
         tap((organization) => {
-          this._organizations.set([organization, ...this._organizations()]);
+          this.organizationsResource.reload();
           this._selectedOrganizationId.set(organization.id);
-          this.fetchOrganizationContext(organization.id);
+          this.organizationContextResource.reload();
         }),
         map(() => void 0),
         catchError((error) => {
@@ -191,12 +210,9 @@ export class OrganizationRolesStore {
       })
       .pipe(
         tap((updated) => {
-          this._organizations.set(
-            this._organizations().map((org) =>
-              org.id === updated.id ? updated : org,
-            ),
-          );
-          this.fetchOrganizationContext(updated.id);
+          this.organizationsResource.reload();
+          this._selectedOrganizationId.set(updated.id);
+          this.organizationContextResource.reload();
         }),
         map(() => void 0),
         catchError((error) => {
@@ -214,18 +230,10 @@ export class OrganizationRolesStore {
       })
       .pipe(
         tap(() => {
-          const remaining = this._organizations().filter(
-            (org) => org.id !== organizationId,
-          );
-          this._organizations.set(remaining);
-          const nextSelection = remaining[0]?.id ?? null;
-          this._selectedOrganizationId.set(nextSelection);
-          if (nextSelection) {
-            this.fetchOrganizationContext(nextSelection);
-          } else {
-            this._roles.set([]);
-            this._permissions.set([]);
-            this._members.set([]);
+          const current = this._selectedOrganizationId();
+          this.organizationsResource.reload();
+          if (current === organizationId) {
+            this._selectedOrganizationId.set(null);
           }
         }),
         catchError((error) => {
@@ -235,14 +243,17 @@ export class OrganizationRolesStore {
       );
   }
 
-  createRole(organizationId: string, payload: CreateRolePayload): Observable<void> {
+  createRole(
+    organizationId: string,
+    payload: CreateRolePayload,
+  ): Observable<void> {
     this._error.set(null);
     return this.http
       .post<OrganizationRoleView>(`${this.baseUrl}/${organizationId}/roles`, payload, {
         headers: this.authService.getAuthHeaders(),
       })
       .pipe(
-        tap(() => this.fetchOrganizationContext(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         map(() => void 0),
         catchError((error) => {
           this._error.set(this.resolveError(error));
@@ -266,7 +277,7 @@ export class OrganizationRolesStore {
         },
       )
       .pipe(
-        tap(() => this.fetchOrganizationContext(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         map(() => void 0),
         catchError((error) => {
           this._error.set(this.resolveError(error));
@@ -290,7 +301,7 @@ export class OrganizationRolesStore {
         },
       )
       .pipe(
-        tap(() => this.fetchOrganizationContext(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         map(() => void 0),
         catchError((error) => {
           this._error.set(this.resolveError(error));
@@ -306,7 +317,7 @@ export class OrganizationRolesStore {
         headers: this.authService.getAuthHeaders(),
       })
       .pipe(
-        tap(() => this.fetchOrganizationContext(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         catchError((error) => {
           this._error.set(this.resolveError(error));
           return throwError(() => error);
@@ -314,73 +325,11 @@ export class OrganizationRolesStore {
       );
   }
 
-  private fetchOrganizationContext(organizationId: string): void {
-    if (!organizationId) {
-      this._roles.set([]);
-      this._permissions.set([]);
-      this._members.set([]);
-      this._loading.set(false);
-      return;
-    }
-
-    this._loading.set(true);
-    this._error.set(null);
-
-    const headers = this.authService.getAuthHeaders();
-
-    forkJoin({
-      roles: this.http.get<OrganizationRoleView[]>(
-        `${this.baseUrl}/${organizationId}/roles`,
-        { headers },
-      ),
-      permissions: this.http.get<PermissionView[]>(
-        `${this.baseUrl}/${organizationId}/roles/available-permissions`,
-        { headers },
-      ),
-      members: this.http.get<OrganizationMemberView[]>(
-        `${this.baseUrl}/${organizationId}/users`,
-        { headers },
-      ),
-    })
-      .pipe(
-        tap(({ roles, permissions, members }) => {
-          this._roles.set(roles);
-          this._permissions.set(permissions);
-          this._members.set(members);
-        }),
-        catchError((error) => {
-          this._error.set(this.resolveError(error));
-          this._roles.set([]);
-          this._permissions.set([]);
-          this._members.set([]);
-          return EMPTY;
-        }),
-        finalize(() => this._loading.set(false)),
-      )
-      .subscribe();
-  }
-
   reloadMembers(organizationId: string): void {
     if (!organizationId) {
-      this._members.set([]);
       return;
     }
-
-    this._membersLoading.set(true);
-    this.http
-      .get<OrganizationMemberView[]>(`${this.baseUrl}/${organizationId}/users`, {
-        headers: this.authService.getAuthHeaders(),
-      })
-      .pipe(
-        tap((members) => this._members.set(members)),
-        catchError((error) => {
-          this._error.set(this.resolveError(error));
-          this._members.set([]);
-          return EMPTY;
-        }),
-        finalize(() => this._membersLoading.set(false)),
-      )
-      .subscribe();
+    this.organizationContextResource.reload();
   }
 
   addMember(
@@ -398,7 +347,7 @@ export class OrganizationRolesStore {
         headers: this.authService.getAuthHeaders(),
       })
       .pipe(
-        tap(() => this.reloadMembers(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         catchError((error) => {
           this._error.set(this.resolveError(error));
           return throwError(() => error);
@@ -413,11 +362,15 @@ export class OrganizationRolesStore {
   ): Observable<void> {
     this._error.set(null);
     return this.http
-      .patch<void>(`${this.baseUrl}/${organizationId}/users/${userId}/role`, payload, {
-        headers: this.authService.getAuthHeaders(),
-      })
+      .patch<void>(
+        `${this.baseUrl}/${organizationId}/users/${userId}/role`,
+        payload,
+        {
+          headers: this.authService.getAuthHeaders(),
+        },
+      )
       .pipe(
-        tap(() => this.reloadMembers(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         catchError((error) => {
           this._error.set(this.resolveError(error));
           return throwError(() => error);
@@ -432,12 +385,62 @@ export class OrganizationRolesStore {
         headers: this.authService.getAuthHeaders(),
       })
       .pipe(
-        tap(() => this.reloadMembers(organizationId)),
+        tap(() => this.organizationContextResource.reload()),
         catchError((error) => {
           this._error.set(this.resolveError(error));
           return throwError(() => error);
         }),
       );
+  }
+
+  private fetchOrganizations(): Promise<OrganizationSummary[]> {
+    return firstValueFrom(this.fetchOrganizations$());
+  }
+
+  private fetchOrganizations$(): Observable<OrganizationSummary[]> {
+    return this.http
+      .get<OrganizationSummary[]>(`${this.baseUrl}/my`, {
+        headers: this.authService.getAuthHeaders(),
+      })
+      .pipe(
+        tap(() => this._error.set(null)),
+        catchError((error) => {
+          this._error.set(this.resolveError(error));
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  private fetchOrganizationContext(
+    organizationId: string,
+  ): Promise<OrganizationContext> {
+    return firstValueFrom(this.fetchOrganizationContext$(organizationId));
+  }
+
+  private fetchOrganizationContext$(
+    organizationId: string,
+  ): Observable<OrganizationContext> {
+    const headers = this.authService.getAuthHeaders();
+    return forkJoin({
+      roles: this.http.get<OrganizationRoleView[]>(
+        `${this.baseUrl}/${organizationId}/roles`,
+        { headers },
+      ),
+      permissions: this.http.get<PermissionView[]>(
+        `${this.baseUrl}/${organizationId}/roles/available-permissions`,
+        { headers },
+      ),
+      members: this.http.get<OrganizationMemberView[]>(
+        `${this.baseUrl}/${organizationId}/users`,
+        { headers },
+      ),
+    }).pipe(
+      tap(() => this._error.set(null)),
+      catchError((error) => {
+        this._error.set(this.resolveError(error));
+        return throwError(() => error);
+      }),
+    );
   }
 
   private resolveError(error: unknown): string {

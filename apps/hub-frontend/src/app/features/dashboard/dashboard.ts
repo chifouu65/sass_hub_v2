@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { AuthService } from '../../core/services/auth';
 import {
   OrganizationRoleView,
   OrganizationRolesStore,
@@ -16,20 +15,18 @@ import {
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard implements OnInit {
-  private readonly authService = inject(AuthService);
-  private readonly organizationRolesStore = inject(OrganizationRolesStore);
-  private readonly fb = inject(NonNullableFormBuilder);
+export class Dashboard {
+  readonly #organizationRolesStore = inject(OrganizationRolesStore);
+  readonly #fb = inject(NonNullableFormBuilder);
   
-  currentUser = this.authService.currentUser;
-  organizations = this.organizationRolesStore.organizations;
-  selectedOrganizationId = this.organizationRolesStore.selectedOrganizationId;
-  roles = this.organizationRolesStore.roles;
-  permissions = this.organizationRolesStore.permissions;
-  loading = this.organizationRolesStore.loading;
-  error = this.organizationRolesStore.error;
+  readonly organizations = this.#organizationRolesStore.organizations;
+  readonly selectedOrganizationId = this.#organizationRolesStore.selectedOrganizationId;
+  readonly roles = this.#organizationRolesStore.roles;
+  readonly permissions = this.#organizationRolesStore.permissions;
+  readonly loading = this.#organizationRolesStore.loading;
+  readonly error = this.#organizationRolesStore.error;
 
-  createRoleForm = this.fb.group({
+  readonly createRoleForm = this.#fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     slug: [
       '',
@@ -39,26 +36,26 @@ export class Dashboard implements OnInit {
       ],
     ],
     description: [''],
-    permissions: this.fb.control<string[]>([]),
+    permissions: this.#fb.control<string[]>([]),
   });
-  permissionsControl = this.createRoleForm.controls.permissions;
+  readonly permissionsControl = this.createRoleForm.controls.permissions;
 
-  private readonly slugManuallyEdited = signal(false);
-  formMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
-  createSubmitting = signal(false);
-  deleteInProgress = signal<string | null>(null);
+  readonly slugManuallyEdited = signal(false);
+  readonly formMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
+  readonly createSubmitting = signal(false);
+  readonly deleteInProgress = signal<string | null>(null);
 
-  ngOnInit(): void {
-    this.organizationRolesStore.loadOrganizations();
+  constructor() {
+    this.#organizationRolesStore.loadOrganizations();
   }
 
   onOrganizationChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
-    this.organizationRolesStore.selectOrganization(value);
+    this.#organizationRolesStore.selectOrganization(value);
   }
 
   refreshOrganization(): void {
-    this.organizationRolesStore.refreshSelection();
+    this.#organizationRolesStore.refreshSelection();
   }
 
   trackById(_: number, item: { id: string }): string {
@@ -70,18 +67,18 @@ export class Dashboard implements OnInit {
       return;
     }
     const name = this.createRoleForm.controls.name.value;
-    this.createRoleForm.controls.slug.setValue(this.slugify(name));
+    this.createRoleForm.controls.slug.setValue(this.#slugify(name));
   }
 
   onSlugInput(): void {
     this.slugManuallyEdited.set(true);
     const value = this.createRoleForm.controls.slug.value;
-    this.createRoleForm.controls.slug.setValue(this.slugify(value));
+    this.createRoleForm.controls.slug.setValue(this.#slugify(value));
   }
 
   onSlugBlur(): void {
     const value = this.createRoleForm.controls.slug.value;
-    this.createRoleForm.controls.slug.setValue(this.slugify(value));
+    this.createRoleForm.controls.slug.setValue(this.#slugify(value));
   }
 
   togglePermission(permissionCode: string, checked: boolean): void {
@@ -120,7 +117,7 @@ export class Dashboard implements OnInit {
       this.createRoleForm.getRawValue();
 
     this.createSubmitting.set(true);
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .createRole(organizationId, {
         name: name.trim(),
         slug: slug.trim(),
@@ -145,7 +142,7 @@ export class Dashboard implements OnInit {
         error: (error) => {
           this.formMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -168,7 +165,7 @@ export class Dashboard implements OnInit {
     }
 
     this.deleteInProgress.set(role.id);
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .deleteRole(organizationId, role.id)
       .pipe(finalize(() => this.deleteInProgress.set(null)))
       .subscribe({
@@ -181,7 +178,7 @@ export class Dashboard implements OnInit {
         error: (error) => {
           this.formMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -194,7 +191,7 @@ export class Dashboard implements OnInit {
     return `${permissions.length} permission${permissions.length > 1 ? 's' : ''}`;
   }
 
-  private slugify(value: string): string {
+  #slugify(value: string) {
     return value
       .toLowerCase()
       .normalize('NFKD')
@@ -203,7 +200,7 @@ export class Dashboard implements OnInit {
       .replace(/^-+|-+$/g, '');
   }
 
-  private extractErrorMessage(error: unknown): string {
+  #extractErrorMessage(error: unknown): string {
     if (!error) {
       return 'Une erreur inattendue est survenue.';
     }

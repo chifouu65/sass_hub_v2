@@ -5,7 +5,7 @@ export class AddOrganizationRoles1720470650000
 {
   name = 'AddOrganizationRoles1720470650000';
 
-  public async up(queryRunner: QueryRunner): Promise<void> {
+    public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP TABLE IF EXISTS \`organization_role_permissions\``);
     await queryRunner.query(`DROP TABLE IF EXISTS \`organization_roles\``);
     await queryRunner.query(`DROP TABLE IF EXISTS \`permissions\``);
@@ -95,9 +95,9 @@ export class AddOrganizationRoles1720470650000
       FOREIGN KEY (\`organization_role_id\`) REFERENCES \`organization_roles\`(\`id\`)
       ON DELETE SET NULL ON UPDATE NO ACTION
     `);
-  }
+    }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+    public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE \`user_organizations\`
       DROP FOREIGN KEY \`FK_6a3eb52e83072f9f878ecfbed81\`
@@ -139,6 +139,6 @@ export class AddOrganizationRoles1720470650000
     await queryRunner.query(`
       DROP TABLE \`permissions\`
     `);
-  }
+    }
 
 }

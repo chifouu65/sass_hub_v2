@@ -118,7 +118,7 @@ export class AuthService {
     return user;
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<{ accessToken: string }> {
+  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
     const { refreshToken } = refreshTokenDto;
 
     try {
@@ -132,10 +132,17 @@ export class AuthService {
         throw new UnauthorizedException('Utilisateur non trouvé ou inactif');
       }
 
-      // Générer un nouveau access token
-      const accessToken = this.generateAccessToken(user);
+      const tokens = this.generateTokens(user);
 
-      return { accessToken };
+      return {
+        ...tokens,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+      };
     } catch {
       throw new UnauthorizedException('Token de rafraîchissement invalide');
     }

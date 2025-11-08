@@ -1,6 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { firstValueFrom, from, Observable, tap, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 export interface User {
   id: string;
@@ -40,85 +42,177 @@ export interface MessageResponse {
   message: string;
 }
 
+interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+}
+
+const EMPTY_STATE: AuthState = {
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  readonly #http = inject(HttpClient);
+  readonly #API_URL = '/api/auth';
 
-  private readonly http = inject(HttpClient);
-  private readonly API_URL = '/api/auth';
-  
-  // Signals pour la gestion de l'état
-  private _currentUser = signal<User | null>(null);
-  private _accessToken = signal<string | null>(null);
-  
-  // Exposer les signaux
-  currentUser = this._currentUser.asReadonly();
-  accessToken = this._accessToken.asReadonly();
-  isAuthenticated = computed(() => this._currentUser() !== null);
-  
-  // Exposer les setters pour la manipulation externe
-  get currentUserSignal() {
-    return this._currentUser;
-  }
+  readonly #state = signal<AuthState>(EMPTY_STATE);
+  readonly #restoring = signal<boolean>(false);
+  readonly #error = signal<string | null>(null);
+  readonly #router = inject(Router);
 
-  constructor() {
-    // Restaurer l'utilisateur depuis localStorage au démarrage
-    const storedToken = localStorage.getItem('accessToken');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      this._accessToken.set(storedToken);
-      this._currentUser.set(JSON.parse(storedUser));
+  #refreshPromise: Promise<AuthResponse> | null = null;
+
+  currentUser = computed(() => this.#state().user);
+  accessToken = computed(() => this.#state().accessToken);
+  isAuthenticated = computed(() => this.#state().user !== null);
+  restoring = computed(() => this.#restoring());
+  error = computed(() => this.#error());
+
+  async initialize(): Promise<void> {
+    this.#restoring.set(true);
+    this.#error.set(null);
+
+    try {
+      const restored = await this.#restoreAuthState();
+      this.#state.set(restored);
+
+      if (restored.refreshToken) {
+        await firstValueFrom(this.refreshTokens());
+        this.#error.set(null);
+      }
+    } catch (error) {
+      this.#error.set(this.#resolveError(error));
+    } finally {
+      this.#restoring.set(false);
     }
   }
 
   login(credentials: LoginDto): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
-      tap(response => this.setAuthData(response))
-    );
+    return this.#http
+      .post<AuthResponse>(`${this.#API_URL}/login`, credentials)
+      .pipe(tap((response) => this.#setAuthData(response)));
   }
 
   register(data: RegisterDto): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/register`, data).pipe(
-      tap(response => this.setAuthData(response))
-    );
+    return this.#http
+      .post<AuthResponse>(`${this.#API_URL}/register`, data)
+      .pipe(tap((response) => this.#setAuthData(response)));
   }
 
   logout(): void {
-    this._currentUser.set(null);
-    this._accessToken.set(null);
+    this.#state.set(EMPTY_STATE);
+    this.#error.set(null);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    this.#router.navigate(['/login']);
   }
 
-  private setAuthData(response: AuthResponse): void {
-    this._currentUser.set(response.user);
-    this._accessToken.set(response.accessToken);
+  setTokensAndUser(user: User, accessToken: string, refreshToken: string): void {
+    this.#setAuthData({ user, accessToken, refreshToken });
+  }
+
+  forgotPassword(data: ForgotPasswordDto): Observable<MessageResponse> {
+    return this.#http.post<MessageResponse>(
+      `${this.#API_URL}/forgot-password`,
+      data,
+    );
+  }
+
+  resetPassword(data: ResetPasswordDto): Observable<MessageResponse> {
+    return this.#http.post<MessageResponse>(
+      `${this.#API_URL}/reset-password`,
+      data,
+    );
+  }
+
+  refreshTokens(): Observable<AuthResponse> {
+    const refreshToken = this.#state().refreshToken;
+    if (!refreshToken) {
+      return throwError(() => new Error('Aucun refresh token disponible'));
+    }
+
+    if (!this.#refreshPromise) {
+      this.#refreshPromise = firstValueFrom(
+        this.#http
+          .post<AuthResponse>(`${this.#API_URL}/refresh`, {
+            refreshToken,
+          })
+          .pipe(
+            tap((response) => this.#setAuthData(response)),
+            catchError((error) => {
+              this.logout();
+              return throwError(() => error);
+            }),
+          ),
+      ).finally(() => {
+        this.#refreshPromise = null;
+      });
+    }
+
+    return from(this.#refreshPromise);
+  }
+
+  getAuthHeaders(): { [key: string]: string } {
+    const token = this.#state().accessToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+   #setAuthData(response: AuthResponse): void {
+    const nextState: AuthState = {
+      user: response.user,
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    } satisfies AuthState;
+
+    this.#state.set(nextState);
+    this.#error.set(null);
     localStorage.setItem('accessToken', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     localStorage.setItem('user', JSON.stringify(response.user));
   }
 
-  setTokensAndUser(user: User, accessToken: string, refreshToken: string): void {
-    this._currentUser.set(user);
-    this._accessToken.set(accessToken);
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    localStorage.setItem('user', JSON.stringify(user));
+  async #restoreAuthState(): Promise<AuthState> {
+    try {
+      const storedToken = localStorage.getItem('accessToken');
+      const storedRefresh = localStorage.getItem('refreshToken');
+      const storedUser = localStorage.getItem('user');
+
+      if (!storedToken || !storedUser) {
+        return EMPTY_STATE;
+      }
+
+      const parsedUser: User = JSON.parse(storedUser);
+      return {
+        user: parsedUser,
+        accessToken: storedToken,
+        refreshToken: storedRefresh ?? null,
+      } satisfies AuthState;
+    } catch {
+      return EMPTY_STATE;
+    }
   }
 
-  forgotPassword(data: ForgotPasswordDto): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.API_URL}/forgot-password`, data);
-  }
+  #resolveError(error: unknown): string | null {
+    if (!error) {
+      return null;
+    }
 
-  resetPassword(data: ResetPasswordDto): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.API_URL}/reset-password`, data);
-  }
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as { message: unknown }).message === 'string'
+    ) {
+      return (error as { message: string }).message;
+    }
 
-  getAuthHeaders(): { [key: string]: string } {
-    const token = this._accessToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return 'Impossible de restaurer l’état d’authentification.';
   }
 }

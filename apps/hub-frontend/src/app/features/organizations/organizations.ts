@@ -1,7 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   Component,
-  OnInit,
   effect,
   inject,
   signal,
@@ -42,19 +41,19 @@ const BUILT_IN_ROLES: Array<{ value: string; label: string }> = [
   templateUrl: './organizations.html',
   styleUrl: './organizations.css',
 })
-export class OrganizationsComponent implements OnInit {
-  private readonly organizationRolesStore = inject(OrganizationRolesStore);
-  private readonly fb = inject(NonNullableFormBuilder);
+export class OrganizationsComponent {
+   readonly #organizationRolesStore = inject(OrganizationRolesStore);
+   readonly #fb = inject(NonNullableFormBuilder);
 
-  organizations = this.organizationRolesStore.organizations;
-  selectedOrganizationId = this.organizationRolesStore.selectedOrganizationId;
-  roles = this.organizationRolesStore.roles;
-  members = this.organizationRolesStore.members;
-  loading = this.organizationRolesStore.loading;
-  membersLoading = this.organizationRolesStore.membersLoading;
-  error = this.organizationRolesStore.error;
+  readonly organizations = this.#organizationRolesStore.organizations;
+  readonly selectedOrganizationId = this.#organizationRolesStore.selectedOrganizationId;
+  readonly roles = this.#organizationRolesStore.roles;
+  readonly members = this.#organizationRolesStore.members;
+  readonly loading = this.#organizationRolesStore.loading;
+  readonly membersLoading = this.#organizationRolesStore.membersLoading;
+  readonly error = this.#organizationRolesStore.error;
 
-  createOrganizationForm = this.fb.group({
+  readonly createOrganizationForm = this.#fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     slug: [
       '',
@@ -66,7 +65,7 @@ export class OrganizationsComponent implements OnInit {
     databaseName: [''],
   });
 
-  updateOrganizationForm = this.fb.group({
+  readonly updateOrganizationForm = this.#fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     slug: [
       '',
@@ -78,24 +77,26 @@ export class OrganizationsComponent implements OnInit {
     databaseName: [''],
   });
 
-  addMemberForm = this.fb.group({
+  readonly addMemberForm = this.#fb.group({
     email: ['', [Validators.required, Validators.email]],
     assignment: ['', [Validators.required]],
   });
 
-  createSubmitting = signal(false);
-  updateSubmitting = signal(false);
-  addMemberSubmitting = signal(false);
-  memberUpdating = signal<Record<string, boolean>>({});
-  memberAssignments = signal<Record<string, AssignmentValue>>({});
-  formMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
-  orgMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
-  deleteSubmitting = signal(false);
+  readonly createSubmitting = signal(false);
+  readonly updateSubmitting = signal(false);
+  readonly addMemberSubmitting = signal(false);
+  readonly memberUpdating = signal<Record<string, boolean>>({});
+  readonly memberAssignments = signal<Record<string, AssignmentValue>>({});
+  readonly formMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
+  readonly orgMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
+  readonly deleteSubmitting = signal(false);
 
-  private slugManuallyEditedCreate = signal(false);
-  private slugManuallyEditedUpdate = signal(false);
+   #slugManuallyEditedCreate = signal(false);
+   #slugManuallyEditedUpdate = signal(false);
 
   constructor() {
+    this.#organizationRolesStore.loadOrganizations();
+   
     effect(() => {
       const organizations = this.organizations();
       const selectedId = this.selectedOrganizationId();
@@ -109,23 +110,18 @@ export class OrganizationsComponent implements OnInit {
           slug: selected.slug ?? '',
           databaseName: selected.databaseName ?? '',
         });
-        this.slugManuallyEditedUpdate.set(true);
+        this.#slugManuallyEditedUpdate.set(true);
       } else {
         this.updateOrganizationForm.reset({
           name: '',
           slug: '',
           databaseName: '',
         });
-        this.slugManuallyEditedUpdate.set(false);
+        this.#slugManuallyEditedUpdate.set(false);
       }
     });
-
-   
   }
 
-  ngOnInit(): void {
-    this.organizationRolesStore.loadOrganizations();
-  }
 
   trackById(index: number, item: { id: string }): string {
     return item.id;
@@ -136,40 +132,40 @@ export class OrganizationsComponent implements OnInit {
   }
 
   onSelectOrganization(id: string): void {
-    this.organizationRolesStore.selectOrganization(id);
+    this.#organizationRolesStore.selectOrganization(id);
     this.orgMessage.set(null);
   }
 
   onRefresh(): void {
-    this.organizationRolesStore.refreshSelection();
+    this.#organizationRolesStore.refreshSelection();
   }
 
   onCreateNameInput(): void {
-    if (this.slugManuallyEditedCreate()) {
+    if (this.#slugManuallyEditedCreate()) {
       return;
     }
     const name = this.createOrganizationForm.controls.name.value;
-    this.createOrganizationForm.controls.slug.setValue(this.slugify(name));
+    this.createOrganizationForm.controls.slug.setValue(this.#slugify(name));
   }
 
   onCreateSlugInput(): void {
-    this.slugManuallyEditedCreate.set(true);
+    this.#slugManuallyEditedCreate.set(true);
     const value = this.createOrganizationForm.controls.slug.value;
-    this.createOrganizationForm.controls.slug.setValue(this.slugify(value));
+    this.createOrganizationForm.controls.slug.setValue(this.#slugify(value));
   }
 
   onUpdateNameInput(): void {
-    if (this.slugManuallyEditedUpdate()) {
+    if (this.#slugManuallyEditedUpdate()) {
       return;
     }
     const name = this.updateOrganizationForm.controls.name.value;
-    this.updateOrganizationForm.controls.slug.setValue(this.slugify(name));
+    this.updateOrganizationForm.controls.slug.setValue(this.#slugify(name));
   }
 
   onUpdateSlugInput(): void {
-    this.slugManuallyEditedUpdate.set(true);
+    this.#slugManuallyEditedUpdate.set(true);
     const value = this.updateOrganizationForm.controls.slug.value;
-    this.updateOrganizationForm.controls.slug.setValue(this.slugify(value));
+    this.updateOrganizationForm.controls.slug.setValue(this.#slugify(value));
   }
 
   onCreateOrganization(): void {
@@ -181,7 +177,7 @@ export class OrganizationsComponent implements OnInit {
 
     const { name, slug, databaseName } = this.createOrganizationForm.getRawValue();
     this.createSubmitting.set(true);
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .createOrganization({
         name: name.trim(),
         slug: slug.trim(),
@@ -199,12 +195,12 @@ export class OrganizationsComponent implements OnInit {
             slug: '',
             databaseName: '',
           });
-          this.slugManuallyEditedCreate.set(false);
+          this.#slugManuallyEditedCreate.set(false);
         },
         error: (error) => {
           this.formMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -228,7 +224,7 @@ export class OrganizationsComponent implements OnInit {
 
     const { name, slug, databaseName } = this.updateOrganizationForm.getRawValue();
     this.updateSubmitting.set(true);
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .updateOrganization(organizationId, {
         name: name.trim(),
         slug: slug.trim(),
@@ -245,7 +241,7 @@ export class OrganizationsComponent implements OnInit {
         error: (error) => {
           this.orgMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -265,7 +261,7 @@ export class OrganizationsComponent implements OnInit {
     }
 
     this.deleteSubmitting.set(true);
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .deleteOrganization(organizationId)
       .pipe(finalize(() => this.deleteSubmitting.set(false)))
       .subscribe({
@@ -278,7 +274,7 @@ export class OrganizationsComponent implements OnInit {
         error: (error) => {
           this.orgMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -304,7 +300,7 @@ export class OrganizationsComponent implements OnInit {
     const payload = this.resolveAssignmentValue(assignment);
 
     this.addMemberSubmitting.set(true);
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .addMember(organizationId, {
         email: email.trim(),
         role: payload.role ?? undefined,
@@ -325,7 +321,7 @@ export class OrganizationsComponent implements OnInit {
         error: (error) => {
           this.orgMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -353,7 +349,7 @@ export class OrganizationsComponent implements OnInit {
     map[member.userId] = true;
     this.memberUpdating.set(map);
 
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .updateMemberRole(organizationId, member.userId, payload)
       .pipe(
         finalize(() => {
@@ -372,7 +368,7 @@ export class OrganizationsComponent implements OnInit {
         error: (error) => {
           this.orgMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -395,7 +391,7 @@ export class OrganizationsComponent implements OnInit {
     map[member.userId] = true;
     this.memberUpdating.set(map);
 
-    this.organizationRolesStore
+    this.#organizationRolesStore
       .removeMember(organizationId, member.userId)
       .pipe(
         finalize(() => {
@@ -414,7 +410,7 @@ export class OrganizationsComponent implements OnInit {
         error: (error) => {
           this.orgMessage.set({
             kind: 'error',
-            text: this.extractErrorMessage(error),
+            text: this.#extractErrorMessage(error),
           });
         },
       });
@@ -451,7 +447,7 @@ export class OrganizationsComponent implements OnInit {
     return {};
   }
 
-  private slugify(value: string): string {
+   #slugify(value: string): string {
     return value
       .toLowerCase()
       .normalize('NFKD')
@@ -460,7 +456,7 @@ export class OrganizationsComponent implements OnInit {
       .replace(/^-+|-+$/g, '');
   }
 
-  private extractErrorMessage(error: unknown): string {
+   #extractErrorMessage(error: unknown): string {
     if (!error) {
       return 'Une erreur inattendue est survenue.';
     }
