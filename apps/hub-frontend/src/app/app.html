@@ -1,1 +1,26 @@
-<router-outlet></router-outlet>
+@if (auth.restoring()) {
+  <div class="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+    <div class="w-full max-w-2xl space-y-6">
+      <div class="space-y-4">
+        <app-skeleton height="2.25rem" width="45%"></app-skeleton>
+        <app-skeleton height="1.25rem" width="65%"></app-skeleton>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        @for (_ of appSkeletonLines; track $index) {
+          <app-skeleton height="1rem" width="100%"></app-skeleton>
+        }
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        @for (_ of appSkeletonLines; track $index) {
+          <div class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm space-y-3">
+            <app-skeleton height="1.1rem" width="60%"></app-skeleton>
+            <app-skeleton height="0.9rem" width="80%"></app-skeleton>
+            <app-skeleton height="0.7rem" width="50%"></app-skeleton>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}

@@ -133,34 +133,48 @@
               Aucune organisation pour le moment. Utilisez le formulaire ci-dessus pour en créer une.
             </p>
           } @else {
-            <ul class="space-y-2">
-              @for (organization of organizations(); track organization.id) {
-                <li>
-                  <button
-                    type="button"
-                    class="w-full rounded-xl border px-4 py-3 text-left shadow-sm transition-colors"
-                    [class.border-indigo-300]="selectedOrganizationId() === organization.id"
-                    [class.bg-indigo-50]="selectedOrganizationId() === organization.id"
-                    [class.border-slate-200]="selectedOrganizationId() !== organization.id"
-                    [class.bg-white]="selectedOrganizationId() !== organization.id"
-                    (click)="onSelectOrganization(organization.id)"
-                  >
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-semibold text-slate-900">
-                          {{ organization.name }}
-                        </p>
-                        <p class="text-xs text-slate-500">slug: {{ organization.slug }}</p>
-                        <p class="text-xs text-slate-500">DB: {{ organization.databaseName }}</p>
-                      </div>
-                      <p class="text-xs text-slate-400">
-                        {{ organization.updatedAt | date: 'short' }}
-                      </p>
+            @if (loading()) {
+              <ul class="space-y-2">
+                @for (_ of listSkeletonItems; track $index) {
+                  <li class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                    <div class="space-y-3">
+                      <app-skeleton height="1rem" width="60%"></app-skeleton>
+                      <app-skeleton height="0.75rem" width="45%"></app-skeleton>
+                      <app-skeleton height="0.75rem" width="35%"></app-skeleton>
                     </div>
-                  </button>
-                </li>
-              }
-            </ul>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <ul class="space-y-2">
+                @for (organization of organizations(); track organization.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="w-full rounded-xl border px-4 py-3 text-left shadow-sm transition-colors"
+                      [class.border-indigo-300]="selectedOrganizationId() === organization.id"
+                      [class.bg-indigo-50]="selectedOrganizationId() === organization.id"
+                      [class.border-slate-200]="selectedOrganizationId() !== organization.id"
+                      [class.bg-white]="selectedOrganizationId() !== organization.id"
+                      (click)="onSelectOrganization(organization.id)"
+                    >
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <p class="text-sm font-semibold text-slate-900">
+                            {{ organization.name }}
+                          </p>
+                          <p class="text-xs text-slate-500">slug: {{ organization.slug }}</p>
+                          <p class="text-xs text-slate-500">DB: {{ organization.databaseName }}</p>
+                        </div>
+                        <p class="text-xs text-slate-400">
+                          {{ organization.updatedAt | date: 'short' }}
+                        </p>
+                      </div>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
           }
         </div>
       </section>
@@ -352,11 +366,31 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200 bg-white">
                   @if (membersLoading()) {
-                    <tr>
-                      <td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">
-                        Chargement des membres...
-                      </td>
-                    </tr>
+                    @for (_ of memberSkeletonRows; track $index) {
+                      <tr>
+                        <td class="px-4 py-4">
+                          <div class="space-y-2">
+                            <app-skeleton height="0.9rem" width="70%"></app-skeleton>
+                            <app-skeleton height="0.75rem" width="55%"></app-skeleton>
+                            <app-skeleton height="0.6rem" width="40%"></app-skeleton>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4">
+                          <app-skeleton height="2.5rem"></app-skeleton>
+                          <div class="mt-2">
+                            <app-skeleton height="0.6rem" width="60%"></app-skeleton>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4">
+                          <app-skeleton height="0.85rem" width="50%"></app-skeleton>
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                          <div class="flex justify-end">
+                            <app-skeleton height="2rem" width="5rem"></app-skeleton>
+                          </div>
+                        </td>
+                      </tr>
+                    }
                   } @else if (members().length === 0) {
                     <tr>
                       <td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">

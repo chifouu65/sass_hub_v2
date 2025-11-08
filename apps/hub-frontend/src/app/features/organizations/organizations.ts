@@ -18,6 +18,7 @@ import {
   OrganizationRolesStore,
 } from '../../core/services/organization-roles';
 import { finalize } from 'rxjs/operators';
+import { SkeletonComponent } from '../../shared/ui/skeleton/skeleton';
 
 type AssignmentValue = string;
 
@@ -37,6 +38,7 @@ const BUILT_IN_ROLES: Array<{ value: string; label: string }> = [
     ReactiveFormsModule,
     FormsModule,
     DatePipe,
+    SkeletonComponent,
   ],
   templateUrl: './organizations.html',
   styleUrl: './organizations.css',
@@ -90,6 +92,8 @@ export class OrganizationsComponent {
   readonly formMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
   readonly orgMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
   readonly deleteSubmitting = signal(false);
+  protected readonly listSkeletonItems = Array.from({ length: 4 });
+  protected readonly memberSkeletonRows = Array.from({ length: 4 });
 
    #slugManuallyEditedCreate = signal(false);
    #slugManuallyEditedUpdate = signal(false);

@@ -7,11 +7,12 @@ import {
   OrganizationRoleView,
   OrganizationRolesStore,
 } from '../../core/services/organization-roles';
+import { SkeletonComponent } from '../../shared/ui/skeleton/skeleton';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, SkeletonComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -44,6 +45,8 @@ export class Dashboard {
   readonly formMessage = signal<{ text: string; kind: 'success' | 'error' } | null>(null);
   readonly createSubmitting = signal(false);
   readonly deleteInProgress = signal<string | null>(null);
+  protected readonly roleSkeletonRows = Array.from({ length: 4 });
+  protected readonly roleSkeletonLines = Array.from({ length: 3 });
 
   constructor() {
     this.#organizationRolesStore.loadOrganizations();

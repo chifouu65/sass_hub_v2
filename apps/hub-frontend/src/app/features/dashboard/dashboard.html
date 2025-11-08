@@ -133,10 +133,52 @@
       } @else {
         <div class="space-y-8">
           @if (loading()) {
-            <div class="space-y-4">
-              <div class="h-4 w-48 bg-gray-100 rounded animate-pulse"></div>
-              <div class="h-48 bg-gray-100 rounded-xl animate-pulse"></div>
-              <div class="h-32 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="space-y-6">
+              <div class="space-y-3">
+                <app-skeleton height="1.5rem" width="35%"></app-skeleton>
+                <app-skeleton height="0.9rem" width="55%"></app-skeleton>
+              </div>
+              <div class="rounded-xl border border-gray-100 bg-white">
+                <div class="border-b border-gray-100 px-4 py-3">
+                  <app-skeleton height="1rem" width="25%"></app-skeleton>
+                </div>
+                <div class="p-4 space-y-3">
+                  @for (_ of roleSkeletonLines; track $index) {
+                    <app-skeleton height="0.85rem" width="100%"></app-skeleton>
+                  }
+                </div>
+              </div>
+              <div class="overflow-hidden rounded-xl border border-gray-100">
+                <table class="min-w-full">
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    @for (_ of roleSkeletonRows; track $index) {
+                      <tr>
+                        <td class="px-4 py-4">
+                          <div class="space-y-2">
+                            <app-skeleton height="1rem" width="45%"></app-skeleton>
+                            <app-skeleton height="0.75rem" width="35%"></app-skeleton>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4">
+                          <app-skeleton height="1.5rem" width="5rem" borderRadius="9999px"></app-skeleton>
+                        </td>
+                        <td class="px-4 py-4">
+                          <div class="flex flex-wrap gap-2">
+                            <app-skeleton height="1.25rem" width="4.5rem" borderRadius="9999px"></app-skeleton>
+                            <app-skeleton height="1.25rem" width="5.5rem" borderRadius="9999px"></app-skeleton>
+                          </div>
+                        </td>
+                        <td class="px-4 py-4">
+                          <app-skeleton height="0.75rem" width="60%"></app-skeleton>
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                          <app-skeleton height="2rem" width="6rem"></app-skeleton>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
             </div>
           } @else {
             <div class="overflow-x-auto rounded-xl border border-gray-100">
