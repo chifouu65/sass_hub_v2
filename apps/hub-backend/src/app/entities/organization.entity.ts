@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserOrganization } from './user-organization.entity';
 import { Subscription } from './subscription.entity';
+import { OrganizationRole } from './organization-role.entity';
 
 export enum OrganizationStatus {
   ACTIVE = 'active',
@@ -48,5 +49,8 @@ export class Organization {
 
   @OneToMany(() => Subscription, (subscription) => subscription.organization)
   subscriptions: Subscription[];
+
+  @OneToMany(() => OrganizationRole, (role) => role.organization)
+  roles: OrganizationRole[];
 }
 

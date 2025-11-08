@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { UserOrganizationRole } from '../../organizations/dto/add-user-to-organization.dto';
+import { UserOrganizationRole } from '../../organizations/constants/user-organization-role.enum';
 import { OrganizationsService } from '../../organizations/organizations.service';
 
 /**

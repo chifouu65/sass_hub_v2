@@ -1,10 +1,15 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { User } from '../entities/user.entity';
-import { UserOrganization } from '../entities/user-organization.entity';
-import { Organization } from '../entities/organization.entity';
-import { Application } from '../entities/application.entity';
-import { Subscription } from '../entities/subscription.entity';
+import {
+  Application,
+  Organization,
+  OrganizationRole,
+  OrganizationRolePermission,
+  Permission,
+  Subscription,
+  User,
+  UserOrganization,
+} from '../entities';
 
 export default registerAs(
   'database',
@@ -15,8 +20,17 @@ export default registerAs(
     username: process.env.DB_USERNAME || 'hub_user',
     password: process.env.DB_PASSWORD || 'hub_password',
     database: process.env.DB_DATABASE || 'hub_db',
-    entities: [User, UserOrganization, Organization, Application, Subscription],
-    synchronize: process.env.NODE_ENV !== 'production', // true en dev, false en prod
+    entities: [
+      User,
+      UserOrganization,
+      Organization,
+      Application,
+      Subscription,
+      OrganizationRole,
+      OrganizationRolePermission,
+      Permission,
+    ],
+    synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
     logging: process.env.NODE_ENV === 'development',
     autoLoadEntities: false, // Explicitly using entities array
     migrations: [__dirname + '/../../migrations/**/*{.ts,.js}'],

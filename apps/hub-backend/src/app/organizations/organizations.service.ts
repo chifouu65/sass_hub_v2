@@ -11,8 +11,10 @@ import { UserOrganization } from '../entities/user-organization.entity';
 import { User } from '../entities/user.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { AddUserToOrganizationDto, UserOrganizationRole } from './dto/add-user-to-organization.dto';
+import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
+import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { OrganizationResponseDto } from './dto/organization-response.dto';
+import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 
 @Injectable()
 export class OrganizationsService {
@@ -23,6 +25,7 @@ export class OrganizationsService {
     private userOrganizationRepository: Repository<UserOrganization>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly organizationRolesService: OrganizationRolesService,
   ) {}
 
   /**
@@ -55,7 +58,13 @@ export class OrganizationsService {
     const savedOrganization = await this.organizationRepository.save(organization);
 
     // Ajouter le créateur comme owner
-    await this.addUserToOrganization(savedOrganization.id, ownerId, UserOrganizationRole.OWNER);
+    await this.addUserToOrganization(
+      savedOrganization.id,
+      { userId: ownerId },
+      {
+        role: UserOrganizationRole.OWNER,
+      },
+    );
 
     return this.mapToResponseDto(savedOrganization);
   }
@@ -165,8 +174,11 @@ export class OrganizationsService {
    */
   async addUserToOrganization(
     organizationId: string,
-    userId: string,
-    role: UserOrganizationRole = UserOrganizationRole.MEMBER,
+    identifier: { userId?: string; email?: string },
+    options: {
+      role?: UserOrganizationRole;
+      organizationRoleId?: string;
+    } = {},
   ): Promise<void> {
     // Vérifier que l'organisation existe
     const organization = await this.organizationRepository.findOne({
@@ -177,18 +189,12 @@ export class OrganizationsService {
       throw new NotFoundException(`Organisation avec l'ID "${organizationId}" introuvable`);
     }
 
-    // Vérifier que l'utilisateur existe
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new NotFoundException(`Utilisateur avec l'ID "${userId}" introuvable`);
-    }
+    // Vérifier que l'utilisateur existe (par id ou email)
+    const user = await this.resolveUserIdentifier(identifier);
 
     // Vérifier si l'association existe déjà
     const existing = await this.userOrganizationRepository.findOne({
-      where: { userId, organizationId },
+      where: { userId: user.id, organizationId },
     });
 
     if (existing) {
@@ -197,11 +203,24 @@ export class OrganizationsService {
       );
     }
 
+    const selection = {
+      role: options.role,
+      organizationRoleId: options.organizationRoleId,
+    };
+
+    if (!selection.role && !selection.organizationRoleId) {
+      selection.role = UserOrganizationRole.MEMBER;
+    }
+
+    const { resolvedRole, resolvedOrganizationRoleId } =
+      await this.resolveRoleSelection(organizationId, selection);
+
     // Créer l'association
     const userOrganization = this.userOrganizationRepository.create({
-      userId,
+      userId: user.id,
       organizationId,
-      role,
+      role: resolvedRole,
+      organizationRoleId: resolvedOrganizationRoleId,
     });
 
     await this.userOrganizationRepository.save(userOrganization);
@@ -213,7 +232,10 @@ export class OrganizationsService {
   async updateUserRole(
     organizationId: string,
     userId: string,
-    role: UserOrganizationRole,
+    update: {
+      role?: UserOrganizationRole;
+      organizationRoleId?: string;
+    },
   ): Promise<void> {
     const userOrganization = await this.userOrganizationRepository.findOne({
       where: { userId, organizationId },
@@ -225,7 +247,18 @@ export class OrganizationsService {
       );
     }
 
-    userOrganization.role = role;
+    if (!update.role && !update.organizationRoleId) {
+      throw new BadRequestException(
+        'Vous devez fournir un rôle ou un rôle personnalisé',
+      );
+    }
+
+    const { resolvedRole, resolvedOrganizationRoleId } =
+      await this.resolveRoleSelection(organizationId, update);
+
+    userOrganization.role = resolvedRole;
+    userOrganization.organizationRoleId = resolvedOrganizationRoleId;
+
     await this.userOrganizationRepository.save(userOrganization);
   }
 
@@ -271,7 +304,7 @@ export class OrganizationsService {
   async getOrganizationUsers(organizationId: string) {
     const userOrganizations = await this.userOrganizationRepository.find({
       where: { organizationId },
-      relations: ['user'],
+      relations: ['user', 'organizationRole'],
     });
 
     return userOrganizations.map((uo) => ({
@@ -281,6 +314,9 @@ export class OrganizationsService {
       firstName: uo.user.firstName,
       lastName: uo.user.lastName,
       role: uo.role,
+      organizationRoleId: uo.organizationRoleId,
+      organizationRoleSlug: uo.organizationRole?.slug ?? null,
+      organizationRoleName: uo.organizationRole?.name ?? null,
       createdAt: uo.createdAt,
     }));
   }
@@ -323,9 +359,116 @@ export class OrganizationsService {
   ): Promise<string | null> {
     const userOrganization = await this.userOrganizationRepository.findOne({
       where: { userId, organizationId },
+      relations: ['organizationRole'],
     });
 
-    return userOrganization?.role || null;
+    if (!userOrganization) {
+      return null;
+    }
+
+    if (userOrganization.role) {
+      return userOrganization.role;
+    }
+
+    return userOrganization.organizationRole?.slug ?? null;
+  }
+
+  async getUserOrganizationMembership(
+    organizationId: string,
+    userId: string,
+  ): Promise<UserOrganization | null> {
+    return this.userOrganizationRepository.findOne({
+      where: { organizationId, userId },
+      relations: [
+        'organizationRole',
+        'organizationRole.permissions',
+        'organizationRole.permissions.permission',
+      ],
+    });
+  }
+
+  private async resolveRoleSelection(
+    organizationId: string,
+    selection: {
+      role?: UserOrganizationRole;
+      organizationRoleId?: string;
+    },
+  ): Promise<{
+    resolvedRole: UserOrganizationRole | null;
+    resolvedOrganizationRoleId: string | null;
+  }> {
+    if (selection.role && selection.organizationRoleId) {
+      throw new BadRequestException(
+        'Vous ne pouvez pas fournir un rôle et un rôle personnalisé simultanément',
+      );
+    }
+
+    if (selection.organizationRoleId) {
+      const roleEntity =
+        await this.organizationRolesService.getRoleWithPermissions(
+          selection.organizationRoleId,
+        );
+
+      if (
+        !roleEntity.isSystem &&
+        roleEntity.organizationId !== organizationId
+      ) {
+        throw new BadRequestException(
+          'Le rôle personnalisé ne correspond pas à cette organisation',
+        );
+      }
+
+      if (roleEntity.isSystem) {
+        return {
+          resolvedRole: roleEntity.slug as UserOrganizationRole,
+          resolvedOrganizationRoleId: null,
+        };
+      }
+
+      return {
+        resolvedRole: null,
+        resolvedOrganizationRoleId: roleEntity.id,
+      };
+    }
+
+    return {
+      resolvedRole: selection.role ?? UserOrganizationRole.MEMBER,
+      resolvedOrganizationRoleId: null,
+    };
+  }
+
+  private async resolveUserIdentifier(identifier: {
+    userId?: string;
+    email?: string;
+  }): Promise<User> {
+    if (!identifier.userId && !identifier.email) {
+      throw new BadRequestException(
+        'Vous devez fournir un identifiant utilisateur ou un email',
+      );
+    }
+
+    let user: User | null = null;
+
+    if (identifier.userId) {
+      user = await this.userRepository.findOne({
+        where: { id: identifier.userId },
+      });
+    } else if (identifier.email) {
+      const normalizedEmail = identifier.email.trim().toLowerCase();
+      user = await this.userRepository.findOne({
+        where: { email: normalizedEmail },
+      });
+    }
+
+    if (!user) {
+      throw new NotFoundException(
+        identifier.userId
+          ? `Utilisateur avec l'ID "${identifier.userId}" introuvable`
+          : `Utilisateur avec l'email "${identifier.email?.trim().toLowerCase()}" introuvable`,
+      );
+    }
+
+    return user;
   }
 
   /**

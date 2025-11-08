@@ -13,6 +13,111 @@
 @mockAccessToken = replace-with-real-token-after-login
 @organizationId = replace-with-real-org-id
 @userId = replace-with-real-user-id
+@roleId = replace-with-real-role-id
+
+###############################################
+# 0. LIST ROLES & PERMISSIONS (ADMIN ou OWNER)
+###############################################
+GET {{baseUrl}}/organizations/{{organizationId}}/roles
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (OWNER ou ADMIN) :
+# [
+#   {
+#     "id": "...",
+#     "name": "Owner",
+#     "slug": "owner",
+#     "isSystem": true,
+#     "permissions": ["manage_organization", "..."]
+#   },
+#   {
+#     "id": "...",
+#     "name": "Custom Role",
+#     "slug": "custom-role",
+#     "isSystem": false,
+#     "permissions": ["manage_apps"]
+#   }
+# ]
+
+###############################################
+# 0.b LIST AVAILABLE PERMISSIONS (ADMIN ou OWNER)
+###############################################
+GET {{baseUrl}}/organizations/{{organizationId}}/roles/available-permissions
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue :
+# [
+#   { "code": "manage_roles", "name": "Gérer les rôles", ... },
+#   ...
+# ]
+
+###############################################
+# 0.c CREATE CUSTOM ROLE (OWNER uniquement)
+###############################################
+POST {{baseUrl}}/organizations/{{organizationId}}/roles
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Custom Manager",
+  "slug": "custom-manager",
+  "description": "Peut gérer les applications",
+  "permissions": ["manage_apps", "view_reports"]
+}
+
+### Réponse attendue (201 Created) :
+# {
+#   "id": "...",
+#   "name": "Custom Manager",
+#   "slug": "custom-manager",
+#   "isSystem": false,
+#   "permissions": ["manage_apps", "view_reports"]
+# }
+
+###############################################
+# 0.d UPDATE CUSTOM ROLE (OWNER uniquement)
+###############################################
+PATCH {{baseUrl}}/organizations/{{organizationId}}/roles/{{roleId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Custom Manager Updated",
+  "description": "Gestion + reporting"
+}
+
+### Réponse attendue (200 OK) :
+# {
+#   "id": "{{roleId}}",
+#   "name": "Custom Manager Updated",
+#   "description": "Gestion + reporting",
+#   "permissions": ["manage_apps", "view_reports"]
+# }
+
+###############################################
+# 0.e UPDATE CUSTOM ROLE PERMISSIONS (OWNER uniquement)
+###############################################
+PUT {{baseUrl}}/organizations/{{organizationId}}/roles/{{roleId}}/permissions
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "permissions": ["manage_roles", "manage_users"]
+}
+
+### Réponse attendue (200 OK) :
+# {
+#   "id": "{{roleId}}",
+#   "permissions": ["manage_roles", "manage_users"]
+# }
+
+###############################################
+# 0.f DELETE CUSTOM ROLE (OWNER uniquement)
+###############################################
+DELETE {{baseUrl}}/organizations/{{organizationId}}/roles/{{roleId}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (204 No Content)
 
 ###############################################
 # 1. UPDATE ORGANIZATION - Owner ou Admin uniquement
@@ -36,7 +141,7 @@ Authorization: Bearer {{mockAccessToken}}
 ### Réponse attendue (si MEMBER, erreur 403 Forbidden):
 # {
 #   "statusCode": 403,
-#   "message": "Access denied. Required roles: owner, admin. Your role: member",
+#   "message": "Accès refusé. Permissions requises: manage_organization",
 #   "error": "Forbidden"
 # }
 
@@ -51,7 +156,7 @@ Authorization: Bearer {{mockAccessToken}}
 ### Réponse attendue (si ADMIN ou MEMBER, erreur 403 Forbidden):
 # {
 #   "statusCode": 403,
-#   "message": "Access denied. Required roles: owner. Your role: admin",
+#   "message": "Accès refusé. Permissions requises: manage_organization",
 #   "error": "Forbidden"
 # }
 
@@ -63,7 +168,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{mockAccessToken}}
 
 {
-  "userId": "{{userId}}",
+  "email": "collaborateur@example.com",
   "role": "member"
 }
 
@@ -72,7 +177,7 @@ Authorization: Bearer {{mockAccessToken}}
 ### Réponse attendue (si MEMBER, erreur 403 Forbidden):
 # {
 #   "statusCode": 403,
-#   "message": "Access denied. Required roles: owner, admin. Your role: member",
+#   "message": "Accès refusé. Permissions requises: manage_users",
 #   "error": "Forbidden"
 # }
 
@@ -98,7 +203,7 @@ Authorization: Bearer {{mockAccessToken}}
 ### Réponse attendue (si MEMBER, erreur 403 Forbidden):
 # {
 #   "statusCode": 403,
-#   "message": "Access denied. Required roles: owner, admin. Your role: member",
+#   "message": "Accès refusé. Permissions requises: manage_users",
 #   "error": "Forbidden"
 # }
 
@@ -118,7 +223,7 @@ Authorization: Bearer {{mockAccessToken}}
 ### Réponse attendue (si ADMIN ou MEMBER, erreur 403 Forbidden):
 # {
 #   "statusCode": 403,
-#   "message": "Access denied. Required roles: owner. Your role: admin",
+#   "message": "Accès refusé. Permissions requises: manage_roles",
 #   "error": "Forbidden"
 # }
 
@@ -133,7 +238,7 @@ Authorization: Bearer {{mockAccessToken}}
 ### Réponse attendue (si ADMIN ou MEMBER, erreur 403 Forbidden):
 # {
 #   "statusCode": 403,
-#   "message": "Access denied. Required roles: owner. Your role: admin",
+#   "message": "Accès refusé. Permissions requises: manage_users",
 #   "error": "Forbidden"
 # }
 
@@ -157,7 +262,7 @@ Authorization: Bearer {{mockAccessToken}}
 # Authorization: Bearer <token-owner>
 #
 # {
-#   "userId": "<admin-user-id>",
+#   "email": "admin@example.com",
 #   "role": "admin"
 # }
 

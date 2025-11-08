@@ -5,15 +5,17 @@ import { OrganizationsController } from './organizations.controller';
 import { Organization } from '../entities/organization.entity';
 import { UserOrganization } from '../entities/user-organization.entity';
 import { User } from '../entities/user.entity';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { OrganizationRolesModule } from '../organization-roles/organization-roles.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Organization, UserOrganization, User]),
+    OrganizationRolesModule,
   ],
   controllers: [OrganizationsController],
-  providers: [OrganizationsService, RolesGuard],
-  exports: [OrganizationsService],
+  providers: [OrganizationsService, PermissionsGuard],
+  exports: [OrganizationsService, PermissionsGuard],
 })
 export class OrganizationsModule {}
 
