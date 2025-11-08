@@ -14,7 +14,8 @@
 - [x] Mettre en place le service d'authentification (JWT/OAuth2/SSO)
 - [x] Configurer la base de données "hub" (MySQL)
 - [x] Implémenter la gestion des organisations (tenants)
-- [ ] Implémenter la gestion des utilisateurs et rôles
+- [x] Implémenter la gestion des utilisateurs et rôles
+- [x] Mettre en place le rafraîchissement automatique des tokens (REST `/api/auth/refresh`)
 - [ ] Créer l'API Gateway (NestJS)
 
 ### 🗄️ Base de données Multi-Tenant
@@ -26,8 +27,9 @@
 ### 🎨 Hub Frontend (Angular)
 - [x] Créer le hub-frontend (Angular 20)
 - [x] Configurer TailwindCSS
-- [ ] Créer le dashboard principal
-- [ ] Implémenter la gestion des organisations
+- [x] Créer le dashboard principal
+- [x] Implémenter la gestion des organisations
+- [x] Ajouter des skeletons de chargement globaux et contextuels
 - [ ] Implémenter la gestion des applications souscrites
 - [ ] Créer l'interface de gestion des entités
 
@@ -103,6 +105,8 @@
 - [x] Création des scripts de démarrage local (start-local.sh, stop-local.sh, check-ports.sh)
 - [x] Configuration de l'environnement de développement sans Nginx
 - [x] Correction du proxy Angular pour éviter les erreurs WebSocket sur /api/health
+- [x] Rafraîchissement automatique des tokens côté frontend + backend
+- [x] Ajout des skeletons de chargement dans les vues Angular principales
 
 ---
 
