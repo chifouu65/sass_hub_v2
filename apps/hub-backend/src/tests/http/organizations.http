@@ -1,0 +1,527 @@
+### API SaaS Hub - Tests HTTP pour les Organisations (Tenants)
+### Base URL: http://localhost:3000/api
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables Mock - Tokens (à remplacer par de vrais tokens après login)
+@mockAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC05MC1hYmNkLWVmZ2giLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3MDk4NzY1NDAsImV4cCI6MTcxMDA0OTM0MH0.mock-access-token
+@mockUserId = 12345678-90ab-cdef-ghij-klmnopqrstuv
+@mockOrganizationId = abcdef12-3456-7890-abcd-ef1234567890
+@mockUserId2 = 87654321-fedc-ba09-8765-4321fedcba09
+
+###############################################
+# 1. CREATE ORGANIZATION - Créer une nouvelle organisation
+###############################################
+POST {{baseUrl}}/organizations
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Acme Corporation",
+  "slug": "acme-corp",
+  "databaseName": "tenant_acme_corp"
+}
+
+### Réponse attendue (201 Created):
+# {
+#   "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#   "name": "Acme Corporation",
+#   "slug": "acme-corp",
+#   "databaseName": "tenant_acme_corp",
+#   "status": "active",
+#   "createdAt": "2024-03-11T18:44:00.000Z",
+#   "updatedAt": "2024-03-11T18:44:00.000Z"
+# }
+
+###############################################
+# 2. CREATE ORGANIZATION - Sans databaseName (généré automatiquement)
+###############################################
+POST {{baseUrl}}/organizations
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Tech Startup Inc",
+  "slug": "tech-startup"
+}
+
+### Réponse attendue:
+# {
+#   "id": "...",
+#   "name": "Tech Startup Inc",
+#   "slug": "tech-startup",
+#   "databaseName": "tenant_tech-startup",  // Généré automatiquement
+#   ...
+# }
+
+###############################################
+# 3. CREATE ORGANIZATION - Test avec slug déjà existant (erreur attendue)
+###############################################
+POST {{baseUrl}}/organizations
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Another Acme",
+  "slug": "acme-corp"
+}
+
+### Réponse attendue (409 Conflict):
+# {
+#   "statusCode": 409,
+#   "message": "Une organisation avec le slug \"acme-corp\" existe déjà",
+#   "error": "Conflict"
+# }
+
+###############################################
+# 4. CREATE ORGANIZATION - Test avec slug invalide (erreur attendue)
+###############################################
+POST {{baseUrl}}/organizations
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Invalid Slug Org",
+  "slug": "Invalid_Slug_123!"
+}
+
+### Réponse attendue (400 Bad Request):
+# {
+#   "statusCode": 400,
+#   "message": ["slug must contain only lowercase letters, numbers, and hyphens"],
+#   "error": "Bad Request"
+# }
+
+###############################################
+# 5. CREATE ORGANIZATION - Test sans token (erreur attendue)
+###############################################
+POST {{baseUrl}}/organizations
+Content-Type: {{contentType}}
+
+{
+  "name": "Unauthorized Org",
+  "slug": "unauthorized"
+}
+
+### Réponse attendue (401 Unauthorized):
+# {
+#   "statusCode": 401,
+#   "message": "Unauthorized"
+# }
+
+###############################################
+# 6. GET ALL ORGANIZATIONS - Récupérer toutes les organisations
+###############################################
+GET {{baseUrl}}/organizations
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (200 OK):
+# [
+#   {
+#     "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#     "name": "Acme Corporation",
+#     "slug": "acme-corp",
+#     "databaseName": "tenant_acme_corp",
+#     "status": "active",
+#     "createdAt": "2024-03-11T18:44:00.000Z",
+#     "updatedAt": "2024-03-11T18:44:00.000Z"
+#   },
+#   ...
+# ]
+
+###############################################
+# 7. GET MY ORGANIZATIONS - Récupérer les organisations de l'utilisateur connecté
+###############################################
+GET {{baseUrl}}/organizations/my
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (200 OK):
+# [
+#   {
+#     "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#     "name": "Acme Corporation",
+#     "slug": "acme-corp",
+#     ...
+#   }
+# ]
+
+###############################################
+# 8. GET ORGANIZATION BY ID - Récupérer une organisation par son ID
+###############################################
+GET {{baseUrl}}/organizations/{{mockOrganizationId}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (200 OK):
+# {
+#   "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#   "name": "Acme Corporation",
+#   "slug": "acme-corp",
+#   "databaseName": "tenant_acme_corp",
+#   "status": "active",
+#   "createdAt": "2024-03-11T18:44:00.000Z",
+#   "updatedAt": "2024-03-11T18:44:00.000Z"
+# }
+
+###############################################
+# 9. GET ORGANIZATION BY ID - Test avec ID inexistant (erreur attendue)
+###############################################
+GET {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (404 Not Found):
+# {
+#   "statusCode": 404,
+#   "message": "Organisation avec l'ID \"00000000-0000-0000-0000-000000000000\" introuvable",
+#   "error": "Not Found"
+# }
+
+###############################################
+# 10. GET ORGANIZATION BY SLUG - Récupérer une organisation par son slug
+###############################################
+GET {{baseUrl}}/organizations/slug/acme-corp
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (200 OK):
+# {
+#   "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#   "name": "Acme Corporation",
+#   "slug": "acme-corp",
+#   ...
+# }
+
+###############################################
+# 11. GET ORGANIZATION BY SLUG - Test avec slug inexistant (erreur attendue)
+###############################################
+GET {{baseUrl}}/organizations/slug/non-existent-slug
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (404 Not Found):
+# {
+#   "statusCode": 404,
+#   "message": "Organisation avec le slug \"non-existent-slug\" introuvable",
+#   "error": "Not Found"
+# }
+
+###############################################
+# 12. UPDATE ORGANIZATION - Mettre à jour une organisation
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Acme Corporation Updated",
+  "status": "active"
+}
+
+### Réponse attendue (200 OK):
+# {
+#   "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#   "name": "Acme Corporation Updated",
+#   "slug": "acme-corp",
+#   "status": "active",
+#   ...
+# }
+
+###############################################
+# 13. UPDATE ORGANIZATION - Mettre à jour le slug
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "slug": "acme-corp-new"
+}
+
+### Réponse attendue (200 OK):
+# {
+#   "id": "abcdef12-3456-7890-abcd-ef1234567890",
+#   "name": "Acme Corporation Updated",
+#   "slug": "acme-corp-new",
+#   ...
+# }
+
+###############################################
+# 14. UPDATE ORGANIZATION - Changer le statut
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "status": "suspended"
+}
+
+### Réponse attendue (200 OK):
+# {
+#   ...
+#   "status": "suspended",
+#   ...
+# }
+
+###############################################
+# 15. UPDATE ORGANIZATION - Test avec slug déjà utilisé (erreur attendue)
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "slug": "tech-startup"
+}
+
+### Réponse attendue (409 Conflict):
+# {
+#   "statusCode": 409,
+#   "message": "Une organisation avec le slug \"tech-startup\" existe déjà",
+#   "error": "Conflict"
+# }
+
+###############################################
+# 16. DELETE ORGANIZATION - Supprimer une organisation
+###############################################
+DELETE {{baseUrl}}/organizations/{{mockOrganizationId}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (204 No Content)
+
+###############################################
+# 17. DELETE ORGANIZATION - Test avec ID inexistant (erreur attendue)
+###############################################
+DELETE {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (404 Not Found):
+# {
+#   "statusCode": 404,
+#   "message": "Organisation avec l'ID \"00000000-0000-0000-0000-000000000000\" introuvable",
+#   "error": "Not Found"
+# }
+
+###############################################
+# GESTION DES UTILISATEURS DANS LES ORGANISATIONS
+###############################################
+
+###############################################
+# 18. ADD USER TO ORGANIZATION - Ajouter un utilisateur à une organisation
+###############################################
+POST {{baseUrl}}/organizations/{{mockOrganizationId}}/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "userId": "{{mockUserId2}}",
+  "role": "admin"
+}
+
+### Réponse attendue (201 Created, pas de body)
+
+###############################################
+# 19. ADD USER TO ORGANIZATION - Ajouter avec rôle owner
+###############################################
+POST {{baseUrl}}/organizations/{{mockOrganizationId}}/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "userId": "{{mockUserId}}",
+  "role": "owner"
+}
+
+### Réponse attendue (201 Created)
+
+###############################################
+# 20. ADD USER TO ORGANIZATION - Ajouter sans spécifier le rôle (default: member)
+###############################################
+POST {{baseUrl}}/organizations/{{mockOrganizationId}}/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "userId": "{{mockUserId2}}"
+}
+
+### Réponse attendue (201 Created)
+
+###############################################
+# 21. ADD USER TO ORGANIZATION - Test avec utilisateur déjà membre (erreur attendue)
+###############################################
+POST {{baseUrl}}/organizations/{{mockOrganizationId}}/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "userId": "{{mockUserId}}",
+  "role": "admin"
+}
+
+### Réponse attendue (409 Conflict):
+# {
+#   "statusCode": 409,
+#   "message": "L'utilisateur est déjà membre de cette organisation",
+#   "error": "Conflict"
+# }
+
+###############################################
+# 22. ADD USER TO ORGANIZATION - Test avec organisation inexistante (erreur attendue)
+###############################################
+POST {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "userId": "{{mockUserId}}",
+  "role": "member"
+}
+
+### Réponse attendue (404 Not Found):
+# {
+#   "statusCode": 404,
+#   "message": "Organisation avec l'ID \"00000000-0000-0000-0000-000000000000\" introuvable",
+#   "error": "Not Found"
+# }
+
+###############################################
+# 23. GET ORGANIZATION USERS - Récupérer les utilisateurs d'une organisation
+###############################################
+GET {{baseUrl}}/organizations/{{mockOrganizationId}}/users
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (200 OK):
+# [
+#   {
+#     "id": "user-org-id-1",
+#     "userId": "12345678-90ab-cdef-ghij-klmnopqrstuv",
+#     "email": "test@example.com",
+#     "firstName": "John",
+#     "lastName": "Doe",
+#     "role": "owner",
+#     "createdAt": "2024-03-11T18:44:00.000Z"
+#   },
+#   {
+#     "id": "user-org-id-2",
+#     "userId": "87654321-fedc-ba09-8765-4321fedcba09",
+#     "email": "user2@example.com",
+#     "firstName": "Jane",
+#     "lastName": "Smith",
+#     "role": "admin",
+#     "createdAt": "2024-03-11T19:00:00.000Z"
+#   }
+# ]
+
+###############################################
+# 24. UPDATE USER ROLE - Mettre à jour le rôle d'un utilisateur
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}/users/{{mockUserId2}}/role
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "role": "admin"
+}
+
+### Réponse attendue (200 OK, pas de body)
+
+###############################################
+# 25. UPDATE USER ROLE - Changer le rôle en owner
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}/users/{{mockUserId2}}/role
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "role": "owner"
+}
+
+### Réponse attendue (200 OK)
+
+###############################################
+# 26. UPDATE USER ROLE - Test avec utilisateur non membre (erreur attendue)
+###############################################
+PATCH {{baseUrl}}/organizations/{{mockOrganizationId}}/users/00000000-0000-0000-0000-000000000000/role
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "role": "member"
+}
+
+### Réponse attendue (404 Not Found):
+# {
+#   "statusCode": 404,
+#   "message": "L'utilisateur n'est pas membre de cette organisation",
+#   "error": "Not Found"
+# }
+
+###############################################
+# 27. REMOVE USER FROM ORGANIZATION - Retirer un utilisateur d'une organisation
+###############################################
+DELETE {{baseUrl}}/organizations/{{mockOrganizationId}}/users/{{mockUserId2}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (204 No Content)
+
+###############################################
+# 28. REMOVE USER FROM ORGANIZATION - Test retirer le dernier owner (erreur attendue)
+###############################################
+DELETE {{baseUrl}}/organizations/{{mockOrganizationId}}/users/{{mockUserId}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (400 Bad Request):
+# {
+#   "statusCode": 400,
+#   "message": "Impossible de retirer le dernier propriétaire de l'organisation",
+#   "error": "Bad Request"
+# }
+
+###############################################
+# 29. REMOVE USER FROM ORGANIZATION - Test avec utilisateur non membre (erreur attendue)
+###############################################
+DELETE {{baseUrl}}/organizations/{{mockOrganizationId}}/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (404 Not Found):
+# {
+#   "statusCode": 404,
+#   "message": "L'utilisateur n'est pas membre de cette organisation",
+#   "error": "Not Found"
+# }
+
+###############################################
+# WORKFLOW COMPLET - Exemple d'utilisation en séquence
+###############################################
+
+### Étape 1: Créer une organisation
+# @name createOrg
+# POST {{baseUrl}}/organizations
+# Authorization: Bearer <token>
+# {
+#   "name": "My New Organization",
+#   "slug": "my-new-org"
+# }
+
+### Étape 2: Récupérer l'ID de l'organisation créée
+# GET {{baseUrl}}/organizations/my
+# Authorization: Bearer <token>
+
+### Étape 3: Ajouter des utilisateurs
+# POST {{baseUrl}}/organizations/<org-id>/users
+# Authorization: Bearer <token>
+# {
+#   "userId": "<user-id>",
+#   "role": "admin"
+# }
+
+### Étape 4: Voir les membres
+# GET {{baseUrl}}/organizations/<org-id>/users
+# Authorization: Bearer <token>
+
+### Étape 5: Mettre à jour le rôle d'un utilisateur
+# PATCH {{baseUrl}}/organizations/<org-id>/users/<user-id>/role
+# Authorization: Bearer <token>
+# {
+#   "role": "owner"
+# }
+

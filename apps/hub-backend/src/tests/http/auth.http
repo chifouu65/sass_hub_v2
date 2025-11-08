@@ -1,0 +1,325 @@
+### API SaaS Hub - Tests HTTP pour l'Authentification
+### Base URL: http://localhost:3000/api
+###
+### IMPORTANT: Si vous avez l'erreur "WebSockets request was expected" :
+### 1. Assurez-vous d'utiliser directement http://localhost:3000/api (pas via proxy)
+### 2. Vérifiez les paramètres de REST Client (menu Settings → REST Client)
+### 3. Désactivez le proxy dans VS Code Settings si nécessaire
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables Mock
+@mockEmail = test@example.com
+@mockPassword = Password123!
+@mockFirstName = John
+@mockLastName = Doe
+@mockAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZDA3NjQxMC1kODMxLTQ5Y2EtYThjNS1jNzRjMjQzMzczMDgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI2MDQ2MTcsImV4cCI6MTc2MjY5MTAxN30.rf746Va2L7F-bqzyFwDnkHtTSujHP8fU2yaXZhpkbPk
+@mockRefreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZDA3NjQxMC1kODMxLTQ5Y2EtYThjNS1jNzRjMjQzMzczMDgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NjIxOTQ0MzIsImV4cCI6MTc2MjI4MDgzMn0.UddH-Ma4gw06juxUSxCXmkpuJK-npwvurV7gOgIOGww
+
+###############################################
+# 1. REGISTER - Créer un nouveau compte
+###############################################
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "{{mockEmail}}",
+  "password": "{{mockPassword}}",
+  "firstName": "{{mockFirstName}}",
+  "lastName": "{{mockLastName}}"
+}
+
+### Réponse attendue:
+# {
+#   "user": {
+#     "id": "12345678-90ab-cdef-ghij-klmnopqrstuv",
+#     "email": "test@example.com",
+#     "firstName": "John",
+#     "lastName": "Doe",
+#     "status": "active",
+#     "createdAt": "2024-03-11T18:44:00.000Z"
+#   },
+#   "accessToken": "eyJhbGc...",
+#   "refreshToken": "eyJhbGc..."
+# }
+
+###############################################
+# 2. REGISTER - Test avec email déjà existant (erreur attendue)
+###############################################
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "{{mockEmail}}",
+  "password": "{{mockPassword}}",
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+
+### Réponse attendue (409 Conflict):
+# {
+#   "statusCode": 409,
+#   "message": "Un utilisateur avec cet email existe déjà",
+#   "error": "Conflict"
+# }
+
+###############################################
+# 3. REGISTER - Test avec mot de passe trop court (erreur attendue)
+###############################################
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "shortpass@example.com",
+  "password": "12345",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+### Réponse attendue (400 Bad Request):
+# {
+#   "statusCode": 400,
+#   "message": ["password must be longer than or equal to 8 characters"],
+#   "error": "Bad Request"
+# }
+
+###############################################
+# 4. REGISTER - Test sans firstName et lastName (optionnel)
+###############################################
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "nofirstname@example.com",
+  "password": "{{mockPassword}}"
+}
+
+### Réponse attendue:
+# {
+#   "user": {
+#     "id": "...",
+#     "email": "nofirstname@example.com",
+#     "firstName": null,
+#     "lastName": null,
+#     ...
+#   },
+#   "accessToken": "...",
+#   "refreshToken": "..."
+# }
+
+###############################################
+# 5. LOGIN - Connexion avec identifiants valides
+###############################################
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{mockEmail}}",
+  "password": "{{mockPassword}}"
+}
+
+### Réponse attendue:
+# {
+#   "user": {
+#     "id": "12345678-90ab-cdef-ghij-klmnopqrstuv",
+#     "email": "test@example.com",
+#     "firstName": "John",
+#     "lastName": "Doe",
+#     "status": "active",
+#     "createdAt": "2024-03-11T18:44:00.000Z"
+#   },
+#   "accessToken": "eyJhbGc...",
+#   "refreshToken": "eyJhbGc..."
+# }
+
+###############################################
+# 6. LOGIN - Test avec email invalide (erreur attendue)
+###############################################
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "wrong@example.com",
+  "password": "{{mockPassword}}"
+}
+
+### Réponse attendue (401 Unauthorized):
+# {
+#   "statusCode": 401,
+#   "message": "Email ou mot de passe incorrect",
+#   "error": "Unauthorized"
+# }
+
+###############################################
+# 7. LOGIN - Test avec mot de passe incorrect (erreur attendue)
+###############################################
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{mockEmail}}",
+  "password": "WrongPassword123!"
+}
+
+### Réponse attendue (401 Unauthorized):
+# {
+#   "statusCode": 401,
+#   "message": "Email ou mot de passe incorrect",
+#   "error": "Unauthorized"
+# }
+
+###############################################
+# 8. LOGIN - Test avec email format invalide (erreur attendue)
+###############################################
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "not-an-email",
+  "password": "{{mockPassword}}"
+}
+
+### Réponse attendue (400 Bad Request):
+# {
+#   "statusCode": 400,
+#   "message": ["email must be an email"],
+#   "error": "Bad Request"
+# }
+
+###############################################
+# 9. REFRESH TOKEN - Rafraîchir le token d'accès
+###############################################
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{mockRefreshToken}}"
+}
+
+### Réponse attendue:
+# {
+#   "accessToken": "eyJhbGc... (nouveau token)"
+# }
+
+###############################################
+# 10. REFRESH TOKEN - Test avec token invalide (erreur attendue)
+###############################################
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "invalid-token-12345"
+}
+
+### Réponse attendue (401 Unauthorized):
+# {
+#   "statusCode": 401,
+#   "message": "Token invalide ou expiré",
+#   "error": "Unauthorized"
+# }
+
+###############################################
+# 11. GET PROFILE - Récupérer le profil de l'utilisateur connecté
+# Nécessite un token valide dans le header Authorization
+###############################################
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue:
+# {
+#   "id": "12345678-90ab-cdef-ghij-klmnopqrstuv",
+#   "email": "test@example.com",
+#   "firstName": "John",
+#   "lastName": "Doe",
+#   "status": "active",
+#   "createdAt": "2024-03-11T18:44:00.000Z"
+# }
+
+###############################################
+# 12. GET PROFILE - Test sans token (erreur attendue)
+###############################################
+GET {{baseUrl}}/auth/me
+
+### Réponse attendue (401 Unauthorized):
+# {
+#   "statusCode": 401,
+#   "message": "Unauthorized"
+# }
+
+###############################################
+# 13. GET PROFILE - Test avec token invalide (erreur attendue)
+###############################################
+GET {{baseUrl}}/auth/me
+Authorization: Bearer invalid-token-12345
+
+### Réponse attendue (401 Unauthorized):
+# {
+#   "statusCode": 401,
+#   "message": "Unauthorized"
+# }
+
+###############################################
+# WORKFLOW COMPLET - Exemple d'utilisation en séquence
+###############################################
+
+### Étape 1: S'inscrire
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePass123!",
+  "firstName": "New",
+  "lastName": "User"
+}
+
+### Étape 2: Se connecter (après avoir récupéré les tokens de l'étape 1)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePass123!"
+}
+
+### Étape 3: Utiliser le profil (remplacer {{mockAccessToken}} par le token de l'étape 2)
+# GET {{baseUrl}}/auth/me
+# Authorization: Bearer <token-from-step-2>
+
+###############################################
+# 14. FORGOT PASSWORD - Demander un lien de réinitialisation
+###############################################
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "email": "{{mockEmail}}"
+}
+
+### Réponse attendue:
+# {
+#   "message": "Si cet email existe, un lien de réinitialisation a été envoyé"
+# }
+# 
+# IMPORTANT: Le token de réinitialisation sera affiché dans les logs du serveur backend
+# Copiez-le depuis les logs pour l'utiliser dans l'étape 15
+
+###############################################
+# 15. RESET PASSWORD - Réinitialiser le mot de passe avec un token
+###############################################
+POST {{baseUrl}}/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "token": "replace-with-reset-token-from-server-logs",
+  "newPassword": "NewPassword123!"
+}
+
+### Réponse attendue:
+# {
+#   "message": "Votre mot de passe a été réinitialisé avec succès"
+# }
+

@@ -1,0 +1,37 @@
+### Test de santé du serveur - Exécutez cette requête en premier !
+### Si cette requête fonctionne, le serveur est prêt pour les autres tests
+
+###############################################
+# HEALTH CHECK - Vérifier que le serveur répond
+###############################################
+GET http://localhost:3000/api/health
+
+### Réponse attendue:
+# {
+#   "status": "ok",
+#   "timestamp": "2024-03-11T18:44:00.000Z"
+# }
+
+###
+### Si cette requête échoue :
+### 1. Le serveur backend n'est pas démarré
+### 2. Exécutez: npm run dev:backend
+### 3. Attendez: 🚀 Application is running on: http://localhost:3000/api
+### 4. Réessayez cette requête
+
+###
+###############################################
+# TEST SIMPLE - Register (après que le health check fonctionne)
+###############################################
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+###
+

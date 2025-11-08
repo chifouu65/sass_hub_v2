@@ -64,7 +64,7 @@ echo ""
 echo "🔧 Démarrage du backend (hub-backend) en mode watch..."
 # Créer le dossier logs si nécessaire
 mkdir -p logs
-npx nx serve hub-backend --port=3000 > logs/hub-backend.log 2>&1 &
+npx nx serve hub-backend > logs/hub-backend.log 2>&1 &
 BACKEND_PID=$!
 echo $BACKEND_PID > .backend.pid
 sleep 8

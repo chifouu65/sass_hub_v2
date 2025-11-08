@@ -2,17 +2,22 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { User } from '../entities/user.entity';
+import * as crypto from 'crypto';
+import { User, UserStatus } from '../entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -136,7 +141,7 @@ export class AuthService {
     }
   }
 
-  private generateTokens(user: User): { accessToken: string; refreshToken: string } {
+  generateTokens(user: User): { accessToken: string; refreshToken: string } {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -174,6 +179,130 @@ export class AuthService {
     return this.jwtService.sign(payload, {
       secret,
     });
+  }
+
+  /**
+   * Demande de réinitialisation de mot de passe
+   */
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+    const { email } = forgotPasswordDto;
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    // Pour la sécurité, on ne révèle pas si l'email existe ou non
+    if (!user) {
+      return {
+        message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
+      };
+    }
+
+    // Générer un token de réinitialisation
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = new Date();
+    resetTokenExpires.setHours(resetTokenExpires.getHours() + 1); // Token valide 1 heure
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpires;
+    await this.userRepository.save(user);
+
+    // TODO: Envoyer un email avec le lien de réinitialisation
+    // Pour l'instant, on retourne juste le token dans la réponse (à retirer en production)
+    console.log(`Reset password token for ${email}: ${resetToken}`);
+
+    return {
+      message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
+    };
+  }
+
+  /**
+   * Réinitialisation de mot de passe avec token
+   */
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+    const { token, newPassword } = resetPasswordDto;
+
+    const user = await this.userRepository.findOne({
+      where: { resetPasswordToken: token },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Token de réinitialisation invalide');
+    }
+
+    // Vérifier si le token n'a pas expiré
+    if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      throw new BadRequestException('Le token de réinitialisation a expiré');
+    }
+
+    // Hasher le nouveau mot de passe
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // Mettre à jour le mot de passe et effacer le token
+    user.passwordHash = passwordHash;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Votre mot de passe a été réinitialisé avec succès',
+    };
+  }
+
+  /**
+   * Trouver ou créer un utilisateur via OAuth
+   */
+  async findOrCreateOAuthUser(profile: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    avatarUrl?: string;
+    provider: string;
+    providerId: string;
+  }): Promise<User> {
+    // Chercher un utilisateur existant avec le même provider + providerId
+    let user = await this.userRepository.findOne({
+      where: {
+        oauthProvider: profile.provider,
+        oauthProviderId: profile.providerId,
+      },
+    });
+
+    // Si pas trouvé, chercher par email
+    if (!user) {
+      user = await this.userRepository.findOne({
+        where: { email: profile.email },
+      });
+    }
+
+    // Si l'utilisateur existe déjà
+    if (user) {
+      // Mettre à jour les informations OAuth si nécessaire
+      if (!user.oauthProvider || !user.oauthProviderId) {
+        user.oauthProvider = profile.provider;
+        user.oauthProviderId = profile.providerId;
+        user.firstName = user.firstName || profile.firstName;
+        user.lastName = user.lastName || profile.lastName;
+        user.avatarUrl = profile.avatarUrl;
+        await this.userRepository.save(user);
+      }
+      return user;
+    }
+
+    // Créer un nouvel utilisateur
+    const newUser = this.userRepository.create({
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatarUrl: profile.avatarUrl,
+      oauthProvider: profile.provider,
+      oauthProviderId: profile.providerId,
+      status: UserStatus.ACTIVE,
+      // Pas de passwordHash pour les utilisateurs OAuth
+    });
+
+    return await this.userRepository.save(newUser);
   }
 }
 

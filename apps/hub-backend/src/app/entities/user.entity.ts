@@ -22,7 +22,7 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column({ type: 'varchar', length: 255, name: 'password_hash' })
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'password_hash' })
   passwordHash: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'first_name' })
@@ -37,6 +37,22 @@ export class User {
     default: UserStatus.ACTIVE,
   })
   status: UserStatus;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'reset_password_token' })
+  resetPasswordToken: string;
+
+  @Column({ type: 'datetime', nullable: true, name: 'reset_password_expires' })
+  resetPasswordExpires: Date;
+
+  // OAuth fields
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'oauth_provider' })
+  oauthProvider: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'oauth_provider_id' })
+  oauthProviderId: string;
+
+  @Column({ type: 'varchar', length: 500, nullable: true, name: 'avatar_url' })
+  avatarUrl: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

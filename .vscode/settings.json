@@ -1,0 +1,19 @@
+{
+  "rest-client.enableTelemetry": false,
+  "rest-client.followredirect": true,
+  "rest-client.enableHttp2": false,
+  "rest-client.certificates": {},
+  "rest-client.defaultHeaders": {
+    "User-Agent": "REST Client"
+  },
+  "rest-client.timeoutinmilliseconds": 10000,
+  "rest-client.previewOption": "exchange",
+  "rest-client.useBrowserExtension": false,
+  "http.proxySupport": "off",
+  "http.systemCertificates": true,
+  "rest-client.rememberCookiesForSubsequentRequests": false,
+  "rest-client.enableTelemetry": false,
+  "http.proxy": "",
+  "http.proxyStrictSSL": false
+}
+

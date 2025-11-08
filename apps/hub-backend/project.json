@@ -7,6 +7,7 @@
   "targets": {
     "build": {
       "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/hub-backend"],
       "options": {
         "command": "webpack-cli build",
         "args": ["--node-env=production"],

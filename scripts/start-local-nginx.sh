@@ -68,7 +68,7 @@ echo "💡 Configuration: Nginx proxy vers Angular serve (port 4201) pour garder
 echo ""
 echo "🔧 Démarrage du backend (hub-backend) en mode watch..."
 mkdir -p logs
-npx nx serve hub-backend --port=3000 > logs/hub-backend.log 2>&1 &
+npx nx serve hub-backend > logs/hub-backend.log 2>&1 &
 BACKEND_PID=$!
 echo $BACKEND_PID > .backend.pid
 sleep 8

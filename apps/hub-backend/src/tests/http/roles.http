@@ -1,0 +1,208 @@
+### API SaaS Hub - Tests pour le contrôle d'accès basé sur les rôles
+### Base URL: http://localhost:3000/api
+###
+### IMPORTANT: 
+### - Remplacez {{mockAccessToken}} par un token valide obtenu après login
+### - Remplacez {{organizationId}} par l'ID d'une organisation réelle
+### - Remplacez {{userId}} par l'ID d'un utilisateur membre de l'organisation
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables Mock
+@mockAccessToken = replace-with-real-token-after-login
+@organizationId = replace-with-real-org-id
+@userId = replace-with-real-user-id
+
+###############################################
+# 1. UPDATE ORGANIZATION - Owner ou Admin uniquement
+###############################################
+PATCH {{baseUrl}}/organizations/{{organizationId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "name": "Updated Organization Name"
+}
+
+### Réponse attendue (si OWNER ou ADMIN):
+# {
+#   "id": "...",
+#   "name": "Updated Organization Name",
+#   "slug": "...",
+#   ...
+# }
+
+### Réponse attendue (si MEMBER, erreur 403 Forbidden):
+# {
+#   "statusCode": 403,
+#   "message": "Access denied. Required roles: owner, admin. Your role: member",
+#   "error": "Forbidden"
+# }
+
+###############################################
+# 2. DELETE ORGANIZATION - Owner uniquement
+###############################################
+DELETE {{baseUrl}}/organizations/{{organizationId}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (si OWNER, 204 No Content)
+
+### Réponse attendue (si ADMIN ou MEMBER, erreur 403 Forbidden):
+# {
+#   "statusCode": 403,
+#   "message": "Access denied. Required roles: owner. Your role: admin",
+#   "error": "Forbidden"
+# }
+
+###############################################
+# 3. ADD USER TO ORGANIZATION - Admin ou Owner uniquement
+###############################################
+POST {{baseUrl}}/organizations/{{organizationId}}/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "userId": "{{userId}}",
+  "role": "member"
+}
+
+### Réponse attendue (si OWNER ou ADMIN, 201 Created)
+
+### Réponse attendue (si MEMBER, erreur 403 Forbidden):
+# {
+#   "statusCode": 403,
+#   "message": "Access denied. Required roles: owner, admin. Your role: member",
+#   "error": "Forbidden"
+# }
+
+###############################################
+# 4. GET ORGANIZATION USERS - Admin ou Owner uniquement
+###############################################
+GET {{baseUrl}}/organizations/{{organizationId}}/users
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (si OWNER ou ADMIN):
+# [
+#   {
+#     "id": "...",
+#     "email": "user@example.com",
+#     "firstName": "John",
+#     "lastName": "Doe",
+#     "role": "member",
+#     "createdAt": "2024-03-11T18:44:00.000Z"
+#   },
+#   ...
+# ]
+
+### Réponse attendue (si MEMBER, erreur 403 Forbidden):
+# {
+#   "statusCode": 403,
+#   "message": "Access denied. Required roles: owner, admin. Your role: member",
+#   "error": "Forbidden"
+# }
+
+###############################################
+# 5. UPDATE USER ROLE - Owner uniquement
+###############################################
+PATCH {{baseUrl}}/organizations/{{organizationId}}/users/{{userId}}/role
+Content-Type: {{contentType}}
+Authorization: Bearer {{mockAccessToken}}
+
+{
+  "role": "admin"
+}
+
+### Réponse attendue (si OWNER, 200 OK)
+
+### Réponse attendue (si ADMIN ou MEMBER, erreur 403 Forbidden):
+# {
+#   "statusCode": 403,
+#   "message": "Access denied. Required roles: owner. Your role: admin",
+#   "error": "Forbidden"
+# }
+
+###############################################
+# 6. REMOVE USER FROM ORGANIZATION - Owner uniquement
+###############################################
+DELETE {{baseUrl}}/organizations/{{organizationId}}/users/{{userId}}
+Authorization: Bearer {{mockAccessToken}}
+
+### Réponse attendue (si OWNER, 204 No Content)
+
+### Réponse attendue (si ADMIN ou MEMBER, erreur 403 Forbidden):
+# {
+#   "statusCode": 403,
+#   "message": "Access denied. Required roles: owner. Your role: admin",
+#   "error": "Forbidden"
+# }
+
+###############################################
+# WORKFLOW COMPLET DE TEST DES RÔLES
+###############################################
+
+### Étape 1: Créer une organisation (l'utilisateur devient OWNER)
+# POST {{baseUrl}}/organizations
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token-owner>
+#
+# {
+#   "name": "Test Organization",
+#   "slug": "test-org"
+# }
+
+### Étape 2: Ajouter un membre avec rôle ADMIN
+# POST {{baseUrl}}/organizations/<org-id>/users
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token-owner>
+#
+# {
+#   "userId": "<admin-user-id>",
+#   "role": "admin"
+# }
+
+### Étape 3: Tester l'accès ADMIN
+# GET {{baseUrl}}/organizations/<org-id>/users
+# Authorization: Bearer <token-admin>
+# ✅ Devrait fonctionner (ADMIN peut voir les utilisateurs)
+
+### Étape 4: Tester l'accès ADMIN sur update (devrait fonctionner)
+# PATCH {{baseUrl}}/organizations/<org-id>
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token-admin>
+#
+# {
+#   "name": "Updated Name"
+# }
+# ✅ Devrait fonctionner (ADMIN peut modifier)
+
+### Étape 5: Tester l'accès ADMIN sur delete (devrait échouer)
+# DELETE {{baseUrl}}/organizations/<org-id>
+# Authorization: Bearer <token-admin>
+# ❌ Devrait échouer avec 403 (seul OWNER peut supprimer)
+
+### Étape 6: Ajouter un membre avec rôle MEMBER
+# POST {{baseUrl}}/organizations/<org-id>/users
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token-owner>
+#
+# {
+#   "userId": "<member-user-id>",
+#   "role": "member"
+# }
+
+### Étape 7: Tester l'accès MEMBER (devrait échouer)
+# GET {{baseUrl}}/organizations/<org-id>/users
+# Authorization: Bearer <token-member>
+# ❌ Devrait échouer avec 403 (MEMBER ne peut pas voir les utilisateurs)
+
+### Étape 8: Tester l'accès MEMBER sur update (devrait échouer)
+# PATCH {{baseUrl}}/organizations/<org-id>
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token-member>
+#
+# {
+#   "name": "Try to Update"
+# }
+# ❌ Devrait échouer avec 403 (MEMBER ne peut pas modifier)
+

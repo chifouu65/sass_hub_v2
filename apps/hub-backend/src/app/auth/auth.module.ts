@@ -6,6 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { GitHubStrategy } from './strategies/github.strategy';
+import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { User } from '../entities/user.entity';
@@ -31,6 +34,9 @@ import jwtConfig from '../config/jwt.config';
   providers: [
     AuthService,
     JwtStrategy,
+    GoogleStrategy,
+    //GitHubStrategy,
+    //MicrosoftStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

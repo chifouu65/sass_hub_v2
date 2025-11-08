@@ -13,7 +13,7 @@
 - [x] Créer le hub-backend (NestJS)
 - [x] Mettre en place le service d'authentification (JWT/OAuth2/SSO)
 - [x] Configurer la base de données "hub" (MySQL)
-- [ ] Implémenter la gestion des organisations (tenants)
+- [x] Implémenter la gestion des organisations (tenants)
 - [ ] Implémenter la gestion des utilisateurs et rôles
 - [ ] Créer l'API Gateway (NestJS)
 
@@ -26,7 +26,6 @@
 ### 🎨 Hub Frontend (Angular)
 - [x] Créer le hub-frontend (Angular 20)
 - [x] Configurer TailwindCSS
-- [ ] Mettre en place l'authentification (SSO)
 - [ ] Créer le dashboard principal
 - [ ] Implémenter la gestion des organisations
 - [ ] Implémenter la gestion des applications souscrites

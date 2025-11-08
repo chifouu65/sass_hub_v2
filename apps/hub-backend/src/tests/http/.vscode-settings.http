@@ -1,0 +1,14 @@
+{
+  "rest-client.enableTelemetry": false,
+  "rest-client.environmentVariables": {
+    "development": {
+      "baseUrl": "http://localhost:3000/api",
+      "accessToken": ""
+    },
+    "production": {
+      "baseUrl": "https://api.example.com/api",
+      "accessToken": ""
+    }
+  }
+}
+

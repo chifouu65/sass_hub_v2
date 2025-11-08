@@ -1,0 +1,215 @@
+### API SaaS Hub - Tous les endpoints en un seul fichier
+### Ce fichier regroupe tous les endpoints principaux pour un test rapide
+### Base URL: http://localhost:3000/api
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables Mock (à remplacer après les premières requêtes)
+@mockEmail = test@example.com
+@mockPassword = Password123!
+@mockAccessToken = replace-with-real-token-after-login
+@mockOrganizationId = replace-with-real-org-id
+@mockUserId = replace-with-real-user-id
+
+###############################################
+# AUTHENTIFICATION - Workflow complet
+###############################################
+
+### 1. REGISTER - Créer un compte
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "demo@example.com",
+  "password": "DemoPassword123!",
+  "firstName": "Demo",
+  "lastName": "User"
+}
+
+### 2. LOGIN - Se connecter (utiliser les credentials de l'étape 1)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "demo@example.com",
+  "password": "DemoPassword123!"
+}
+
+### 3. GET PROFILE - Récupérer le profil (remplacer le token)
+# GET {{baseUrl}}/auth/me
+# Authorization: Bearer <token-from-step-2>
+
+###############################################
+# ORGANISATIONS - Workflow complet
+###############################################
+
+### 4. CREATE ORGANIZATION - Créer une organisation (remplacer le token)
+# @name createOrg
+# POST {{baseUrl}}/organizations
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+
+# {
+#   "name": "Demo Organization",
+#   "slug": "demo-org"
+# }
+
+### 5. GET MY ORGANIZATIONS - Voir mes organisations
+# GET {{baseUrl}}/organizations/my
+# Authorization: Bearer <token>
+
+### 6. GET ORGANIZATION BY ID - Détails d'une organisation
+# GET {{baseUrl}}/organizations/<org-id>
+# Authorization: Bearer <token>
+
+### 7. UPDATE ORGANIZATION - Mettre à jour
+# PATCH {{baseUrl}}/organizations/<org-id>
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+
+# {
+#   "name": "Updated Organization Name"
+# }
+
+### 8. ADD USER TO ORGANIZATION - Ajouter un utilisateur
+# POST {{baseUrl}}/organizations/<org-id>/users
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+
+# {
+#   "userId": "<user-id>",
+#   "role": "admin"
+# }
+
+### 9. GET ORGANIZATION USERS - Voir les membres
+# GET {{baseUrl}}/organizations/<org-id>/users
+# Authorization: Bearer <token>
+
+### 10. UPDATE USER ROLE - Changer le rôle d'un utilisateur
+# PATCH {{baseUrl}}/organizations/<org-id>/users/<user-id>/role
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+
+# {
+#   "role": "owner"
+# }
+
+### 11. REMOVE USER FROM ORGANIZATION - Retirer un utilisateur
+# DELETE {{baseUrl}}/organizations/<org-id>/users/<user-id>
+# Authorization: Bearer <token>
+
+### 12. DELETE ORGANIZATION - Supprimer une organisation
+# DELETE {{baseUrl}}/organizations/<org-id>
+# Authorization: Bearer <token>
+
+###############################################
+# TESTS RAPIDES - Scénarios complets
+###############################################
+
+### Scénario 1: Créer un compte et une organisation
+### Step 1: Register
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "newuser{{$timestamp}}@example.com",
+  "password": "Password123!",
+  "firstName": "New",
+  "lastName": "User"
+}
+
+### Step 2: Login (après avoir obtenu le token de l'étape 1)
+# POST {{baseUrl}}/auth/login
+# Content-Type: {{contentType}}
+# 
+# {
+#   "email": "newuser@example.com",
+#   "password": "Password123!"
+# }
+
+### Step 3: Create Organization (remplacer le token)
+# POST {{baseUrl}}/organizations
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+# 
+# {
+#   "name": "My First Organization",
+#   "slug": "my-first-org-{{$timestamp}}"
+# }
+
+### Scénario 2: Gérer les membres d'une organisation
+### Step 1: Get My Organizations
+# GET {{baseUrl}}/organizations/my
+# Authorization: Bearer <token>
+
+### Step 2: Add User (remplacer org-id et user-id)
+# POST {{baseUrl}}/organizations/<org-id>/users
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+# 
+# {
+#   "userId": "<user-id>",
+#   "role": "member"
+# }
+
+### Step 3: View Users
+# GET {{baseUrl}}/organizations/<org-id>/users
+# Authorization: Bearer <token>
+
+### Step 4: Promote User to Admin
+# PATCH {{baseUrl}}/organizations/<org-id>/users/<user-id>/role
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+# 
+# {
+#   "role": "admin"
+# }
+
+###############################################
+# TESTS D'ERREURS - Vérification de la validation
+###############################################
+
+### Test: Register avec email invalide
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "not-an-email",
+  "password": "Password123!"
+}
+
+### Test: Register avec mot de passe trop court
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "12345"
+}
+
+### Test: Create Organization avec slug invalide
+# POST {{baseUrl}}/organizations
+# Content-Type: {{contentType}}
+# Authorization: Bearer <token>
+# 
+# {
+#   "name": "Test Org",
+#   "slug": "Invalid_Slug_123!"
+# }
+
+### Test: Get Organization avec ID inexistant
+# GET {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000
+# Authorization: Bearer <token>
+
+### Test: Add User sans token
+POST {{baseUrl}}/organizations/{{mockOrganizationId}}/users
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{mockUserId}}",
+  "role": "member"
+}
+
