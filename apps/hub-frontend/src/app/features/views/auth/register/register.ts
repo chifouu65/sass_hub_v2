@@ -2,53 +2,52 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, LoginDto } from '../../../core/services/auth.service';
-
-type OAuthProvider = 'google' | 'github' | 'microsoft';
+import { AuthService, RegisterDto } from '../../../../core/services/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+  templateUrl: './register.html',
+  styleUrl: './register.css',
 })
-export class Login {
+export class Register {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
-  loginForm = this.fb.group({
+  registerForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    firstName: [''],
+    lastName: [''],
   });
 
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
+    if (this.registerForm.invalid) {
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
-    const credentials: LoginDto = this.loginForm.value as LoginDto;
+    const data: RegisterDto = this.registerForm.value as RegisterDto;
 
-    this.authService.login(credentials).subscribe({
+    this.authService.register(data).subscribe({
       next: () => {
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Une erreur est survenue lors de la connexion';
+        this.errorMessage =
+          error.error?.message ||
+          "Une erreur est survenue lors de la création du compte";
       },
     });
-  }
-
-  loginWithOAuth(provider: OAuthProvider): void {
-    const backendUrl = 'http://localhost:3000';
-    window.location.href = `${backendUrl}/api/auth/${provider}`;
   }
 }

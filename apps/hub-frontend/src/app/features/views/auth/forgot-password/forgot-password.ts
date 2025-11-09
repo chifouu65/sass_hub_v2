@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, ForgotPasswordDto } from '../../../core/services/auth.service';
+import { AuthService, ForgotPasswordDto } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -13,7 +13,6 @@ import { AuthService, ForgotPasswordDto } from '../../../core/services/auth.serv
 })
 export class ForgotPassword {
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
   forgotPasswordForm = this.fb.group({
@@ -33,16 +32,19 @@ export class ForgotPassword {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const data: ForgotPasswordDto = this.forgotPasswordForm.value as ForgotPasswordDto;
+    const data: ForgotPasswordDto =
+      this.forgotPasswordForm.value as ForgotPasswordDto;
 
     this.authService.forgotPassword(data).subscribe({
       next: () => {
         this.isLoading = false;
-        this.successMessage = 'Si cet email existe, un lien de réinitialisation a été envoyé';
+        this.successMessage =
+          "Si cet email existe, un lien de réinitialisation a été envoyé";
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Une erreur est survenue';
+        this.errorMessage =
+          error.error?.message || 'Une erreur est survenue';
       },
     });
   }

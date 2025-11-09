@@ -5,27 +5,31 @@ export const appRoutes: Route[] = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/auth/login/login').then((m) => m.Login),
+      import('./features/views/auth/login/login').then((m) => m.Login),
   },
   {
     path: 'register',
     loadComponent: () =>
-      import('./features/auth/register/register').then((m) => m.Register),
+      import('./features/views/auth/register/register').then((m) => m.Register),
   },
   {
     path: 'forgot-password',
     loadComponent: () =>
-      import('./features/auth/forgot-password/forgot-password').then((m) => m.ForgotPassword),
+      import('./features/views/auth/forgot-password/forgot-password').then(
+        (m) => m.ForgotPassword,
+      ),
   },
   {
     path: 'reset-password',
     loadComponent: () =>
-      import('./features/auth/reset-password/reset-password').then((m) => m.ResetPassword),
+      import('./features/views/auth/reset-password/reset-password').then(
+        (m) => m.ResetPassword,
+      ),
   },
   {
     path: 'auth/callback',
     loadComponent: () =>
-      import('./features/auth/callback/callback').then((m) => m.Callback),
+      import('./features/views/auth/callback/callback').then((m) => m.Callback),
   },
   {
     path: '',

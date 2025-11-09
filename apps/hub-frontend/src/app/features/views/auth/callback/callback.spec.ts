@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ForgotPassword } from './forgot-password';
+import { Callback } from './callback';
 
-describe('ForgotPassword', () => {
-  let component: ForgotPassword;
-  let fixture: ComponentFixture<ForgotPassword>;
+describe('Callback', () => {
+  let component: Callback;
+  let fixture: ComponentFixture<Callback>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ForgotPassword]
-    })
-    .compileComponents();
+      imports: [Callback],
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(ForgotPassword);
+    fixture = TestBed.createComponent(Callback);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

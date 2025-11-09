@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-callback',
@@ -19,7 +19,6 @@ export class Callback implements OnInit {
   errorMessage = '';
 
   ngOnInit(): void {
-    // Récupérer les tokens depuis les query params
     const token = this.route.snapshot.queryParams['token'];
     const refreshToken = this.route.snapshot.queryParams['refreshToken'];
 
@@ -30,11 +29,9 @@ export class Callback implements OnInit {
       return;
     }
 
-    // Stocker les tokens et les données utilisateur
     try {
-      // Décoder le token pour récupérer l'utilisateur
       const payload = JSON.parse(atob(token.split('.')[1]));
-      
+
       const userData = {
         id: payload.sub,
         email: payload.email,
@@ -42,13 +39,11 @@ export class Callback implements OnInit {
         lastName: undefined,
       };
 
-      // Mettre à jour le service d'authentification
       this.authService.setTokensAndUser(userData, token, refreshToken);
 
-      // Rediriger vers le dashboard
       this.router.navigate(['/dashboard']);
     } catch (error) {
-      this.errorMessage = 'Erreur lors du traitement de l\'authentification';
+      this.errorMessage = "Erreur lors du traitement de l'authentification";
       this.isLoading = false;
       setTimeout(() => this.router.navigate(['/login']), 3000);
     }

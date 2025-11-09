@@ -1,14 +1,28 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { OrganizationRolesService, OrganizationSummary } from '../../../core/services/organization-roles.service';
+import {
+  OrganizationRolesService,
+  OrganizationSummary,
+} from '../../../core/services/organization-roles.service';
 import { ModalService } from '../../services/modal/modal.service';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
-import { OrganizationDeleteModalComponent, OrganizationDeleteModalData } from '../../components/organization-delete-modal/organization-delete-modal.component';
-import { OrganizationManageModalComponent, OrganizationManageModalData } from '../../components/organization-manage-modal/organization-manage-modal.component';
+import {
+  OrganizationDeleteModalComponent,
+  OrganizationDeleteModalData,
+} from '../../components/organization-delete-modal/organization-delete-modal.component';
+import {
+  OrganizationManageModalComponent,
+  OrganizationManageModalData,
+} from '../../components/organization-manage-modal/organization-manage-modal.component';
 import { OrganizationMembersComponent } from '../../components/organization-members/organization-members.component';
 import { OrganizationRolesComponent } from '../../components/organization-roles/organization-roles.component';
-import { GenericTableComponent, GenericTableHeader } from '../../components/generic-table/generic-table.component';
+import {
+  GenericTableComponent,
+  GenericTableHeader,
+} from '../../components/generic-table/generic-table.component';
+
+type TabId = 'organizations' | 'members' | 'roles';
 
 @Component({
   selector: 'app-organizations',
@@ -41,6 +55,12 @@ export class OrganizationsComponent {
     { key: 'actions', label: 'Actions', align: 'right', srOnly: true },
   ];
   readonly tableSkeletonRows = 4;
+  readonly tabs: ReadonlyArray<{ id: TabId; label: string }> = [
+    { id: 'organizations', label: 'Organisations' },
+    { id: 'members', label: 'Membres' },
+    { id: 'roles', label: 'Rôles' },
+  ];
+  readonly activeTab = signal<TabId>('organizations');
 
   constructor() {
     this.#organizationRolesStore.loadOrganizations();
@@ -48,6 +68,14 @@ export class OrganizationsComponent {
 
   onSelectOrganization(id: string): void {
     this.#organizationRolesStore.selectOrganization(id);
+  }
+
+  setActiveTab(tab: TabId): void {
+    this.activeTab.set(tab);
+  }
+
+  isActiveTab(tab: TabId): boolean {
+    return this.activeTab() === tab;
   }
 
   onRefresh(): void {
