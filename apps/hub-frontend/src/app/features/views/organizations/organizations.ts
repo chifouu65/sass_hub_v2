@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   OrganizationRolesService,
@@ -61,6 +61,24 @@ export class OrganizationsComponent {
     { id: 'roles', label: 'Rôles' },
   ];
   readonly activeTab = signal<TabId>('organizations');
+  readonly organizationSearchTerm = signal('');
+  readonly filteredOrganizations = computed(() => {
+    const term = this.organizationSearchTerm().trim().toLowerCase();
+    const list = this.organizations();
+    if (!term) {
+      return list;
+    }
+    return list.filter((organization) => {
+      const haystack = [
+        organization.name,
+        organization.slug,
+        organization.databaseName ?? '',
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  });
 
   constructor() {
     this.#organizationRolesStore.loadOrganizations();
@@ -91,6 +109,10 @@ export class OrganizationsComponent {
 
   trackOrganization(_: number, organization: OrganizationSummary): string {
     return organization.id;
+  }
+
+  onOrganizationSearchChange(term: string): void {
+    this.organizationSearchTerm.set(term);
   }
 
   findOrganizationName(currentId: string): string {

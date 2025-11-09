@@ -1,0 +1,152 @@
+<form class="space-y-6" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold text-slate-900">
+      Nouveau rôle pour {{ organizationName }}
+    </h2>
+    <p class="text-sm text-slate-500">
+      Définissez un rôle personnalisé en sélectionnant les permissions adaptées.
+    </p>
+  </div>
+
+  @if (roleFormError(); as errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-slate-700" for="role-name"
+      >Nom du rôle</label
+    >
+    <input
+      id="role-name"
+      type="text"
+      class="form-input"
+      formControlName="name"
+      (input)="onNameInput()"
+      autocomplete="off"
+    />
+    @if (form.controls.name.invalid && form.controls.name.touched) {
+      <p class="text-xs text-red-600">
+        Fournissez un nom d’au moins 2 caractères.
+      </p>
+    }
+  </div>
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-slate-700" for="role-slug"
+      >Slug</label
+    >
+    <input
+      id="role-slug"
+      type="text"
+      class="form-input"
+      formControlName="slug"
+      (input)="onSlugInput()"
+      (blur)="onSlugBlur()"
+      autocomplete="off"
+    />
+    @if (form.controls.slug.invalid && form.controls.slug.touched) {
+      <p class="text-xs text-red-600">
+        Le slug doit contenir uniquement des minuscules, chiffres ou tirets.
+      </p>
+    }
+  </div>
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-slate-700" for="role-description"
+      >Description (optionnel)</label
+    >
+    <textarea
+      id="role-description"
+      class="form-textarea resize-none"
+      rows="3"
+      formControlName="description"
+      placeholder="Décrivez brièvement le rôle"
+    ></textarea>
+  </div>
+
+  <div class="space-y-3">
+    <div class="flex items-center justify-between">
+      <label class="text-sm font-medium text-slate-700">
+        Permissions associées
+      </label>
+      <span class="text-xs text-slate-500">
+        {{ permissionsSelectedLabel }}
+      </span>
+    </div>
+    @if (permissions.length === 0) {
+      <div
+        class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500"
+      >
+        Aucune permission disponible pour le moment.
+      </div>
+    } @else {
+      <div class="max-h-56 overflow-y-auto rounded-lg border border-slate-200">
+        <ul class="divide-y divide-slate-200">
+          @for (permission of permissions; track permission.id) {
+            <li class="bg-white px-4 py-3 hover:bg-slate-50">
+              <label class="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  [checked]="isPermissionSelected(permission.code)"
+                  (change)="togglePermission(permission.code, $any($event.target).checked)"
+                />
+                <span class="text-sm">
+                  <span class="font-semibold text-slate-900">{{
+                    permission.name
+                  }}</span>
+                  <span
+                    class="block text-xs uppercase tracking-wide text-indigo-600"
+                    >{{ permission.code }}</span
+                  >
+                  @if (permission.description) {
+                    <span class="mt-1 block text-xs text-slate-500">
+                      {{ permission.description }}
+                    </span>
+                  }
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 pt-2">
+    <button type="button" class="btn btn-secondary" (click)="close(false)">
+      Annuler
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="form.invalid || submitting()"
+    >
+      @if (submitting()) {
+        <svg
+          class="mr-2 h-4 w-4 animate-spin"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+      }
+      Créer le rôle
+    </button>
+  </div>
+</form>
+

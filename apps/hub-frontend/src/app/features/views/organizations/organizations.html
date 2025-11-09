@@ -18,13 +18,28 @@
         >
           Retour au tableau de bord
         </button>
-        <button
-          type="button"
-          (click)="onRefresh()"
-          class="btn btn-primary"
-        >
-          Rafraîchir
-        </button>
+        <div class="flex items-center gap-2">
+          @if (organizations().length > 0) {
+          <select
+            class="form-select md:w-56"
+            [value]="selectedOrganizationId() ?? ''"
+            (change)="onOrganizationSelectChange($event)"
+          >
+            @for (organization of organizations(); track organization.id) {
+            <option [value]="organization.id">
+              {{ organization.name }}
+            </option>
+            }
+          </select>
+          }
+          <button
+            type="button"
+            (click)="onRefresh()"
+            class="btn btn-primary"
+          >
+            Rafraîchir
+          </button>
+        </div>
       </div>
     </div>
 
@@ -113,9 +128,7 @@
 
       <div class="flex-1">
         @switch (activeTab()) { @case ('organizations') {
-        <div
-          class="rounded-lg bg-gray-50 p-6 shadow-sm"
-        >
+        <div class="rounded-lg bg-gray-50 p-6 shadow-sm space-y-6">
           <div
             class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
           >
@@ -148,20 +161,56 @@
                 </svg>
                 Créer une organisation
               </button>
-              <button
-                type="button"
-                class="btn btn-secondary btn-sm"
-                (click)="onRefresh()"
-              >
-                Rafraîchir
-              </button>
             </div>
           </div>
 
-          <div class="mt-6">
+          <form
+            class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+            role="search"
+            (submit)="$event.preventDefault()"
+          >
+            <div class="relative max-w-md w-full">
+              <label class="sr-only" for="organization-search"
+                >Rechercher une organisation</label
+              >
+              <div
+                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+              <input
+                id="organization-search"
+                type="search"
+                class="form-input w-full pl-10 pr-3"
+                placeholder="Rechercher par nom, slug ou base de données"
+                autocomplete="off"
+                [value]="organizationSearchTerm()"
+                (input)="onOrganizationSearchChange($any($event.target).value)"
+              />
+            </div>
+
+            <div class="text-sm text-slate-500 md:text-right">
+              {{ filteredOrganizations().length }}
+              résultat{{ filteredOrganizations().length > 1 ? 's' : '' }} sur
+              {{ organizations().length }}
+            </div>
+          </form>
+
             <app-generic-table
               [headers]="tableHeaders"
-              [data]="organizations()"
+              [data]="filteredOrganizations()"
               [loading]="loading()"
               [skeletonRows]="tableSkeletonRows"
               [rowTemplate]="organizationRow"
@@ -172,7 +221,6 @@
               [showToolbar]="false"
             >
             </app-generic-table>
-          </div>
         </div>
         } @case ('members') {
         <div
@@ -278,9 +326,11 @@
     <span>
       Total :
       <span class="font-semibold text-slate-900">
-        {{ organizations().length }}
+        {{ filteredOrganizations().length }}
       </span>
-      organisation{{ organizations().length > 1 ? 's' : '' }}
+      organisation{{ filteredOrganizations().length > 1 ? 's' : '' }}
+      affichée{{ filteredOrganizations().length > 1 ? 's' : '' }}
+      (sur {{ organizations().length }})
     </span>
     <span>
       Organisation sélectionnée : @if (selectedOrganizationId(); as currentId) {

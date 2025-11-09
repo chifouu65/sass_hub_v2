@@ -34,6 +34,7 @@ export class OrganizationMembersComponent {
   readonly #modalService = inject(ModalService);
   readonly #toastService = inject(ToastService);
 
+  readonly organizations = this.#organizationRolesStore.organizations;
   readonly selectedOrganizationId =
     this.#organizationRolesStore.selectedOrganizationId;
   readonly members = this.#organizationRolesStore.members;
@@ -273,9 +274,10 @@ export class OrganizationMembersComponent {
     this.searchTerm.set(term);
   }
 
-  resetSearch(): void {
-    if (this.searchTerm()) {
-      this.searchTerm.set('');
+  onOrganizationSelectChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    if (value) {
+      this.#organizationRolesStore.selectOrganization(value);
     }
   }
 
@@ -285,6 +287,13 @@ export class OrganizationMembersComponent {
 
   trackMember(_: number, member: OrganizationMemberView): string {
     return member.userId;
+  }
+
+  onRefresh(): void {
+    const organizationId = this.selectedOrganizationId();
+    if (organizationId) {
+      this.#organizationRolesStore.reloadMembers(organizationId);
+    }
   }
 
   async #confirmAction(
