@@ -3,3 +3,45 @@
 @tailwind utilities;
 
 /* You can add global styles to this file, and also import other style files */
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-700 focus:ring-indigo-300;
+  }
+
+  .btn-secondary {
+    @apply btn border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 focus:ring-slate-300;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-red-700 focus:ring-red-300;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 focus:ring-slate-200;
+  }
+
+  .btn-icon {
+    @apply btn bg-transparent p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:ring-slate-200 h-8 w-8;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .form-input {
+    @apply w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200;
+  }
+
+  .form-select {
+    @apply w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200;
+  }
+
+  .form-textarea {
+    @apply w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200;
+  }
+}

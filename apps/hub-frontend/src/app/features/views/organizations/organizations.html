@@ -1,0 +1,198 @@
+<div class="py-8 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    >
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900">Organisations</h1>
+        <p class="text-sm text-slate-600">
+          Créez, modifiez et gérez les membres de vos organisations
+          multi-tenant.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          routerLink="/dashboard"
+        >
+          Retour au tableau de bord
+        </button>
+        <button
+          type="button"
+          (click)="onRefresh()"
+          class="btn btn-primary"
+        >
+          Rafraîchir
+        </button>
+      </div>
+    </div>
+
+    @if (error(); as message) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      {{ message }}
+    </div>
+    }
+
+    <div class="flex flex-col gap-8">
+      <!-- title, redirection, refresh button, create button -->
+      <div
+        class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+      >
+        <div class="space-y-1">
+          <h2 class="text-lg font-semibold text-slate-900">Organisations</h2>
+          <p class="text-xs text-slate-500">
+            Gérez vos organisations multi-tenant et leurs métadonnées.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 md:justify-end">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            (click)="openCreateModal()"
+          >
+            <svg
+              class="mr-2 h-3.5 w-3.5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              />
+            </svg>
+            Créer une organisation
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            (click)="onRefresh()"
+          >
+            Rafraîchir
+          </button>
+        </div>
+      </div>
+
+     <!-- table organizations -->
+     <app-generic-table
+       [headers]="tableHeaders"
+       [data]="organizations()"
+       [loading]="loading()"
+       [skeletonRows]="tableSkeletonRows"
+       [rowTemplate]="organizationRow"
+       [skeletonTemplate]="organizationSkeleton"
+       [emptyTemplate]="organizationEmpty"
+       [footerTemplate]="organizationFooter"
+       [trackBy]="trackOrganization"
+       [showToolbar]="false"
+     >
+     </app-generic-table>
+
+     <app-organization-members></app-organization-members>
+
+    </div>
+
+  </div>
+
+  <app-organization-roles></app-organization-roles>
+</div>
+
+<ng-template #organizationRow let-organization>
+  <tr
+    class="border-b border-gray-100 text-sm transition-colors"
+    [ngClass]="{
+      'bg-indigo-50/70': selectedOrganizationId() === organization.id
+    }"
+  >
+    <td class="px-4 py-4">
+      <button
+        type="button"
+        class="btn btn-ghost w-full justify-start text-left"
+        (click)="onSelectOrganization(organization.id)"
+      >
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-slate-900">
+            {{ organization.name }}
+          </span>
+          @if (selectedOrganizationId() === organization.id) {
+          <span
+            class="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700"
+          >
+            Sélectionnée
+          </span>
+          }
+        </div>
+        <p class="mt-1 text-xs text-slate-500">
+          Créée le {{ organization.createdAt | date: 'short' }}
+        </p>
+      </button>
+    </td>
+    <td class="px-4 py-4 text-xs text-slate-600">{{ organization.slug }}</td>
+    <td class="px-4 py-4 text-xs text-slate-600">
+      {{ organization.databaseName ?? '—' }}
+    </td>
+    <td class="px-4 py-4 text-xs text-slate-500">
+      {{ organization.updatedAt | date: 'short' }}
+    </td>
+    <td class="px-4 py-4 text-right space-x-2">
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        (click)="openUpdateModal(organization)"
+      >
+        Modifier
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        (click)="openDeleteModal(organization)"
+      >
+        Supprimer
+      </button>
+    </td>
+  </tr>
+</ng-template>
+
+<ng-template #organizationSkeleton>
+  <tr class="border-b border-gray-100">
+    <td class="px-4 py-4" colspan="5">
+      <div class="flex items-center gap-4">
+        <app-skeleton height="1rem" width="20%"></app-skeleton>
+        <app-skeleton height="1rem" width="15%"></app-skeleton>
+        <app-skeleton height="1rem" width="15%"></app-skeleton>
+        <app-skeleton height="1rem" width="20%"></app-skeleton>
+        <app-skeleton height="2rem" width="6rem"></app-skeleton>
+      </div>
+    </td>
+  </tr>
+</ng-template>
+
+<ng-template #organizationEmpty>
+  <p class="text-sm text-slate-500">
+    Aucune organisation pour le moment. Utilisez le formulaire ci-dessus pour en
+    créer une.
+  </p>
+</ng-template>
+
+<ng-template #organizationFooter>
+  <div
+    class="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <span>
+      Total :
+      <span class="font-semibold text-slate-900">
+        {{ organizations().length }}
+      </span>
+      organisation{{ organizations().length > 1 ? 's' : '' }}
+    </span>
+    <span>
+      Organisation sélectionnée : @if (selectedOrganizationId(); as currentId) {
+      {{ findOrganizationName(currentId) }} } @else { aucune }
+    </span>
+  </div>
+</ng-template>

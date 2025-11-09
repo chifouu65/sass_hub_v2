@@ -25,7 +25,7 @@
               type="text"
               autocomplete="given-name"
               formControlName="firstName"
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+              class="form-input"
               placeholder="John"
             />
           </div>
@@ -40,7 +40,7 @@
               type="text"
               autocomplete="family-name"
               formControlName="lastName"
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+              class="form-input"
               placeholder="Doe"
             />
           </div>
@@ -57,7 +57,7 @@
             autocomplete="email"
             required
             formControlName="email"
-            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+            class="form-input"
             placeholder="votre@email.com"
             [class.border-red-300]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
           />
@@ -79,7 +79,7 @@
             autocomplete="new-password"
             required
             formControlName="password"
-            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+            class="form-input"
             placeholder="••••••••"
             [class.border-red-300]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
           />
@@ -110,7 +110,7 @@
         <button
           type="submit"
           [disabled]="registerForm.invalid || isLoading"
-          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          class="btn btn-primary w-full justify-center"
         >
           @if (isLoading) {
             <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

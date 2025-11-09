@@ -30,7 +30,7 @@ export const appRoutes: Route[] = [
   {
     path: '',
     loadComponent: () =>
-      import('./layouts/app-layout/app-layout').then(
+      import('./features/components/app-layout/app-layout').then(
         (m) => m.AppLayoutComponent,
       ),
     canActivate: [authGuard],
@@ -43,12 +43,12 @@ export const appRoutes: Route[] = [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+          import('./features/views/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
         path: 'organizations',
         loadComponent: () =>
-          import('./features/organizations/organizations').then(
+          import('./features/views/organizations/organizations').then(
             (m) => m.OrganizationsComponent,
           ),
       },
