@@ -14,10 +14,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import {
-  OrganizationRolesService,
-  OrganizationSummary,
-} from '../../../core/services/organization-roles.service';
+import { OrganizationSummary } from '@sass-hub-v2/shared-types';
+import { slugify } from '@sass-hub-v2/utils';
+import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { ModalRef } from '../../services/modal/modal-ref';
 import { MODAL_DATA } from '../../services/modal/modal.tokens';
 import { ToastService } from '../../services/toast/toast.service';
@@ -194,13 +193,13 @@ export class OrganizationManageModalComponent {
     }
 
     const nameValue = this.form.controls.name.value;
-    this.form.controls.slug.setValue(this.#slugify(nameValue));
+    this.form.controls.slug.setValue(slugify(nameValue));
   }
 
   onSlugInput(): void {
     this.#slugManuallyEdited.set(true);
     const slugValue = this.form.controls.slug.value;
-    this.form.controls.slug.setValue(this.#slugify(slugValue));
+    this.form.controls.slug.setValue(slugify(slugValue));
   }
 
   async onSubmit(): Promise<void> {
@@ -244,15 +243,6 @@ export class OrganizationManageModalComponent {
   close(result: boolean): void {
     this.#cleanupEffect.destroy();
     this.#modalRef.close(result);
-  }
-
-  #slugify(value: string): string {
-    return value
-      .toLowerCase()
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 
   #extractErrorMessage(error: unknown): string {

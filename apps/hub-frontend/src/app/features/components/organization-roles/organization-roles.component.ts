@@ -1,9 +1,7 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import {
-  OrganizationRoleView,
-  OrganizationRolesService,
-} from '../../../core/services/organization-roles.service';
+import { OrganizationRoleView } from '@sass-hub-v2/shared-types';
+import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { SkeletonComponent } from '../skeleton/skeleton';
 import { ModalService } from '../../services/modal/modal.service';
 import {
@@ -57,7 +55,7 @@ const PERMISSION_METADATA: Record<
 @Component({
   selector: 'app-organization-roles',
   standalone: true,
-  imports: [CommonModule, DatePipe, SkeletonComponent, GenericTableComponent],
+  imports: [CommonModule, SkeletonComponent, GenericTableComponent],
   templateUrl: './organization-roles.component.html',
 })
 export class OrganizationRolesComponent {
@@ -149,8 +147,8 @@ export class OrganizationRolesComponent {
       },
       host: {
         title: 'Créer un rôle',
-      },
-    });
+        },
+      });
 
     await firstValueFrom(modalRef.afterClosed());
   }
@@ -165,9 +163,9 @@ export class OrganizationRolesComponent {
     }
 
     const confirmed = await this.#confirmAction({
-      description: `Le rôle "${role.name}" sera supprimé définitivement.`,
-      confirmLabel: 'Supprimer',
-      cancelLabel: 'Annuler',
+        description: `Le rôle "${role.name}" sera supprimé définitivement.`,
+        confirmLabel: 'Supprimer',
+        cancelLabel: 'Annuler',
     });
     if (!confirmed) {
       return;
@@ -213,7 +211,7 @@ export class OrganizationRolesComponent {
       return;
     }
 
-    const details = role.permissions.map((code) => ({
+    const details = role.permissions.map((code: string) => ({
       code,
       ...this.getPermissionInfo(code),
     }));

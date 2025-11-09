@@ -80,3 +80,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Accorder les privilèges nécessaires à l'utilisateur applicatif pour les bases tenants
+GRANT CREATE, ALTER, DROP ON *.* TO 'hub_user'@'%';
+FLUSH PRIVILEGES;
+

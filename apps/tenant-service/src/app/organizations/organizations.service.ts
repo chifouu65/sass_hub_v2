@@ -3,10 +3,12 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Organization, OrganizationStatus } from '../entities/organization.entity';
+import { Organization } from '../entities/organization.entity';
 import { UserOrganization } from '../entities/user-organization.entity';
 import { User } from '../entities/user.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -14,9 +16,12 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { OrganizationResponseDto } from './dto/organization-response.dto';
+import { ISODateString } from '@sass-hub-v2/shared-types';
+import { normalizeEmail } from '@sass-hub-v2/utils';
+import { OrganizationStatus } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 import { PermissionCode } from '../entities/permission.entity';
-import { TenantDatabaseService } from '../database/tenant-database.service';
+import { TenantDatabaseService } from '@sass-hub-v2/tenant-db';
 
 export interface OrganizationMembershipResponse {
   id: string;
@@ -27,7 +32,7 @@ export interface OrganizationMembershipResponse {
   organizationRoleSlug: string | null;
   organizationRoleName: string | null;
   permissions: PermissionCode[];
-  createdAt: Date;
+  createdAt: ISODateString;
 }
 
 @Injectable()
@@ -60,6 +65,13 @@ export class OrganizationsService {
     // Générer un nom de base de données si non fourni
     const databaseName = createDto.databaseName || `tenant_${createDto.slug}`;
 
+    try {
+      await this.tenantDatabaseService.ensureTenantDatabase(databaseName);
+      await this.tenantDatabaseService.getTenantDataSource(databaseName);
+    } catch (error) {
+      this.handleTenantDatabaseProvisioningError(error, databaseName);
+    }
+
     // Créer l'organisation
     const organization = this.organizationRepository.create({
       name: createDto.name,
@@ -69,9 +81,6 @@ export class OrganizationsService {
     });
 
     const savedOrganization = await this.organizationRepository.save(organization);
-
-    await this.tenantDatabaseService.ensureTenantDatabase(databaseName);
-    await this.tenantDatabaseService.getTenantDataSource(databaseName);
 
     // Ajouter le créateur comme owner
     await this.addUserToOrganization(
@@ -443,7 +452,7 @@ export class OrganizationsService {
       organizationRoleSlug: membership.organizationRole?.slug ?? null,
       organizationRoleName: membership.organizationRole?.name ?? null,
       permissions,
-      createdAt: membership.createdAt,
+      createdAt: membership.createdAt.toISOString(),
     };
   }
 
@@ -530,7 +539,7 @@ export class OrganizationsService {
         where: { id: identifier.userId },
       });
     } else if (identifier.email) {
-      const normalizedEmail = identifier.email.trim().toLowerCase();
+      const normalizedEmail = normalizeEmail(identifier.email);
       user = await this.userRepository.findOne({
         where: { email: normalizedEmail },
       });
@@ -556,10 +565,28 @@ export class OrganizationsService {
       name: organization.name,
       slug: organization.slug,
       databaseName: organization.databaseName,
-      status: organization.status,
-      createdAt: organization.createdAt,
-      updatedAt: organization.updatedAt,
+      status: organization.status as OrganizationStatus,
+      createdAt: organization.createdAt.toISOString(),
+      updatedAt: organization.updatedAt.toISOString(),
     };
+  }
+
+  private handleTenantDatabaseProvisioningError(
+    error: unknown,
+    databaseName: string,
+  ): never {
+    if (error && typeof error === 'object') {
+      const maybeCode = (error as { code?: string }).code;
+      if (maybeCode === 'ER_DBACCESS_DENIED_ERROR') {
+        throw new ForbiddenException(
+          `Impossible de créer la base de données "${databaseName}". Le compte MySQL configuré n'a pas les privilèges nécessaires (CREATE DATABASE).`,
+        );
+      }
+    }
+
+    throw new ServiceUnavailableException(
+      `La base de données "${databaseName}" n'a pas pu être provisionnée. Réessayez plus tard ou contactez un administrateur.`,
+    );
   }
 }
 

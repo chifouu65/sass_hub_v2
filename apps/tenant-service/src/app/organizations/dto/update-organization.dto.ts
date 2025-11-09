@@ -6,7 +6,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { OrganizationStatus } from '../../entities/organization.entity';
+import { OrganizationStatus } from '@sass-hub-v2/shared-types';
 
 export class UpdateOrganizationDto {
   @IsString()

@@ -1,11 +1,12 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectDataSource } from '@nestjs/typeorm';
 import {
   DataSource,
   EntityTarget,
+  ObjectLiteral,
   Repository,
 } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 
 type TenantDataSource = DataSource;
@@ -47,7 +48,7 @@ export class TenantDatabaseService implements OnModuleDestroy {
     return dataSource;
   }
 
-  async getTenantRepository<Entity>(
+  async getTenantRepository<Entity extends ObjectLiteral>(
     databaseName: string,
     entity: EntityTarget<Entity>
   ): Promise<Repository<Entity>> {

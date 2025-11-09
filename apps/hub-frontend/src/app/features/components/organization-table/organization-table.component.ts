@@ -1,14 +1,12 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import {
   GenericTableComponent,
   GenericTableHeader,
 } from '../generic-table/generic-table.component';
 import { SkeletonComponent } from '../skeleton/skeleton';
-import {
-  OrganizationRolesService,
-  OrganizationSummary,
-} from '../../../core/services/organization-roles.service';
+import { OrganizationSummary } from '@sass-hub-v2/shared-types';
+import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { ModalService } from '../../services/modal/modal.service';
 import {
   OrganizationManageModalComponent,
@@ -22,7 +20,7 @@ import {
 @Component({
   selector: 'app-organization-table',
   standalone: true,
-  imports: [CommonModule, DatePipe, GenericTableComponent, SkeletonComponent],
+  imports: [CommonModule, GenericTableComponent, SkeletonComponent],
   templateUrl: './organization-table.component.html',
 })
 export class OrganizationTableComponent {

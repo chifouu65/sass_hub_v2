@@ -202,8 +202,8 @@ export class OrganizationsController {
       code: permission.code,
       name: permission.name,
       description: permission.description,
-      createdAt: permission.createdAt,
-      updatedAt: permission.updatedAt,
+      createdAt: permission.createdAt.toISOString(),
+      updatedAt: permission.updatedAt.toISOString(),
     }));
   }
 
@@ -280,8 +280,8 @@ export class OrganizationsController {
       organizationId: role.organizationId,
       isSystem: role.isSystem,
       isDefault: role.isDefault,
-      createdAt: role.createdAt,
-      updatedAt: role.updatedAt,
+      createdAt: role.createdAt.toISOString(),
+      updatedAt: role.updatedAt.toISOString(),
       permissions: (role.permissions || [])
         .map((permission) => permission.permission?.code)
         .filter(

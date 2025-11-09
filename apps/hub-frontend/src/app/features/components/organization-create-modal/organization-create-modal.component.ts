@@ -8,6 +8,7 @@ import {
 import { finalize } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
+import { slugify } from '@sass-hub-v2/utils';
 import { ModalService } from '../../services/modal/modal.service';
 import {
   ConfirmModalComponent,
@@ -58,13 +59,13 @@ export class OrganizationCreateModalComponent {
       return;
     }
     const name = this.createOrganizationForm.controls.name.value;
-    this.createOrganizationForm.controls.slug.setValue(this.#slugify(name));
+    this.createOrganizationForm.controls.slug.setValue(slugify(name));
   }
 
   onSlugInput(): void {
     this.#slugManuallyEditedCreate.set(true);
     const value = this.createOrganizationForm.controls.slug.value;
-    this.createOrganizationForm.controls.slug.setValue(this.#slugify(value));
+    this.createOrganizationForm.controls.slug.setValue(slugify(value));
   }
 
   async onSubmit(): Promise<void> {
@@ -136,15 +137,6 @@ export class OrganizationCreateModalComponent {
 
     const result = await firstValueFrom(modalRef.afterClosed());
     return result ?? false;
-  }
-
-  #slugify(value: string): string {
-    return value
-      .toLowerCase()
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 
   #extractErrorMessage(error: unknown): string {

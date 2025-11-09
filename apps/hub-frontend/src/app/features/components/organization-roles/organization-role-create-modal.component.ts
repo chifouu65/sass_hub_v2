@@ -6,10 +6,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import {
-  PermissionView,
-  OrganizationRolesService,
-} from '../../../core/services/organization-roles.service';
+import { PermissionView } from '@sass-hub-v2/shared-types';
+import { slugify } from '@sass-hub-v2/utils';
+import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { ModalRef } from '../../services/modal/modal-ref';
 import { MODAL_DATA } from '../../services/modal/modal.tokens';
 import { ToastService } from '../../services/toast/toast.service';
@@ -73,18 +72,18 @@ export class OrganizationRoleCreateModalComponent {
       return;
     }
     const name = this.form.controls.name.value;
-    this.form.controls.slug.setValue(this.#slugify(name));
+    this.form.controls.slug.setValue(slugify(name));
   }
 
   onSlugInput(): void {
     this.#slugManuallyEdited.set(true);
     const value = this.form.controls.slug.value;
-    this.form.controls.slug.setValue(this.#slugify(value));
+    this.form.controls.slug.setValue(slugify(value));
   }
 
   onSlugBlur(): void {
     const value = this.form.controls.slug.value;
-    this.form.controls.slug.setValue(this.#slugify(value));
+    this.form.controls.slug.setValue(slugify(value));
   }
 
   togglePermission(code: string, checked: boolean): void {
@@ -148,15 +147,6 @@ export class OrganizationRoleCreateModalComponent {
 
   close(result: boolean = false): void {
     this.#modalRef.close(result);
-  }
-
-  #slugify(value: string): string {
-    return value
-      .toLowerCase()
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 
   async #confirmAction(data: ConfirmModalData): Promise<boolean> {

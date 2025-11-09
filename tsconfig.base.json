@@ -16,7 +16,12 @@
     "baseUrl": ".",
     "paths": {
       "@sass-hub-v2/shared-types": ["libs/shared-types/src/index.ts"],
-      "@sass-hub-v2/utils": ["libs/utils/src/index.ts"]
+      "@sass-hub-v2/utils": ["libs/utils/src/index.ts"],
+      "@sass-hub-v2/backend": ["libs/backend/src/index.ts"],
+      "@sass-hub-v2/backend/auth": ["libs/backend/src/lib/auth/index.ts"],
+      "@sass-hub-v2/tenant-db": ["libs/backend/src/index.ts"],
+      "@sass-hub-v2/sdk": ["libs/sdk/src/index.ts"],
+      "@sass-hub-v2/contracts": ["libs/contracts/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

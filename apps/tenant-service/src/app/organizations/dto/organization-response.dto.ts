@@ -1,12 +1,4 @@
-import { OrganizationStatus } from '../../entities/organization.entity';
+import { OrganizationSummary } from '@sass-hub-v2/shared-types';
 
-export class OrganizationResponseDto {
-  id: string;
-  name: string;
-  slug: string;
-  databaseName: string;
-  status: OrganizationStatus;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type OrganizationResponseDto = OrganizationSummary;
 

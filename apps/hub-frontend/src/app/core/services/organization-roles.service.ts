@@ -7,69 +7,21 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import {
+  AddOrganizationMemberRequest,
+  CreateOrganizationRoleRequest,
+  CreateOrganizationRequest,
+  OrganizationMemberView,
+  OrganizationRoleView,
+  OrganizationSummary,
+  PermissionView,
+  UpdateOrganizationMemberRoleRequest,
+  UpdateOrganizationRequest,
+  UpdateOrganizationRoleRequest,
+} from '@sass-hub-v2/shared-types';
 import { firstValueFrom, forkJoin, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
-
-export interface OrganizationSummary {
-  id: string;
-  name: string;
-  slug: string;
-  databaseName: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OrganizationRoleView {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  organizationId: string | null;
-  isSystem: boolean;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-  permissions: string[];
-}
-
-export interface PermissionView {
-  id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OrganizationMemberView {
-  id: string;
-  userId: string;
-  email: string;
-  firstName: string | null;
-  lastName: string | null;
-  role: string | null;
-  organizationRoleId: string | null;
-  organizationRoleSlug: string | null;
-  organizationRoleName: string | null;
-  createdAt: string;
-}
-
-export interface CreateRolePayload {
-  name: string;
-  slug: string;
-  description?: string | null;
-  permissions: string[];
-}
-
-export interface UpdateRolePayload {
-  name?: string;
-  slug?: string;
-  description?: string | null;
-  isDefault?: boolean;
-  permissions?: string[];
-}
 
 type OrganizationContext = {
   roles: OrganizationRoleView[];
@@ -175,11 +127,9 @@ export class OrganizationRolesService {
     }
   }
 
-  createOrganization(payload: {
-    name: string;
-    slug: string;
-    databaseName?: string | null;
-  }): Observable<void> {
+  createOrganization(
+    payload: CreateOrganizationRequest
+  ): Observable<void> {
     this._error.set(null);
     return this.http
       .post<OrganizationSummary>(`${this.baseUrl}`, payload, {
@@ -201,7 +151,7 @@ export class OrganizationRolesService {
 
   updateOrganization(
     organizationId: string,
-    payload: { name?: string; slug?: string; databaseName?: string | null },
+    payload: UpdateOrganizationRequest,
   ): Observable<void> {
     this._error.set(null);
     return this.http
@@ -245,7 +195,7 @@ export class OrganizationRolesService {
 
   createRole(
     organizationId: string,
-    payload: CreateRolePayload,
+    payload: CreateOrganizationRoleRequest,
   ): Observable<void> {
     this._error.set(null);
     return this.http
@@ -265,7 +215,7 @@ export class OrganizationRolesService {
   updateRole(
     organizationId: string,
     roleId: string,
-    payload: UpdateRolePayload,
+    payload: UpdateOrganizationRoleRequest,
   ): Observable<void> {
     this._error.set(null);
     return this.http
@@ -334,12 +284,7 @@ export class OrganizationRolesService {
 
   addMember(
     organizationId: string,
-    payload: {
-      userId?: string;
-      email?: string;
-      role?: string;
-      organizationRoleId?: string | null;
-    },
+    payload: AddOrganizationMemberRequest,
   ): Observable<void> {
     this._error.set(null);
     return this.http
@@ -358,7 +303,7 @@ export class OrganizationRolesService {
   updateMemberRole(
     organizationId: string,
     userId: string,
-    payload: { role?: string; organizationRoleId?: string | null },
+    payload: UpdateOrganizationMemberRoleRequest,
   ): Observable<void> {
     this._error.set(null);
     return this.http

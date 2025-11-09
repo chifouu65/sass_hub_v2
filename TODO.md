@@ -51,11 +51,11 @@
 - [x] Créer libs/shared-types (Types partagés entre services)
 - [x] Créer libs/utils (Fonctions utilitaires)
 - [x] Créer libs/sdk (SDK front ↔ backend)
-- [ ] Créer lib backend pour la gestion multi-tenant (pool de connexions réutilisable)
-- [ ] Créer lib backend auth commune (decorators, guards, stratégies OAuth)
-- [ ] Créer lib de contrats/DTO partagés entre services et frontend
+- [x] Créer lib backend pour la gestion multi-tenant (pool de connexions réutilisable)
+- [x] Créer lib backend auth commune (decorators, guards, stratégies OAuth)
+- [x] Créer lib de contrats/DTO partagés entre services et frontend
 - [ ] Créer lib UI Angular partagée (tableaux, modals, composants transverses)
-- [ ] Étendre libs/sdk avec les clients tenant-service et auth-service
+- [x] Étendre libs/sdk avec les clients tenant-service et auth-service
 
 ### 🐳 Docker et Infrastructure
 - [x] Créer docker-compose.yml

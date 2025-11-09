@@ -6,15 +6,10 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { OrganizationStatus } from '@sass-hub-v2/shared-types';
 import { UserOrganization } from './user-organization.entity';
 import { Subscription } from './subscription.entity';
 import { OrganizationRole } from './organization-role.entity';
-
-export enum OrganizationStatus {
-  ACTIVE = 'active',
-  SUSPENDED = 'suspended',
-  INACTIVE = 'inactive',
-}
 
 @Entity('organizations')
 export class Organization {

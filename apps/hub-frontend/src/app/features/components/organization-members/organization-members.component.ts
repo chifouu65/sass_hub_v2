@@ -1,10 +1,8 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  OrganizationMemberView,
-  OrganizationRolesService,
-} from '../../../core/services/organization-roles.service';
+import { OrganizationMemberView } from '@sass-hub-v2/shared-types';
+import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { SkeletonComponent } from '../skeleton/skeleton';
 import { GenericTableComponent } from '../generic-table/generic-table.component';
 import { GenericTableHeader } from '../generic-table/generic-table.component';
@@ -23,7 +21,6 @@ type AssignmentValue = string;
   imports: [
     CommonModule,
     FormsModule,
-    DatePipe,
     SkeletonComponent,
     GenericTableComponent,
   ],
