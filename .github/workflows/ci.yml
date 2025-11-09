@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - '*'
+
+env:
+  NX_SKIP_NX_CACHE: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npx nx format:check
+
+      - name: Lint
+        run: npx nx run-many --target=lint --all --parallel
+
+      - name: Run unit tests
+        run: npx nx run-many --target=test --all --parallel --configuration=ci
+        continue-on-error: false
+
+      - name: Build applications
+        run: npx nx run-many --target=build --all --parallel
+
