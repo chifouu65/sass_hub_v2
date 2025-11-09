@@ -14,6 +14,7 @@ import {
   ConfirmModalComponent,
   ConfirmModalData,
 } from '../confirm-modal/confirm-modal.component';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Component({
   selector: 'app-organization-create-modal',
@@ -25,6 +26,7 @@ export class OrganizationCreateModalComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);
   readonly #fb = inject(NonNullableFormBuilder);
   readonly #modalService = inject(ModalService);
+  readonly #toastService = inject(ToastService);
 
   readonly createOrganizationForm = this.#fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -101,22 +103,11 @@ export class OrganizationCreateModalComponent {
       .pipe(finalize(() => this.createSubmitting.set(false)))
       .subscribe({
         next: () => {
-          this.formMessage.set({
-            kind: 'success',
-            text: 'Organisation créée avec succès.',
-          });
-          this.createOrganizationForm.reset({
-            name: '',
-            slug: '',
-            databaseName: '',
-          });
+          this.#toastService.success('Organisation créée avec succès.');
           this.#slugManuallyEditedCreate.set(false);
         },
         error: (error) => {
-          this.formMessage.set({
-            kind: 'error',
-            text: this.#extractErrorMessage(error),
-          });
+          this.#toastService.error(this.#extractErrorMessage(error));
         },
       });
   }

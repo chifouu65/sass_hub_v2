@@ -7,6 +7,19 @@ export enum OrganizationStatus {
   INACTIVE = 'inactive',
 }
 
+export enum ApplicationStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  BETA = 'beta',
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = 'active',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+  PENDING = 'pending',
+}
+
 export interface OrganizationSummary {
   id: UUID;
   name: string;
@@ -174,10 +187,39 @@ export interface AuthValidateTokenResponse {
   expiresAt: ISODateString | null;
 }
 
+export interface SubscribedApplicationView {
+  subscriptionId: UUID;
+  organizationId: UUID;
+  applicationId: UUID;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  applicationStatus: ApplicationStatus;
+  subscriptionStatus: SubscriptionStatus;
+  subscribedAt: ISODateString;
+  startsAt: ISODateString | null;
+  endsAt: ISODateString | null;
+  updatedAt: ISODateString;
+}
+
+export interface AvailableApplicationView {
+  id: UUID;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  status: ApplicationStatus;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+}
+
 export type TenantOrganizationSummary = OrganizationSummary;
 export type TenantOrganizationRole = OrganizationRoleView;
 export type TenantOrganizationMember = OrganizationMemberView;
 export type TenantPermissionView = PermissionView;
+export type TenantSubscribedApplicationView = SubscribedApplicationView;
+export type TenantAvailableApplicationView = AvailableApplicationView;
 
 export type TenantCreateOrganizationRequest = CreateOrganizationRequest;
 export type TenantUpdateOrganizationRequest = UpdateOrganizationRequest;
@@ -191,6 +233,7 @@ export interface TenantGetOrganizationResponse {
   organization: TenantOrganizationSummary;
   roles: TenantOrganizationRole[];
   members: TenantOrganizationMember[];
+  applications: TenantSubscribedApplicationView[];
 }
 export type TenantListRolesResponse = PaginatedResult<TenantOrganizationRole>;
 export interface TenantListPermissionsResponse {

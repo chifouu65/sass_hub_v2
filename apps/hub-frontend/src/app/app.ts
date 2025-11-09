@@ -3,9 +3,10 @@ import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { SkeletonComponent } from './features/components/skeleton/skeleton';
+import { ToastContainerComponent } from './features/services/toast/toast-container.component';
 
 @Component({
-  imports: [CommonModule, RouterModule, SkeletonComponent],
+  imports: [CommonModule, RouterModule, SkeletonComponent, ToastContainerComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.css',

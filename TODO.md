@@ -3,6 +3,7 @@
 ## ✅ À faire
 
 ### 🏗️ Architecture et Infrastructure
+
 - [x] Initialiser le workspace Nx avec preset 'apps' pour structure monorepo
 - [x] Ajouter les plugins @nx/angular et @nx/nest pour support Angular et NestJS
 - [x] Créer la structure de dossiers de base (apps/, services/, libs/, docker/)
@@ -10,6 +11,7 @@
 - [x] Créer les applications de base : hub-frontend et hub-backend
 
 ### 🔐 Authentification et Hub Backend
+
 - [x] Créer le hub-backend (NestJS)
 - [x] Mettre en place le service d'authentification (JWT/OAuth2/SSO)
 - [x] Configurer la base de données "hub" (MySQL)
@@ -19,12 +21,14 @@
 - [ ] Créer l'API Gateway (NestJS)
 
 ### 🗄️ Base de données Multi-Tenant
+
 - [x] Mettre en place le système de multi-tenant MySQL (structure de base)
-- [x] Créer le tenant-service pour gestion dynamique des bases 
+- [x] Créer le tenant-service pour gestion dynamique des bases
 - [x] Implémenter le pool de connexions par organisation
 - [x] Configurer la base "hub" pour les métadonnées globales
 
 ### 🎨 Hub Frontend (Angular)
+
 - [x] Créer le hub-frontend (Angular 20)
 - [x] Configurer TailwindCSS
 - [x] Créer le dashboard principal
@@ -34,6 +38,7 @@
 - [ ] Créer l'interface de gestion des entités
 
 ### 📦 Applications Modulaires
+
 - [ ] Créer hotel-manager-backend (NestJS)
 - [ ] Créer hotel-manager-frontend (Angular)
 - [ ] Créer booking-portal-backend (NestJS)
@@ -42,12 +47,14 @@
 - [ ] Créer hr-manager-frontend (Angular)
 
 ### 🔧 Services Microservices
+
 - [x] Créer auth-service (Authentification / SSO / Tokens)
 - [x] Créer tenant-service (Gestion organisations / multi-tenant)
 - [ ] Créer billing-service (Paiement / abonnements)
 - [ ] Créer notification-service (Mails / alertes)
 
 ### 📚 Bibliothèques Partagées
+
 - [x] Créer libs/shared-types (Types partagés entre services)
 - [x] Créer libs/utils (Fonctions utilitaires)
 - [ ] Créer libs/sdk (SDK front ↔ backend) — abandonné (les frontends passeront uniquement par les backends Nest)
@@ -58,6 +65,7 @@
 - [ ] Étendre libs/sdk avec les clients tenant-service et auth-service — sans objet tant que la lib SDK n’est pas nécessaire
 
 ### 🐳 Docker et Infrastructure
+
 - [x] Créer docker-compose.yml
 - [x] Configurer MySQL (multi-tenant)
 - [x] Configurer Redis
@@ -65,17 +73,20 @@
 - [x] Créer les Dockerfiles pour les services
 
 ### 🔄 Communication Inter-Services
+
 - [ ] Configurer gRPC pour communication inter-services
 - [ ] Configurer RabbitMQ pour messaging
 - [ ] Mettre en place les clients REST
 
 ### 💰 Marketplace et Facturation
+
 - [ ] Implémenter le système de marketplace d'applications
 - [ ] Créer l'interface d'activation/désactivation d'apps
 - [ ] Implémenter la gestion des abonnements
 - [ ] Intégrer le système de paiement
 
 ### 📝 Documentation
+
 - [ ] Documenter l'architecture
 - [ ] Créer des guides d'installation
 - [ ] Documenter les APIs
@@ -123,3 +134,32 @@
 - **Containerisation** : Docker + Docker Compose
 - **Nx Version** : 22.0.2
 
+Roadmap
+
+Phase 1 
+– Consolidation Hub (en cours d’achèvement)
+- Finaliser la gestion des applications souscrites (hub-frontend)
+- Créer l’interface de gestion des entités (hub-frontend)
+- Stabiliser le tenant-service et les libs partagées (fait en grande partie)
+
+Phase 1 bis – Socle transverse
+Créer l’API Gateway (NestJS) pour centraliser l’accès aux microservices et préparer la sécurité transversale
+
+Phase 2 – Services business & front dédiés
+Billing-service (paiements, abonnements)
+Notification-service (emails/alertes)
+UI d’activation/désactivation d’apps
+Gestion d’abonnements et intégration paiement dans le hub
+
+Phase 3 – Suites applicatives verticales
+Hotel-manager backend/frontend
+Booking-portal backend/frontend
+HR-manager backend/frontend
+
+Phase 4 – Communication & interop
+gRPC pour la communication inter-services
+RabbitMQ pour le messaging
+Clients REST (si nécessaire après gRPC)
+Phase 5 – Industrialisation & docs
+Lib UI Angular partagée
+Documentation architecture/APIs + guides install & dev

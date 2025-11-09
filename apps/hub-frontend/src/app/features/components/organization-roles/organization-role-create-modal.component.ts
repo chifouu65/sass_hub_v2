@@ -115,7 +115,7 @@ export class OrganizationRoleCreateModalComponent {
     const { name, slug, description, permissions } = this.form.getRawValue();
 
     const confirmed = await this.#confirmAction({
-      description: `Confirmez la création du rôle « ${name.trim()} » (${permissions.length} permission${permissions.length > 1 ? 's' : ''}).`,
+      description: `Confirmez la création du rôle « ${name.trim()} » (${permissions.length} permission${permissions.length > 1 ? 's' : ''}).`,
       confirmLabel: 'Créer',
       cancelLabel: 'Annuler',
     });
@@ -145,7 +145,7 @@ export class OrganizationRoleCreateModalComponent {
     }
   }
 
-  close(result: boolean = false): void {
+  close(result = false): void {
     this.#modalRef.close(result);
   }
 

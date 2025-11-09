@@ -22,6 +22,8 @@ import { OrganizationStatus } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 import { PermissionCode } from '../entities/permission.entity';
 import { TenantDatabaseService } from '@sass-hub-v2/tenant-db';
+import { Subscription, SubscriptionStatus } from '../entities/subscription.entity';
+import { Application, ApplicationStatus } from '../entities/application.entity';
 
 export interface OrganizationMembershipResponse {
   id: string;
@@ -35,6 +37,22 @@ export interface OrganizationMembershipResponse {
   createdAt: ISODateString;
 }
 
+export interface OrganizationApplicationResponse {
+  subscriptionId: string;
+  organizationId: string;
+  applicationId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  applicationStatus: ApplicationStatus;
+  subscriptionStatus: SubscriptionStatus;
+  subscribedAt: ISODateString;
+  startsAt: ISODateString | null;
+  endsAt: ISODateString | null;
+  updatedAt: ISODateString;
+}
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -44,9 +62,45 @@ export class OrganizationsService {
     private userOrganizationRepository: Repository<UserOrganization>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Subscription)
+    private subscriptionRepository: Repository<Subscription>,
+    @InjectRepository(Application)
+    private applicationRepository: Repository<Application>,
     private readonly organizationRolesService: OrganizationRolesService,
     private readonly tenantDatabaseService: TenantDatabaseService,
   ) {}
+
+  private defaultApplicationsSeeded = false;
+
+  private readonly defaultApplicationsSeedData: Array<{
+    name: string;
+    slug: string;
+    description: string | null;
+    category: string | null;
+    status: ApplicationStatus;
+  }> = [
+    {
+      name: 'CRM Pro',
+      slug: 'crm-pro',
+      description: 'Centralisez vos prospects et automatisez le suivi commercial.',
+      category: 'CRM',
+      status: ApplicationStatus.ACTIVE,
+    },
+    {
+      name: 'Support Desk',
+      slug: 'support-desk',
+      description: 'Gestion des tickets et base de connaissances pour vos équipes support.',
+      category: 'Support',
+      status: ApplicationStatus.ACTIVE,
+    },
+    {
+      name: 'Insights Analytics',
+      slug: 'insights-analytics',
+      description: 'Tableaux de bord analytiques pour suivre la performance de vos équipes.',
+      category: 'Analytics',
+      status: ApplicationStatus.BETA,
+    },
+  ];
 
   /**
    * Créer une nouvelle organisation
@@ -380,6 +434,112 @@ export class OrganizationsService {
   }
 
   /**
+   * Récupérer les applications souscrites par une organisation
+   */
+  async listOrganizationApplications(
+    organizationId: string,
+  ): Promise<OrganizationApplicationResponse[]> {
+    await this.ensureOrganizationExists(organizationId);
+
+    const subscriptions = await this.subscriptionRepository.find({
+      where: { organizationId },
+      relations: ['application'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return subscriptions.map((subscription) =>
+      this.mapSubscriptionToResponse(subscription),
+    );
+  }
+
+  /**
+   * Récupérer les applications disponibles non souscrites
+   */
+  async listAvailableApplications(organizationId: string): Promise<Application[]> {
+    await this.ensureOrganizationExists(organizationId);
+    await this.ensureDefaultApplications();
+
+    const subscriptions = await this.subscriptionRepository.find({
+      select: ['applicationId'],
+      where: { organizationId },
+    });
+    const excludedIds = new Set(subscriptions.map((sub) => sub.applicationId));
+
+    const applications = await this.applicationRepository.find({
+      order: { name: 'ASC' },
+    });
+
+    return applications.filter((app) => !excludedIds.has(app.id));
+  }
+
+  /**
+   * Souscrire une organisation à une application
+   */
+  async subscribeToApplication(
+    organizationId: string,
+    applicationId: string,
+    options: { startsAt?: ISODateString | null; endsAt?: ISODateString | null } = {},
+  ): Promise<OrganizationApplicationResponse> {
+    await this.ensureOrganizationExists(organizationId);
+    await this.ensureDefaultApplications();
+
+    const application = await this.applicationRepository.findOne({
+      where: { id: applicationId },
+    });
+
+    if (!application) {
+      throw new NotFoundException(
+        `Application avec l'ID "${applicationId}" introuvable`,
+      );
+    }
+
+    const existing = await this.subscriptionRepository.findOne({
+      where: { organizationId, applicationId },
+    });
+
+    if (existing) {
+      throw new ConflictException(
+        `L'organisation est déjà souscrite à cette application`,
+      );
+    }
+
+    const subscription = this.subscriptionRepository.create({
+      organizationId,
+      applicationId,
+      status: SubscriptionStatus.ACTIVE,
+      startsAt: options.startsAt ? new Date(options.startsAt) : null,
+      endsAt: options.endsAt ? new Date(options.endsAt) : null,
+    });
+
+    const saved = await this.subscriptionRepository.save(subscription);
+    saved.application = application;
+
+    return this.mapSubscriptionToResponse(saved);
+  }
+
+  /**
+   * Désinstaller une application pour une organisation
+   */
+  async unsubscribeFromApplication(
+    organizationId: string,
+    subscriptionId: string,
+  ): Promise<void> {
+    await this.ensureOrganizationExists(organizationId);
+
+    const subscription = await this.subscriptionRepository.findOne({
+      where: { id: subscriptionId, organizationId },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(
+        `Souscription "${subscriptionId}" introuvable pour l’organisation ${organizationId}`,
+      );
+    }
+
+    await this.subscriptionRepository.remove(subscription);
+  }
+
+  /**
    * Vérifier si un utilisateur est membre d'une organisation
    */
   async isUserMember(
@@ -470,6 +630,57 @@ export class OrganizationsService {
     });
 
     return this.mapMembership(membership);
+  }
+
+  private async ensureOrganizationExists(organizationId: string): Promise<void> {
+    const exists = await this.organizationRepository.findOne({
+      where: { id: organizationId },
+      select: ['id'],
+    });
+
+    if (!exists) {
+      throw new NotFoundException(
+        `Organisation avec l'ID "${organizationId}" introuvable`,
+      );
+    }
+  }
+
+  private mapSubscriptionToResponse(
+    subscription: Subscription & { application?: Application },
+  ): OrganizationApplicationResponse {
+    const application = subscription.application;
+
+    return {
+      subscriptionId: subscription.id,
+      organizationId: subscription.organizationId,
+      applicationId: subscription.applicationId,
+      name: application?.name ?? 'Application inconnue',
+      slug: application?.slug ?? 'unknown',
+      description: application?.description ?? null,
+      category: application?.category ?? null,
+      applicationStatus: application?.status ?? ApplicationStatus.ACTIVE,
+      subscriptionStatus: subscription.status,
+      subscribedAt: subscription.createdAt.toISOString(),
+      startsAt: subscription.startsAt ? subscription.startsAt.toISOString() : null,
+      endsAt: subscription.endsAt ? subscription.endsAt.toISOString() : null,
+      updatedAt: subscription.updatedAt.toISOString(),
+    };
+  }
+
+  private async ensureDefaultApplications(): Promise<void> {
+    if (this.defaultApplicationsSeeded) {
+      return;
+    }
+
+    const count = await this.applicationRepository.count();
+    if (count === 0) {
+      const entities = this.defaultApplicationsSeedData.map((data) =>
+        this.applicationRepository.create(data),
+      );
+      await this.applicationRepository.save(entities);
+    }
+
+    this.defaultApplicationsSeeded = true;
   }
 
   private async resolveRoleSelection(

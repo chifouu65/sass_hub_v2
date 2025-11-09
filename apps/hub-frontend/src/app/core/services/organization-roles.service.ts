@@ -9,12 +9,14 @@ import {
 } from '@angular/core';
 import {
   AddOrganizationMemberRequest,
+  AvailableApplicationView,
   CreateOrganizationRoleRequest,
   CreateOrganizationRequest,
   OrganizationMemberView,
   OrganizationRoleView,
   OrganizationSummary,
   PermissionView,
+  SubscribedApplicationView,
   UpdateOrganizationMemberRoleRequest,
   UpdateOrganizationRequest,
   UpdateOrganizationRoleRequest,
@@ -27,12 +29,14 @@ type OrganizationContext = {
   roles: OrganizationRoleView[];
   permissions: PermissionView[];
   members: OrganizationMemberView[];
+  applications: SubscribedApplicationView[];
 };
 
 const EMPTY_CONTEXT: OrganizationContext = {
   roles: [],
   permissions: [],
   members: [],
+  applications: [],
 };
 
 @Injectable({
@@ -66,6 +70,9 @@ export class OrganizationRolesService {
   members = computed(
     () => this.organizationContextResource.value()?.members ?? [],
   );
+  applications = computed(
+    () => this.organizationContextResource.value()?.applications ?? [],
+  );
 
   selectedOrganizationId = this._selectedOrganizationId.asReadonly();
   error = this._error.asReadonly();
@@ -79,6 +86,11 @@ export class OrganizationRolesService {
   });
 
   membersLoading = computed(
+    () =>
+      !!this._selectedOrganizationId() &&
+      this.organizationContextResource.isLoading(),
+  );
+  applicationsLoading = computed(
     () =>
       !!this._selectedOrganizationId() &&
       this.organizationContextResource.isLoading(),
@@ -379,6 +391,10 @@ export class OrganizationRolesService {
         `${this.baseUrl}/${organizationId}/users`,
         { headers },
       ),
+      applications: this.http.get<SubscribedApplicationView[]>(
+        `${this.baseUrl}/${organizationId}/applications`,
+        { headers },
+      ),
     }).pipe(
       tap(() => this._error.set(null)),
       catchError((error) => {
@@ -386,6 +402,69 @@ export class OrganizationRolesService {
         return throwError(() => error);
       }),
     );
+  }
+
+  fetchAvailableApplications(
+    organizationId: string,
+  ): Observable<AvailableApplicationView[]> {
+    this._error.set(null);
+    return this.http
+      .get<AvailableApplicationView[]>(
+        `${this.baseUrl}/${organizationId}/applications/available`,
+        {
+          headers: this.authService.getAuthHeaders(),
+        },
+      )
+      .pipe(
+        tap(() => this._error.set(null)),
+        catchError((error) => {
+          this._error.set(this.resolveError(error));
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  subscribeToApplication(
+    organizationId: string,
+    applicationId: string,
+  ): Observable<void> {
+    this._error.set(null);
+    return this.http
+      .post<void>(
+        `${this.baseUrl}/${organizationId}/applications`,
+        { applicationId },
+        {
+          headers: this.authService.getAuthHeaders(),
+        },
+      )
+      .pipe(
+        tap(() => this.organizationContextResource.reload()),
+        catchError((error) => {
+          this._error.set(this.resolveError(error));
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  unsubscribeFromApplication(
+    organizationId: string,
+    subscriptionId: string,
+  ): Observable<void> {
+    this._error.set(null);
+    return this.http
+      .delete<void>(
+        `${this.baseUrl}/${organizationId}/applications/${subscriptionId}`,
+        {
+          headers: this.authService.getAuthHeaders(),
+        },
+      )
+      .pipe(
+        tap(() => this.organizationContextResource.reload()),
+        catchError((error) => {
+          this._error.set(this.resolveError(error));
+          return throwError(() => error);
+        }),
+      );
   }
 
   private resolveError(error: unknown): string {

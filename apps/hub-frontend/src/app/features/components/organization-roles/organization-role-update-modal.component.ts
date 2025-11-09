@@ -93,9 +93,9 @@ export interface OrganizationRoleUpdateModalData {
 
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <label class="text-sm font-medium text-slate-700">
+          <span class="text-sm font-medium text-slate-700">
             Permissions associées
-          </label>
+          </span>
           <span class="text-xs text-slate-500">
             {{ permissionsSelectedLabel() }}
           </span>
@@ -326,7 +326,7 @@ export class OrganizationRoleUpdateModalComponent {
     const confirmed = await this.#confirmAction({
       description: `Confirmez la mise à jour de ${actionDescriptionParts.join(
         ' et '
-      )} pour « ${this.role.name} ».`,
+      )} pour « ${this.role.name} ».`, 
       confirmLabel: 'Mettre à jour',
       cancelLabel: 'Annuler',
     });

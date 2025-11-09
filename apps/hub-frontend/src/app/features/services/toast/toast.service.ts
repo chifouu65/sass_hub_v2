@@ -27,10 +27,12 @@ export class ToastService {
   }
 
   success(message: string, config?: ToastConfig): string {
+    console.log('success toast', message, config);
     return this.show(message, { ...config, kind: 'success' });
   }
 
   error(message: string, config?: ToastConfig): string {
+    console.log('error toast', message, config);
     return this.show(message, { ...config, kind: 'error' });
   }
 

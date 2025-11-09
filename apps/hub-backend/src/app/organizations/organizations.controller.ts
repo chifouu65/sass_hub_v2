@@ -16,6 +16,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { SubscribeApplicationDto } from './dto/subscribe-application.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/types';
@@ -28,6 +29,8 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import {
   PermissionCode,
+  TenantApplication,
+  TenantOrganizationApplication,
   TenantOrganizationRole,
 } from './types';
 
@@ -180,6 +183,72 @@ export class OrganizationsController {
   }
 
   /**
+   * Récupérer les applications souscrites pour une organisation
+   */
+  @Get(':id/applications')
+  @UseGuards(PermissionsGuard)
+  @Permissions(PermissionCode.MANAGE_APPS)
+  async listApplications(@Param('id') organizationId: string) {
+    const applications =
+      await this.organizationsService.listOrganizationApplications(organizationId);
+
+    return applications.map((application) => this.mapOrganizationApplication(application));
+  }
+
+  /**
+   * Récupérer les applications disponibles pour une organisation
+   */
+  @Get(':id/applications/available')
+  @UseGuards(PermissionsGuard)
+  @Permissions(PermissionCode.MANAGE_APPS)
+  async listAvailableApplications(@Param('id') organizationId: string) {
+    const applications =
+      await this.organizationsService.listAvailableApplications(organizationId);
+
+    return applications.map((application) => this.mapAvailableApplication(application));
+  }
+
+  /**
+   * Souscrire à une application
+   */
+  @Post(':id/applications')
+  @UseGuards(PermissionsGuard)
+  @Permissions(PermissionCode.MANAGE_APPS)
+  @HttpCode(HttpStatus.CREATED)
+  async subscribeToApplication(
+    @Param('id') organizationId: string,
+    @Body() dto: SubscribeApplicationDto,
+  ) {
+    const subscription = await this.organizationsService.subscribeToApplication(
+      organizationId,
+      {
+        applicationId: dto.applicationId,
+        startsAt: dto.startsAt ?? undefined,
+        endsAt: dto.endsAt ?? undefined,
+      },
+    );
+
+    return this.mapOrganizationApplication(subscription);
+  }
+
+  /**
+   * Désinstaller une application
+   */
+  @Delete(':id/applications/:subscriptionId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(PermissionCode.MANAGE_APPS)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unsubscribeFromApplication(
+    @Param('id') organizationId: string,
+    @Param('subscriptionId') subscriptionId: string,
+  ) {
+    await this.organizationsService.unsubscribeFromApplication(
+      organizationId,
+      subscriptionId,
+    );
+  }
+
+  /**
    * Récupérer les rôles disponibles pour une organisation (rôles système + personnalisés)
    */
   @Get(':id/roles')
@@ -299,6 +368,55 @@ export class OrganizationsController {
         .filter(
           (code): code is PermissionCode => Boolean(code),
         ),
+    };
+  }
+
+  private mapOrganizationApplication(application: TenantOrganizationApplication) {
+    return {
+      subscriptionId: application.subscriptionId,
+      organizationId: application.organizationId,
+      applicationId: application.applicationId,
+      name: application.name,
+      slug: application.slug,
+      description: application.description,
+      category: application.category,
+      applicationStatus: application.applicationStatus,
+      subscriptionStatus: application.subscriptionStatus,
+      subscribedAt:
+        application.subscribedAt instanceof Date
+          ? application.subscribedAt.toISOString()
+          : application.subscribedAt,
+      startsAt:
+        application.startsAt instanceof Date
+          ? application.startsAt.toISOString()
+          : application.startsAt,
+      endsAt:
+        application.endsAt instanceof Date
+          ? application.endsAt.toISOString()
+          : application.endsAt,
+      updatedAt:
+        application.updatedAt instanceof Date
+          ? application.updatedAt.toISOString()
+          : application.updatedAt,
+    };
+  }
+
+  private mapAvailableApplication(application: TenantApplication) {
+    return {
+      id: application.id,
+      name: application.name,
+      slug: application.slug,
+      description: application.description,
+      category: application.category,
+      status: application.status,
+      createdAt:
+        application.createdAt instanceof Date
+          ? application.createdAt.toISOString()
+          : application.createdAt,
+      updatedAt:
+        application.updatedAt instanceof Date
+          ? application.updatedAt.toISOString()
+          : application.updatedAt,
     };
   }
 }

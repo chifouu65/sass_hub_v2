@@ -1,0 +1,152 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-xl font-semibold text-slate-900">Applications souscrites</h2>
+      <p class="text-sm text-slate-600">
+        Gérez les applications installées pour l’organisation sélectionnée.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openSubscribeModal()"
+        [disabled]="!selectedOrganizationId()"
+      >
+        Souscrire à une application
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-[240px,1fr]">
+    <div class="space-y-3">
+      <label class="text-sm font-medium text-slate-700" for="applications-search">
+        Recherche
+      </label>
+      <input
+        id="applications-search"
+        type="search"
+        class="form-input"
+        placeholder="Rechercher une application…"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearch($event)"
+      />
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <app-generic-table
+        [headers]="tableHeaders()"
+        [data]="filteredApplications()"
+        [loading]="applicationsLoading()"
+        [trackBy]="trackApplication.bind(this)"
+        [showToolbar]="false"
+        [skeletonRows]="4"
+        [rowTemplate]="applicationRow"
+        [emptyTemplate]="emptyTemplate"
+      >
+      </app-generic-table>
+    </div>
+  </div>
+</div>
+
+<ng-template #applicationRow let-application>
+  <tr class="border-t border-slate-100">
+    <td class="px-4 py-4 align-top">
+      <div class="space-y-1">
+        <div class="text-sm font-semibold text-slate-900">
+          {{ application.name }}
+        </div>
+        <div class="text-xs text-slate-500">
+          {{ application.slug }}
+        </div>
+        @if (application.description) {
+          <p class="text-xs text-slate-500">
+            {{ application.description }}
+          </p>
+        }
+        @if (application.category) {
+          <span
+            class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600"
+          >
+            {{ application.category }}
+          </span>
+        }
+      </div>
+    </td>
+    <td class="px-4 py-4 align-top">
+      <div class="flex flex-col gap-2">
+        <span
+          class="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium"
+          [ngClass]="statusBadgeClass(application.subscriptionStatus)"
+        >
+          {{ $any(subscriptionStatusLabels)[application.subscriptionStatus] ?? application.subscriptionStatus }}
+        </span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+          {{ application.applicationStatus | titlecase }}
+        </span>
+      </div>
+    </td>
+    <td class="px-4 py-4 align-top">
+      <div class="space-y-1 text-sm text-slate-600">
+        <div>
+          <span class="font-semibold text-slate-700">Souscrite le :</span>
+          {{ application.subscribedAt | date: 'longDate' }}
+        </div>
+        @if (application.startsAt) {
+          <div>
+            <span class="font-semibold text-slate-700">Début :</span>
+            {{ application.startsAt | date: 'longDate' }}
+          </div>
+        }
+        @if (application.endsAt) {
+          <div>
+            <span class="font-semibold text-slate-700">Fin :</span>
+            {{ application.endsAt | date: 'longDate' }}
+          </div>
+        }
+      </div>
+    </td>
+    <td class="px-4 py-4 text-right align-top">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="confirmUnsubscribe(application)"
+          [disabled]="!!unsubscribeState()[application.subscriptionId]"
+        >
+          @if (unsubscribeState()[application.subscriptionId]) {
+            <svg
+              class="mr-2 h-4 w-4 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          }
+          Désinstaller
+        </button>
+      </div>
+    </td>
+  </tr>
+</ng-template>
+
+<ng-template #emptyTemplate>
+  <tr>
+    <td class="px-4 py-6 text-center text-sm text-slate-500" [attr.colspan]="tableHeaders().length">
+      {{ emptyStateMessage() }}
+    </td>
+  </tr>
+</ng-template>
+

@@ -7,8 +7,9 @@ import {
 import { OrganizationMembersComponent } from '../../components/organization-members/organization-members.component';
 import { OrganizationRolesComponent } from '../../components/organization-roles/organization-roles.component';
 import { OrganizationTableComponent } from '../../components/organization-table/organization-table.component';
+import { OrganizationApplicationsComponent } from '../../components/organization-applications/organization-applications.component';
 
-type TabId = 'organizations' | 'members' | 'roles';
+type TabId = 'organizations' | 'applications' | 'members' | 'roles';
 
 @Component({
   selector: 'app-organizations',
@@ -18,6 +19,7 @@ type TabId = 'organizations' | 'members' | 'roles';
     OrganizationTableComponent,
     OrganizationMembersComponent,
     OrganizationRolesComponent,
+    OrganizationApplicationsComponent,
   ],
   templateUrl: './organizations.html',
   styleUrl: './organizations.css',
@@ -32,6 +34,7 @@ export class OrganizationsComponent {
   readonly error = this.#organizationRolesStore.error;
   readonly tabs: ReadonlyArray<{ id: TabId; label: string }> = [
     { id: 'organizations', label: 'Organisations' },
+    { id: 'applications', label: 'Applications' },
     { id: 'members', label: 'Membres' },
     { id: 'roles', label: 'Rôles' },
   ];

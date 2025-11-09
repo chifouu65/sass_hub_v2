@@ -1,3 +1,4 @@
+import { ApplicationStatus, SubscriptionStatus } from '@sass-hub-v2/shared-types';
 import { UserOrganizationRole } from './constants/user-organization-role.enum';
 
 export enum PermissionCode {
@@ -51,4 +52,31 @@ export interface OrganizationMembershipResponse {
   email?: string;
   firstName?: string | null;
   lastName?: string | null;
+}
+
+export interface TenantOrganizationApplication {
+  subscriptionId: string;
+  organizationId: string;
+  applicationId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  applicationStatus: ApplicationStatus;
+  subscriptionStatus: SubscriptionStatus;
+  subscribedAt: string | Date;
+  startsAt: string | Date | null;
+  endsAt: string | Date | null;
+  updatedAt: string | Date;
+}
+
+export interface TenantApplication {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  status: ApplicationStatus;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }

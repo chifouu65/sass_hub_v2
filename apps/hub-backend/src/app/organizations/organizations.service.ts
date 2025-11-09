@@ -6,7 +6,11 @@ import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { OrganizationResponseDto } from './dto/organization-response.dto';
 import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { TenantServiceClient } from './tenant-service.client';
-import { OrganizationMembershipResponse } from './types';
+import {
+  OrganizationMembershipResponse,
+  TenantApplication,
+  TenantOrganizationApplication,
+} from './types';
 
 @Injectable()
 export class OrganizationsService {
@@ -122,6 +126,35 @@ export class OrganizationsService {
     userId: string,
   ): Promise<OrganizationMembershipResponse | null> {
     return this.tenantClient.getOrganizationMembership(organizationId, userId);
+  }
+
+  listOrganizationApplications(
+    organizationId: string,
+  ): Promise<TenantOrganizationApplication[]> {
+    return this.tenantClient.listOrganizationApplications(organizationId);
+  }
+
+  listAvailableApplications(
+    organizationId: string,
+  ): Promise<TenantApplication[]> {
+    return this.tenantClient.listAvailableApplications(organizationId);
+  }
+
+  subscribeToApplication(
+    organizationId: string,
+    dto: { applicationId: string; startsAt?: string | null; endsAt?: string | null },
+  ): Promise<TenantOrganizationApplication> {
+    return this.tenantClient.subscribeToApplication(organizationId, dto);
+  }
+
+  unsubscribeFromApplication(
+    organizationId: string,
+    subscriptionId: string,
+  ): Promise<void> {
+    return this.tenantClient.unsubscribeFromApplication(
+      organizationId,
+      subscriptionId,
+    );
   }
 }
 

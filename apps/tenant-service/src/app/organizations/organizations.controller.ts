@@ -16,6 +16,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { SubscribeApplicationDto } from './dto/subscribe-application.dto';
 import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 import { CreateOrganizationRoleDto } from '../organization-roles/dto/create-organization-role.dto';
@@ -176,6 +177,75 @@ export class OrganizationsController {
     await this.organizationsService.removeUserFromOrganization(
       organizationId,
       userId,
+    );
+  }
+
+  /**
+   * Récupérer les applications souscrites pour une organisation
+   */
+  @Get(':id/applications')
+  async listApplications(@Param('id') organizationId: string) {
+    const applications =
+      await this.organizationsService.listOrganizationApplications(organizationId);
+
+    return applications.map((application) => ({
+      ...application,
+    }));
+  }
+
+  /**
+   * Récupérer les applications disponibles pour une organisation
+   */
+  @Get(':id/applications/available')
+  async listAvailableApplications(@Param('id') organizationId: string) {
+    const applications =
+      await this.organizationsService.listAvailableApplications(organizationId);
+
+    return applications.map((application) => ({
+      id: application.id,
+      name: application.name,
+      slug: application.slug,
+      description: application.description,
+      category: application.category,
+      status: application.status,
+      createdAt: application.createdAt.toISOString(),
+      updatedAt: application.updatedAt.toISOString(),
+    }));
+  }
+
+  /**
+   * Souscrire à une application
+   */
+  @Post(':id/applications')
+  @HttpCode(HttpStatus.CREATED)
+  async subscribeToApplication(
+    @Param('id') organizationId: string,
+    @Body() dto: SubscribeApplicationDto,
+  ) {
+    const subscription = await this.organizationsService.subscribeToApplication(
+      organizationId,
+      dto.applicationId,
+      {
+        startsAt: dto.startsAt ?? undefined,
+        endsAt: dto.endsAt ?? undefined,
+      },
+    );
+
+    return subscription;
+  }
+
+  /**
+   * Désinstaller une application pour une organisation
+   */
+  @Delete(':id/applications/:subscriptionId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unsubscribeFromApplication(
+    @Param('id') organizationId: string,
+    @Param('subscriptionId') subscriptionId: string,
+  ) {
+    await this.organizationsService.unsubscribeFromApplication(
+      organizationId,
+      subscriptionId,
     );
   }
 

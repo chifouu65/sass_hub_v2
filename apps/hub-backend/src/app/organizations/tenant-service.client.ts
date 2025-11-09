@@ -17,6 +17,8 @@ import { SetRolePermissionsDto } from '../organization-roles/dto/set-role-permis
 import { OrganizationResponseDto } from './dto/organization-response.dto';
 import type {
   OrganizationMembershipResponse,
+  TenantApplication,
+  TenantOrganizationApplication,
   TenantOrganizationRole,
   TenantPermission,
 } from './types';
@@ -225,6 +227,38 @@ export class TenantServiceClient {
     return this.request<OrganizationMembershipResponse | null>(
       `GET`,
       `/organizations/${id}/users/${userId}`,
+    );
+  }
+
+  listOrganizationApplications(id: string) {
+    return this.request<TenantOrganizationApplication[]>(
+      `GET`,
+      `/organizations/${id}/applications`,
+    );
+  }
+
+  listAvailableApplications(id: string) {
+    return this.request<TenantApplication[]>(
+      `GET`,
+      `/organizations/${id}/applications/available`,
+    );
+  }
+
+  subscribeToApplication(
+    id: string,
+    dto: { applicationId: string; startsAt?: string | null; endsAt?: string | null },
+  ) {
+    return this.request<TenantOrganizationApplication>(
+      `POST`,
+      `/organizations/${id}/applications`,
+      dto,
+    );
+  }
+
+  unsubscribeFromApplication(id: string, subscriptionId: string) {
+    return this.request<void>(
+      `DELETE`,
+      `/organizations/${id}/applications/${subscriptionId}`,
     );
   }
 }
