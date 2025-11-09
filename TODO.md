@@ -20,8 +20,8 @@
 
 ### 🗄️ Base de données Multi-Tenant
 - [x] Mettre en place le système de multi-tenant MySQL (structure de base)
-- [ ] Créer le tenant-service pour gestion dynamique des bases
-- [ ] Implémenter le pool de connexions par organisation
+- [x] Créer le tenant-service pour gestion dynamique des bases 
+- [x] Implémenter le pool de connexions par organisation
 - [x] Configurer la base "hub" pour les métadonnées globales
 
 ### 🎨 Hub Frontend (Angular)
@@ -42,8 +42,8 @@
 - [ ] Créer hr-manager-frontend (Angular)
 
 ### 🔧 Services Microservices
-- [ ] Créer auth-service (Authentification / SSO / Tokens)
-- [ ] Créer tenant-service (Gestion organisations / multi-tenant)
+- [x] Créer auth-service (Authentification / SSO / Tokens)
+- [x] Créer tenant-service (Gestion organisations / multi-tenant)
 - [ ] Créer billing-service (Paiement / abonnements)
 - [ ] Créer notification-service (Mails / alertes)
 
@@ -51,6 +51,11 @@
 - [x] Créer libs/shared-types (Types partagés entre services)
 - [x] Créer libs/utils (Fonctions utilitaires)
 - [x] Créer libs/sdk (SDK front ↔ backend)
+- [ ] Créer lib backend pour la gestion multi-tenant (pool de connexions réutilisable)
+- [ ] Créer lib backend auth commune (decorators, guards, stratégies OAuth)
+- [ ] Créer lib de contrats/DTO partagés entre services et frontend
+- [ ] Créer lib UI Angular partagée (tableaux, modals, composants transverses)
+- [ ] Étendre libs/sdk avec les clients tenant-service et auth-service
 
 ### 🐳 Docker et Infrastructure
 - [x] Créer docker-compose.yml

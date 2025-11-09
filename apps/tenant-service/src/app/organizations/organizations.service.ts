@@ -16,6 +16,7 @@ import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { OrganizationResponseDto } from './dto/organization-response.dto';
 import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 import { PermissionCode } from '../entities/permission.entity';
+import { TenantDatabaseService } from '../database/tenant-database.service';
 
 export interface OrganizationMembershipResponse {
   id: string;
@@ -39,6 +40,7 @@ export class OrganizationsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly organizationRolesService: OrganizationRolesService,
+    private readonly tenantDatabaseService: TenantDatabaseService,
   ) {}
 
   /**
@@ -67,6 +69,9 @@ export class OrganizationsService {
     });
 
     const savedOrganization = await this.organizationRepository.save(organization);
+
+    await this.tenantDatabaseService.ensureTenantDatabase(databaseName);
+    await this.tenantDatabaseService.getTenantDataSource(databaseName);
 
     // Ajouter le créateur comme owner
     await this.addUserToOrganization(
@@ -158,9 +163,22 @@ export class OrganizationsService {
       }
     }
 
+    const originalDatabaseName = organization.databaseName;
+
     // Appliquer les modifications
     Object.assign(organization, updateDto);
     const updatedOrganization = await this.organizationRepository.save(organization);
+
+    if (
+      updateDto.databaseName &&
+      updateDto.databaseName !== originalDatabaseName
+    ) {
+      await this.tenantDatabaseService.disposeTenantDataSource(
+        originalDatabaseName
+      );
+      await this.tenantDatabaseService.ensureTenantDatabase(updatedOrganization.databaseName);
+      await this.tenantDatabaseService.getTenantDataSource(updatedOrganization.databaseName);
+    }
 
     return this.mapToResponseDto(updatedOrganization);
   }

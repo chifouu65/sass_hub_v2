@@ -6,6 +6,7 @@ import { Organization } from '../entities/organization.entity';
 import { UserOrganization } from '../entities/user-organization.entity';
 import { User } from '../entities/user.entity';
 import { OrganizationRolesModule } from '../organization-roles/organization-roles.module';
+import { TenantDatabaseService } from '../database/tenant-database.service';
 
 @Module({
   imports: [
@@ -13,8 +14,8 @@ import { OrganizationRolesModule } from '../organization-roles/organization-role
     OrganizationRolesModule,
   ],
   controllers: [OrganizationsController],
-  providers: [OrganizationsService],
-  exports: [OrganizationsService],
+  providers: [OrganizationsService, TenantDatabaseService],
+  exports: [OrganizationsService, TenantDatabaseService],
 })
 export class OrganizationsModule {}
 

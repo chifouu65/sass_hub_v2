@@ -1,4 +1,11 @@
-import { IsString, IsOptional, MinLength, MaxLength, Matches, IsEnum } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { OrganizationStatus } from '../../entities/organization.entity';
 
 export class UpdateOrganizationDto {
@@ -16,6 +23,11 @@ export class UpdateOrganizationDto {
     message: 'slug must contain only lowercase letters, numbers, and hyphens',
   })
   slug?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  databaseName?: string;
 
   @IsEnum(OrganizationStatus)
   @IsOptional()

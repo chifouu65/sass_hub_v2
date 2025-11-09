@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
@@ -15,7 +15,6 @@ type TabId = 'organizations' | 'members' | 'roles';
   imports: [
     CommonModule,
     RouterModule,
-    DatePipe,
     OrganizationTableComponent,
     OrganizationMembersComponent,
     OrganizationRolesComponent,

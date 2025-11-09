@@ -15,12 +15,12 @@ import {
 } from '../confirm-modal/confirm-modal.component';
 
 @Component({
-  selector: 'app-organization-create',
+  selector: 'app-organization-create-modal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './organization-create.component.html',
+  templateUrl: './organization-create-modal.component.html',
 })
-export class OrganizationCreateComponent {
+export class OrganizationCreateModalComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);
   readonly #fb = inject(NonNullableFormBuilder);
   readonly #modalService = inject(ModalService);
