@@ -1,21 +1,31 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { OrganizationsService } from './organizations.service';
 import { OrganizationsController } from './organizations.controller';
-import { Organization } from '../entities/organization.entity';
-import { UserOrganization } from '../entities/user-organization.entity';
-import { User } from '../entities/user.entity';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { OrganizationRolesModule } from '../organization-roles/organization-roles.module';
+import {
+  TENANT_SERVICE_BASE_URL,
+  TenantServiceClient,
+} from './tenant-service.client';
+import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Organization, UserOrganization, User]),
-    OrganizationRolesModule,
+    ConfigModule,
+    HttpModule,
   ],
   controllers: [OrganizationsController],
-  providers: [OrganizationsService, PermissionsGuard],
-  exports: [OrganizationsService, PermissionsGuard],
+  providers: [
+    OrganizationsService,
+    OrganizationRolesService,
+    TenantServiceClient,
+    {
+      provide: TENANT_SERVICE_BASE_URL,
+      useFactory: () =>
+        process.env.TENANT_SERVICE_URL ?? 'http://localhost:3002/api',
+    },
+  ],
+  exports: [OrganizationsService, OrganizationRolesService],
 })
 export class OrganizationsModule {}
 

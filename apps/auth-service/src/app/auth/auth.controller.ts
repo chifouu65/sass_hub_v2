@@ -8,6 +8,10 @@ import {
   UseGuards,
   Req,
   Res,
+  Param,
+  Headers,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -21,10 +25,14 @@ import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '../entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @Post('register')
@@ -134,6 +142,47 @@ export class AuthController {
     res.redirect(
       `${frontendUrl}/auth/callback?token=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
+  }
+
+  @Public()
+  @Get('internal/users/:id')
+  async getInternalUser(
+    @Param('id') id: string,
+    @Headers('x-internal-api-key') apiKey?: string,
+  ) {
+    this.assertInternalApiKey(apiKey);
+
+    const user = await this.authService.validateUser(id);
+
+    if (!user) {
+      throw new NotFoundException(
+        `Utilisateur ${id} introuvable ou inactif`,
+      );
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      status: user.status,
+      createdAt: user.createdAt,
+      permissions: [],
+      roles: [],
+    };
+  }
+
+  private assertInternalApiKey(apiKey?: string) {
+    const expectedKey =
+      this.configService.get<string>('AUTH_SERVICE_INTERNAL_API_KEY') ?? '';
+
+    if (!expectedKey) {
+      return;
+    }
+
+    if (apiKey !== expectedKey) {
+      throw new UnauthorizedException('Invalid internal API key');
+    }
   }
 }
 

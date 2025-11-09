@@ -18,16 +18,18 @@ import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { User } from '../entities/user.entity';
+import { User } from '../auth/types';
 import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
 import { CreateOrganizationRoleDto } from '../organization-roles/dto/create-organization-role.dto';
 import { UpdateOrganizationRoleDto } from '../organization-roles/dto/update-organization-role.dto';
 import { SetRolePermissionsDto } from '../organization-roles/dto/set-role-permissions.dto';
-import { OrganizationRole } from '../entities/organization-role.entity';
-import { PermissionCode } from '../entities/permission.entity';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
+import {
+  PermissionCode,
+  TenantOrganizationRole,
+} from './types';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
@@ -196,8 +198,9 @@ export class OrganizationsController {
   @Get(':id/roles/available-permissions')
   @UseGuards(PermissionsGuard)
   @Permissions(PermissionCode.MANAGE_ROLES)
-  async listPermissions() {
-    const permissions = await this.organizationRolesService.listPermissions();
+  async listPermissions(@Param('id') organizationId: string) {
+    const permissions =
+      await this.organizationRolesService.listPermissions(organizationId);
 
     return permissions.map((permission) => ({
       id: permission.id,
@@ -258,10 +261,10 @@ export class OrganizationsController {
     @Param('roleId') roleId: string,
     @Body() dto: SetRolePermissionsDto,
   ) {
-    const role = await this.organizationRolesService.updateRole(
+    const role = await this.organizationRolesService.setRolePermissions(
       organizationId,
       roleId,
-      { permissions: dto.permissions },
+      dto,
     );
 
     return this.mapRole(role);
@@ -281,7 +284,7 @@ export class OrganizationsController {
     await this.organizationRolesService.deleteRole(organizationId, roleId);
   }
 
-  private mapRole(role: OrganizationRole) {
+  private mapRole(role: TenantOrganizationRole) {
     return {
       id: role.id,
       name: role.name,
@@ -293,7 +296,6 @@ export class OrganizationsController {
       createdAt: role.createdAt,
       updatedAt: role.updatedAt,
       permissions: (role.permissions || [])
-        .map((permission) => permission.permission?.code)
         .filter(
           (code): code is PermissionCode => Boolean(code),
         ),

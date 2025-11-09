@@ -10,7 +10,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -20,7 +19,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { User } from '../entities/user.entity';
+import { User } from './types';
 
 @Controller('auth')
 export class AuthController {
@@ -77,62 +76,46 @@ export class AuthController {
   // OAuth endpoints
   @Public()
   @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    // La stratégie Passport gère automatiquement la redirection
+  async googleAuth(@Res() res: Response) {
+    return res.redirect(this.authService.buildOAuthAuthorizeUrl('google'));
   }
 
   @Public()
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as User;
-    const tokens = this.authService.generateTokens(user);
-    
-    // Rediriger vers le frontend avec les tokens
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
-    res.redirect(
-      `${frontendUrl}/auth/callback?token=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+    const query = req.url.split('?')[1];
+    return res.redirect(
+      this.authService.buildOAuthCallbackUrl('google', query),
     );
   }
 
   @Public()
   @Get('github')
-  @UseGuards(AuthGuard('github'))
-  async githubAuth() {
-    // La stratégie Passport gère automatiquement la redirection
+  async githubAuth(@Res() res: Response) {
+    return res.redirect(this.authService.buildOAuthAuthorizeUrl('github'));
   }
 
   @Public()
   @Get('github/callback')
-  @UseGuards(AuthGuard('github'))
   async githubAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as User;
-    const tokens = this.authService.generateTokens(user);
-    
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
-    res.redirect(
-      `${frontendUrl}/auth/callback?token=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+    const query = req.url.split('?')[1];
+    return res.redirect(
+      this.authService.buildOAuthCallbackUrl('github', query),
     );
   }
 
   @Public()
   @Get('microsoft')
-  @UseGuards(AuthGuard('microsoft'))
-  async microsoftAuth() {
-    // La stratégie Passport gère automatiquement la redirection
+  async microsoftAuth(@Res() res: Response) {
+    return res.redirect(this.authService.buildOAuthAuthorizeUrl('microsoft'));
   }
 
   @Public()
   @Get('microsoft/callback')
-  @UseGuards(AuthGuard('microsoft'))
   async microsoftAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as User;
-    const tokens = this.authService.generateTokens(user);
-    
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
-    res.redirect(
-      `${frontendUrl}/auth/callback?token=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+    const query = req.url.split('?')[1];
+    return res.redirect(
+      this.authService.buildOAuthCallbackUrl('microsoft', query),
     );
   }
 }

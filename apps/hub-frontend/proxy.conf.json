@@ -1,24 +1,4 @@
 {
-  "/api/auth": {
-    "target": "http://localhost:3001",
-    "secure": false,
-    "ws": false,
-    "changeOrigin": true,
-    "logLevel": "debug",
-    "pathRewrite": {
-      "^/api/auth": ""
-    }
-  },
-  "/api/tenant": {
-    "target": "http://localhost:3002",
-    "secure": false,
-    "ws": false,
-    "changeOrigin": true,
-    "logLevel": "debug",
-    "pathRewrite": {
-      "^/api/tenant": ""
-    }
-  },
   "/api": {
     "target": "http://localhost:3000",
     "secure": false,

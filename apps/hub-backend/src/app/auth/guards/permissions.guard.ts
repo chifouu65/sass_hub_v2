@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import { PermissionCode } from '../../entities/permission.entity';
+import { PermissionCode } from '../../organizations/types';
 import { OrganizationsService } from '../../organizations/organizations.service';
 import { OrganizationRolesService } from '../../organization-roles/organization-roles.service';
 

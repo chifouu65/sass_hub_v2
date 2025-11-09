@@ -15,6 +15,19 @@ import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { UserOrganizationRole } from './constants/user-organization-role.enum';
 import { OrganizationResponseDto } from './dto/organization-response.dto';
 import { OrganizationRolesService } from '../organization-roles/organization-roles.service';
+import { PermissionCode } from '../entities/permission.entity';
+
+export interface OrganizationMembershipResponse {
+  id: string;
+  organizationId: string;
+  userId: string;
+  role: UserOrganizationRole | null;
+  organizationRoleId: string | null;
+  organizationRoleSlug: string | null;
+  organizationRoleName: string | null;
+  permissions: PermissionCode[];
+  createdAt: Date;
+}
 
 @Injectable()
 export class OrganizationsService {
@@ -299,24 +312,44 @@ export class OrganizationsService {
   /**
    * Récupérer les utilisateurs d'une organisation
    */
-  async getOrganizationUsers(organizationId: string) {
+  async getOrganizationUsers(
+    organizationId: string,
+  ): Promise<
+    Array<
+      OrganizationMembershipResponse & {
+        email: string;
+        firstName: string | null;
+        lastName: string | null;
+      }
+    >
+  > {
     const userOrganizations = await this.userOrganizationRepository.find({
       where: { organizationId },
-      relations: ['user', 'organizationRole'],
+      relations: [
+        'user',
+        'organizationRole',
+        'organizationRole.permissions',
+        'organizationRole.permissions.permission',
+      ],
     });
 
-    return userOrganizations.map((uo) => ({
-      id: uo.id,
-      userId: uo.user.id,
-      email: uo.user.email,
-      firstName: uo.user.firstName,
-      lastName: uo.user.lastName,
-      role: uo.role,
-      organizationRoleId: uo.organizationRoleId,
-      organizationRoleSlug: uo.organizationRole?.slug ?? null,
-      organizationRoleName: uo.organizationRole?.name ?? null,
-      createdAt: uo.createdAt,
-    }));
+    return Promise.all(
+      userOrganizations.map(async (uo) => {
+        const membership = await this.mapMembership(uo);
+        if (!membership) {
+          throw new NotFoundException(
+            `Membre "${uo.id}" introuvable pour l’organisation ${organizationId}`,
+          );
+        }
+
+        return {
+          ...membership,
+          email: uo.user.email,
+          firstName: uo.user.firstName,
+          lastName: uo.user.lastName,
+        };
+      }),
+    );
   }
 
   /**
@@ -355,27 +388,52 @@ export class OrganizationsService {
     organizationId: string,
     userId: string,
   ): Promise<string | null> {
-    const userOrganization = await this.userOrganizationRepository.findOne({
+    const membership = await this.userOrganizationRepository.findOne({
       where: { userId, organizationId },
       relations: ['organizationRole'],
     });
 
-    if (!userOrganization) {
+    if (!membership) {
       return null;
     }
 
-    if (userOrganization.role) {
-      return userOrganization.role;
+    if (membership.role) {
+      return membership.role;
     }
 
-    return userOrganization.organizationRole?.slug ?? null;
+    return membership.organizationRole?.slug ?? null;
+  }
+
+  private async mapMembership(
+    membership: UserOrganization | null,
+  ): Promise<OrganizationMembershipResponse | null> {
+    if (!membership) {
+      return null;
+    }
+
+    const permissions =
+      await this.organizationRolesService.getEffectivePermissionsForMembership(
+        membership,
+      );
+
+    return {
+      id: membership.id,
+      organizationId: membership.organizationId,
+      userId: membership.userId,
+      role: membership.role ?? null,
+      organizationRoleId: membership.organizationRoleId ?? null,
+      organizationRoleSlug: membership.organizationRole?.slug ?? null,
+      organizationRoleName: membership.organizationRole?.name ?? null,
+      permissions,
+      createdAt: membership.createdAt,
+    };
   }
 
   async getUserOrganizationMembership(
     organizationId: string,
     userId: string,
-  ): Promise<UserOrganization | null> {
-    return this.userOrganizationRepository.findOne({
+  ): Promise<OrganizationMembershipResponse | null> {
+    const membership = await this.userOrganizationRepository.findOne({
       where: { organizationId, userId },
       relations: [
         'organizationRole',
@@ -383,6 +441,8 @@ export class OrganizationsService {
         'organizationRole.permissions.permission',
       ],
     });
+
+    return this.mapMembership(membership);
   }
 
   private async resolveRoleSelection(

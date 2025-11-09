@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  NotFoundException,
 } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -119,6 +120,29 @@ export class OrganizationsController {
   @Get(':id/users')
   async getUsers(@Param('id') organizationId: string) {
     return this.organizationsService.getOrganizationUsers(organizationId);
+  }
+
+  /**
+   * Récupérer l’adhésion d’un utilisateur dans l’organisation
+   */
+  @Get(':id/users/:userId')
+  async getMembership(
+    @Param('id') organizationId: string,
+    @Param('userId') userId: string,
+  ) {
+    const membership =
+      await this.organizationsService.getUserOrganizationMembership(
+        organizationId,
+        userId,
+      );
+
+    if (!membership) {
+      throw new NotFoundException(
+        `Membre ${userId} introuvable pour l’organisation ${organizationId}`,
+      );
+    }
+
+    return membership;
   }
 
   /**

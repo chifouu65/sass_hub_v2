@@ -1,4 +1,4 @@
-import { OrganizationStatus } from '../../entities/organization.entity';
+import { OrganizationStatus } from '../types';
 
 export class OrganizationResponseDto {
   id: string;
@@ -6,7 +6,7 @@ export class OrganizationResponseDto {
   slug: string;
   databaseName: string;
   status: OrganizationStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 

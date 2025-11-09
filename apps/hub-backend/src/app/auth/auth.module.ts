@@ -1,22 +1,23 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
-import { GitHubStrategy } from './strategies/github.strategy';
-import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
-import { User } from '../entities/user.entity';
 import jwtConfig from '../config/jwt.config';
+import {
+  AUTH_SERVICE_BASE_URL,
+  AUTH_SERVICE_INTERNAL_API_KEY,
+  AuthServiceClient,
+} from './auth-service.client';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    HttpModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -34,9 +35,16 @@ import jwtConfig from '../config/jwt.config';
   providers: [
     AuthService,
     JwtStrategy,
-    GoogleStrategy,
-    //GitHubStrategy,
-    //MicrosoftStrategy,
+    AuthServiceClient,
+    {
+      provide: AUTH_SERVICE_BASE_URL,
+      useFactory: () =>
+        process.env.AUTH_SERVICE_URL ?? 'http://localhost:3001/api',
+    },
+    {
+      provide: AUTH_SERVICE_INTERNAL_API_KEY,
+      useFactory: () => process.env.AUTH_SERVICE_INTERNAL_API_KEY ?? null,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

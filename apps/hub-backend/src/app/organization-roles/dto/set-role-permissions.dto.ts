@@ -1,5 +1,5 @@
 import { IsArray, ArrayNotEmpty, IsEnum } from 'class-validator';
-import { PermissionCode } from '../../entities/permission.entity';
+import { PermissionCode } from '../../organizations/types';
 
 export class SetRolePermissionsDto {
   @IsArray()

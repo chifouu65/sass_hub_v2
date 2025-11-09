@@ -1,5 +1,5 @@
 import { IsString, IsOptional, MinLength, MaxLength, Matches, IsEnum } from 'class-validator';
-import { OrganizationStatus } from '../../entities/organization.entity';
+import { OrganizationStatus } from '../types';
 
 export class UpdateOrganizationDto {
   @IsString()

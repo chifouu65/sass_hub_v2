@@ -1,0 +1,95 @@
+<section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased rounded-2xl">
+  <div class="mx-auto max-w-full px-0 md:px-2">
+    <div
+      class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700"
+    >
+      @if (showToolbar()) {
+        <div
+          class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4"
+        >
+          <div class="w-full md:w-1/2">
+            <ng-content select="[table-search]"></ng-content>
+          </div>
+          <div
+            class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0"
+          >
+            <ng-content select="[table-actions]"></ng-content>
+          </div>
+        </div>
+      }
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              @if (!headers().length) {
+                <th scope="col" class="px-4 py-3 text-left">&nbsp;</th>
+              } @else {
+                @for (header of headers(); track header.key ?? header.label) {
+                  <th scope="col" [ngClass]="getHeaderClass(header)">
+                    @if (header.srOnly) {
+                      <span class="sr-only">{{ header.label }}</span>
+                    } @else {
+                      {{ header.label }}
+                    }
+                  </th>
+                }
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 bg-white dark:bg-gray-800 dark:divide-gray-700">
+            @if (loading()) {
+              @if (loadingTemplate()) {
+                <ng-container
+                  *ngTemplateOutlet="loadingTemplate()"
+                ></ng-container>
+              } @else {
+                @for (_ of skeletonArray(); track $index) {
+                  @if (skeletonTemplate()) {
+                    <ng-container
+                      *ngTemplateOutlet="skeletonTemplate()"
+                    ></ng-container>
+                  } @else {
+                    <tr>
+                      <td class="px-4 py-4" [attr.colspan]="colspan()">
+                        <app-skeleton height="1.5rem"></app-skeleton>
+                      </td>
+                    </tr>
+                  }
+                }
+              }
+            } @else if (data()?.length) {
+              @for (item of data(); track trackByWrapper($index, item); let idx = $index) {
+                <ng-container
+                  *ngTemplateOutlet="rowTemplate(); context: { $implicit: item, index: idx }"
+                ></ng-container>
+              }
+            } @else {
+              <tr>
+                <td
+                  class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
+                  [attr.colspan]="colspan()"
+                >
+                  @if (emptyTemplate()) {
+                    <ng-container
+                      *ngTemplateOutlet="emptyTemplate()"
+                    ></ng-container>
+                  } @else {
+                    Aucun élément
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (footerTemplate()) {
+        <div class="border-t border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800 p-4">
+          <ng-container *ngTemplateOutlet="footerTemplate()"></ng-container>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+

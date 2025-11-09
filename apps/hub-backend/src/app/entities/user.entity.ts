@@ -4,9 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
 } from 'typeorm';
-import { UserOrganization } from './user-organization.entity';
 
 export enum UserStatus {
   ACTIVE = 'active',
@@ -59,9 +57,5 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  // Relations
-  @OneToMany(() => UserOrganization, (userOrg) => userOrg.user)
-  userOrganizations: UserOrganization[];
 }
 

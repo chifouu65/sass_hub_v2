@@ -1,10 +1,13 @@
 <div class="py-8 bg-slate-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    >
       <div>
         <h1 class="text-3xl font-bold text-slate-900">Organisations</h1>
         <p class="text-sm text-slate-600">
-          Créez, modifiez et gérez les membres de vos organisations multi-tenant.
+          Créez, modifiez et gérez les membres de vos organisations
+          multi-tenant.
         </p>
       </div>
       <div class="flex items-center gap-2">
@@ -25,447 +28,93 @@
       </div>
     </div>
 
-    @if (formMessage(); as message) {
-      <div
-        class="rounded-lg border px-4 py-3 text-sm"
-        [class.bg-emerald-50]="message.kind === 'success'"
-        [class.text-emerald-700]="message.kind === 'success'"
-        [class.border-emerald-200]="message.kind === 'success'"
-        [class.bg-red-50]="message.kind === 'error'"
-        [class.text-red-700]="message.kind === 'error'"
-        [class.border-red-200]="message.kind === 'error'"
-      >
-        {{ message.text }}
-      </div>
-    }
-
     @if (error(); as message) {
-      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-        {{ message }}
-      </div>
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      {{ message }}
+    </div>
     }
 
     <div class="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <section class="space-y-6">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="text-lg font-semibold text-slate-900 mb-3">Créer une organisation</h2>
-          <p class="text-sm text-slate-500 mb-4">
-            Définissez un nom, un slug et éventuellement un nom de base de données personnalisé.
-          </p>
-
-          <form class="space-y-4" [formGroup]="createOrganizationForm" (ngSubmit)="onCreateOrganization()">
-            <div>
-              <label for="create-name" class="block text-sm font-medium text-slate-700 mb-1">Nom</label>
-              <input
-                id="create-name"
-                type="text"
-                formControlName="name"
-                (input)="onCreateNameInput()"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                placeholder="Ex. Hotel Corp"
-              />
-              @if (createOrganizationForm.controls.name.invalid && createOrganizationForm.controls.name.touched) {
-                <p class="mt-1 text-xs text-red-600">
-                  Nom obligatoire (au moins 2 caractères).
-                </p>
-              }
-            </div>
-
-            <div>
-              <label for="create-slug" class="block text-sm font-medium text-slate-700 mb-1">Slug</label>
-              <input
-                id="create-slug"
-                type="text"
-                formControlName="slug"
-                (input)="onCreateSlugInput()"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                placeholder="hotel-corp"
-              />
-              @if (createOrganizationForm.controls.slug.invalid && createOrganizationForm.controls.slug.touched) {
-                <p class="mt-1 text-xs text-red-600">
-                  Slug invalide. Utilisez uniquement des minuscules, chiffres et tirets.
-                </p>
-              }
-            </div>
-
-            <div>
-              <label for="create-db" class="block text-sm font-medium text-slate-700 mb-1">Nom de base de données (optionnel)</label>
-              <input
-                id="create-db"
-                type="text"
-                formControlName="databaseName"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                placeholder="tenant_hotel_corp"
-              />
-              <p class="mt-1 text-xs text-slate-500">
-                Si laissé vide, un nom sera généré automatiquement.
-              </p>
-            </div>
-
-            <div class="flex justify-end">
-              <button
-                type="submit"
-                class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-70"
-                [disabled]="createOrganizationForm.invalid || createSubmitting()"
-              >
-                @if (createSubmitting()) {
-                  <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                }
-                Créer
-              </button>
-            </div>
-          </form>
-        </div>
+        <app-organization-create></app-organization-create>
 
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900">Vos organisations</h2>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {{ organizations().length }} organisation{{ organizations().length > 1 ? 's' : '' }}
+            <h2 class="text-lg font-semibold text-slate-900">
+              Vos organisations
+            </h2>
+            <span
+              class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+            >
+              {{ organizations().length }} organisation{{ organizations().length
+              > 1 ? 's' : '' }}
             </span>
           </div>
 
           @if (organizations().length === 0 && !loading()) {
-            <p class="text-sm text-slate-500">
-              Aucune organisation pour le moment. Utilisez le formulaire ci-dessus pour en créer une.
-            </p>
-          } @else {
-            @if (loading()) {
-              <ul class="space-y-2">
-                @for (_ of listSkeletonItems; track $index) {
-                  <li class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                    <div class="space-y-3">
-                      <app-skeleton height="1rem" width="60%"></app-skeleton>
-                      <app-skeleton height="0.75rem" width="45%"></app-skeleton>
-                      <app-skeleton height="0.75rem" width="35%"></app-skeleton>
-                    </div>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <ul class="space-y-2">
-                @for (organization of organizations(); track organization.id) {
-                  <li>
-                    <button
-                      type="button"
-                      class="w-full rounded-xl border px-4 py-3 text-left shadow-sm transition-colors"
-                      [class.border-indigo-300]="selectedOrganizationId() === organization.id"
-                      [class.bg-indigo-50]="selectedOrganizationId() === organization.id"
-                      [class.border-slate-200]="selectedOrganizationId() !== organization.id"
-                      [class.bg-white]="selectedOrganizationId() !== organization.id"
-                      (click)="onSelectOrganization(organization.id)"
-                    >
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <p class="text-sm font-semibold text-slate-900">
-                            {{ organization.name }}
-                          </p>
-                          <p class="text-xs text-slate-500">slug: {{ organization.slug }}</p>
-                          <p class="text-xs text-slate-500">DB: {{ organization.databaseName }}</p>
-                        </div>
-                        <p class="text-xs text-slate-400">
-                          {{ organization.updatedAt | date: 'short' }}
-                        </p>
-                      </div>
-                    </button>
-                  </li>
-                }
-              </ul>
+          <p class="text-sm text-slate-500">
+            Aucune organisation pour le moment. Utilisez le formulaire ci-dessus
+            pour en créer une.
+          </p>
+          } @else { @if (loading()) {
+          <ul class="space-y-2">
+            @for (_ of listSkeletonItems; track $index) {
+            <li
+              class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+            >
+              <div class="space-y-3">
+                <app-skeleton height="1rem" width="60%"></app-skeleton>
+                <app-skeleton height="0.75rem" width="45%"></app-skeleton>
+                <app-skeleton height="0.75rem" width="35%"></app-skeleton>
+              </div>
+            </li>
             }
-          }
+          </ul>
+          } @else {
+          <ul class="space-y-2">
+            @for (organization of organizations(); track organization.id) {
+            <li>
+              <button
+                type="button"
+                class="w-full rounded-xl border px-4 py-3 text-left shadow-sm transition-colors"
+                [class.border-indigo-300]="selectedOrganizationId() === organization.id"
+                [class.bg-indigo-50]="selectedOrganizationId() === organization.id"
+                [class.border-slate-200]="selectedOrganizationId() !== organization.id"
+                [class.bg-white]="selectedOrganizationId() !== organization.id"
+                (click)="onSelectOrganization(organization.id)"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">
+                      {{ organization.name }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      slug: {{ organization.slug }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      DB: {{ organization.databaseName }}
+                    </p>
+                  </div>
+                  <p class="text-xs text-slate-400">
+                    {{ organization.updatedAt | date: 'short' }}
+                  </p>
+                </div>
+              </button>
+            </li>
+            }
+          </ul>
+          } }
         </div>
       </section>
 
       <section class="space-y-6">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900">Détails de l’organisation</h2>
-            @if (selectedOrganizationId(); as currentOrgId) {
-              <button
-                type="button"
-                class="inline-flex items-center rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-70"
-                [disabled]="deleteSubmitting()"
-                (click)="onDeleteOrganization()"
-              >
-                @if (deleteSubmitting()) {
-                  <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                }
-                Supprimer
-              </button>
-            }
-          </div>
-
-          @if (orgMessage(); as message) {
-            <div
-              class="mb-4 rounded-lg border px-3 py-2 text-xs"
-              [class.bg-emerald-50]="message.kind === 'success'"
-              [class.text-emerald-700]="message.kind === 'success'"
-              [class.border-emerald-200]="message.kind === 'success'"
-              [class.bg-red-50]="message.kind === 'error'"
-              [class.text-red-700]="message.kind === 'error'"
-              [class.border-red-200]="message.kind === 'error'"
-            >
-              {{ message.text }}
-            </div>
-          }
-
-          @if (!selectedOrganizationId()) {
-            <p class="text-sm text-slate-500">
-              Sélectionnez une organisation pour voir les détails.
-            </p>
-          } @else {
-            <form class="space-y-4" [formGroup]="updateOrganizationForm" (ngSubmit)="onUpdateOrganization()">
-              <div class="grid gap-4 md:grid-cols-2">
-                <div class="md:col-span-2">
-                  <label for="update-name" class="block text-sm font-medium text-slate-700 mb-1">Nom</label>
-                  <input
-                    id="update-name"
-                    type="text"
-                    formControlName="name"
-                    (input)="onUpdateNameInput()"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                  />
-                </div>
-
-                <div>
-                  <label for="update-slug" class="block text-sm font-medium text-slate-700 mb-1">Slug</label>
-                  <input
-                    id="update-slug"
-                    type="text"
-                    formControlName="slug"
-                    (input)="onUpdateSlugInput()"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                  />
-                </div>
-
-                <div>
-                  <label for="update-db" class="block text-sm font-medium text-slate-700 mb-1">Nom de base de données</label>
-                  <input
-                    id="update-db"
-                    type="text"
-                    formControlName="databaseName"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                  />
-                </div>
-              </div>
-
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-70"
-                  [disabled]="updateOrganizationForm.invalid || updateSubmitting()"
-                >
-                  @if (updateSubmitting()) {
-                    <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                  }
-                  Mettre à jour
-                </button>
-              </div>
-            </form>
-          }
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">Membres</h2>
-              <p class="text-xs text-slate-500">
-                Gérer les utilisateurs associés à l’organisation sélectionnée.
-              </p>
-            </div>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {{ members().length }} membre{{ members().length > 1 ? 's' : '' }}
-            </span>
-          </div>
-
-          @if (!selectedOrganizationId()) {
-            <p class="text-sm text-slate-500">
-              Sélectionnez une organisation pour consulter et gérer ses membres.
-            </p>
-          } @else {
-            <form class="rounded-xl border border-slate-200 bg-slate-50 p-4 mb-6" [formGroup]="addMemberForm" (ngSubmit)="onAddMember()">
-              <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1" for="member-email">
-                    Email utilisateur
-                  </label>
-                  <input
-                    id="member-email"
-                    type="email"
-                    formControlName="email"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                    placeholder="utilisateur@example.com"
-                  />
-                  @if (addMemberForm.controls.email.invalid && addMemberForm.controls.email.touched) {
-                    <p class="mt-1 text-xs text-red-600">
-                      Fournissez un email valide.
-                    </p>
-                  }
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1" for="member-assignment">
-                    Rôle assigné
-                  </label>
-                  <select
-                    id="member-assignment"
-                    formControlName="assignment"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                  >
-                    <option value="" disabled>Choisissez un rôle</option>
-                    @for (option of roleAssignableOptions(); track option.value) {
-                      <option [value]="option.value">{{ option.label }}</option>
-                    }
-                  </select>
-                </div>
-
-                <div class="flex md:justify-end">
-                  <button
-                    type="submit"
-                    class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-70"
-                    [disabled]="addMemberForm.invalid || addMemberSubmitting()"
-                  >
-                    @if (addMemberSubmitting()) {
-                      <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                      </svg>
-                    }
-                    Ajouter
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            <div class="overflow-x-auto rounded-xl border border-slate-200">
-              <table class="min-w-full divide-y divide-slate-200">
-                <thead class="bg-slate-50">
-                  <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Utilisateur
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Rôle assigné
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Depuis
-                    </th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200 bg-white">
-                  @if (membersLoading()) {
-                    @for (_ of memberSkeletonRows; track $index) {
-                      <tr>
-                        <td class="px-4 py-4">
-                          <div class="space-y-2">
-                            <app-skeleton height="0.9rem" width="70%"></app-skeleton>
-                            <app-skeleton height="0.75rem" width="55%"></app-skeleton>
-                            <app-skeleton height="0.6rem" width="40%"></app-skeleton>
-                          </div>
-                        </td>
-                        <td class="px-4 py-4">
-                          <app-skeleton height="2.5rem"></app-skeleton>
-                          <div class="mt-2">
-                            <app-skeleton height="0.6rem" width="60%"></app-skeleton>
-                          </div>
-                        </td>
-                        <td class="px-4 py-4">
-                          <app-skeleton height="0.85rem" width="50%"></app-skeleton>
-                        </td>
-                        <td class="px-4 py-4 text-right">
-                          <div class="flex justify-end">
-                            <app-skeleton height="2rem" width="5rem"></app-skeleton>
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  } @else if (members().length === 0) {
-                    <tr>
-                      <td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">
-                        Aucun membre pour cette organisation.
-                      </td>
-                    </tr>
-                  } @else {
-                    @for (member of members(); track member.userId) {
-                      <tr>
-                        <td class="px-4 py-4 text-sm">
-                          <div class="font-semibold text-slate-900">
-                            {{ member.firstName }} {{ member.lastName }}
-                          </div>
-                          <div class="text-xs text-slate-500">{{ member.email }}</div>
-                          <div class="text-[11px] text-slate-400 mt-1">
-                            userId: {{ member.userId }}
-                          </div>
-                        </td>
-                        <td class="px-4 py-4 text-sm">
-                          <select
-                            class="w-full rounded-lg border border-slate-300 px-2 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                            [ngModel]="memberAssignments()[member.userId]"
-                            (ngModelChange)="onAssignmentChange(member.userId, $event)"
-                          >
-                            @for (option of roleAssignableOptions(); track option.value) {
-                              <option [value]="option.value">{{ option.label }}</option>
-                            }
-                          </select>
-                          <p class="mt-1 text-[11px] text-slate-400">
-                            Actuel :
-                            @if (member.organizationRoleName) {
-                              {{ member.organizationRoleName }}
-                            } @else if (member.role) {
-                              {{ member.role }}
-                            } @else {
-                              Non défini
-                            }
-                          </p>
-                        </td>
-                        <td class="px-4 py-4 text-sm text-slate-500">
-                          {{ member.createdAt | date: 'short' }}
-                        </td>
-                        <td class="px-4 py-4 text-sm text-right space-x-2">
-                          <button
-                            type="button"
-                            class="inline-flex items-center rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-60"
-                            [disabled]="memberUpdating()[member.userId]"
-                            (click)="updateMemberAssignment(member)"
-                          >
-                            @if (memberUpdating()[member.userId]) {
-                              <svg class="mr-1.5 h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                              </svg>
-                            }
-                            Mettre à jour
-                          </button>
-                          <button
-                            type="button"
-                            class="inline-flex items-center rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60"
-                            [disabled]="memberUpdating()[member.userId]"
-                            (click)="removeMember(member)"
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    }
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-        </div>
+        <app-organization-details></app-organization-details>
+        <app-organization-members></app-organization-members>
       </section>
     </div>
+
+    <app-organization-roles></app-organization-roles>
   </div>
 </div>
