@@ -92,3 +92,108 @@ export interface UpdateOrganizationMemberRoleRequest {
   role?: string;
   organizationRoleId?: UUID | null;
 }
+
+export interface PageRequest {
+  page?: number | string;
+  perPage?: number | string;
+  search?: string | null;
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | readonly (string | number | boolean | null | undefined)[];
+}
+
+export interface NormalizedPageRequest {
+  page: number;
+  perPage: number;
+  search: string | null;
+}
+
+export interface PaginatedMeta {
+  totalItems: number;
+  totalPages: number;
+  page: number;
+  perPage: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: PaginatedMeta;
+}
+
+export interface AuthOrganizationLink {
+  id: UUID;
+  name: string;
+  slug: string;
+  role: string | null;
+}
+
+export interface AuthenticatedUserView {
+  id: UUID;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  organizations: AuthOrganizationLink[];
+  roles: string[];
+  permissions: string[];
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+}
+
+export interface AuthLoginRequest {
+  email: string;
+  password: string;
+  organizationSlug?: string;
+}
+
+export interface AuthLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: ISODateString;
+  user: AuthenticatedUserView;
+}
+
+export interface AuthRefreshRequest {
+  refreshToken: string;
+}
+
+export interface AuthRefreshResponse {
+  accessToken: string;
+  expiresAt: ISODateString;
+}
+
+export interface AuthValidateTokenRequest {
+  accessToken: string;
+}
+
+export interface AuthValidateTokenResponse {
+  valid: boolean;
+  expiresAt: ISODateString | null;
+}
+
+export type TenantOrganizationSummary = OrganizationSummary;
+export type TenantOrganizationRole = OrganizationRoleView;
+export type TenantOrganizationMember = OrganizationMemberView;
+export type TenantPermissionView = PermissionView;
+
+export type TenantCreateOrganizationRequest = CreateOrganizationRequest;
+export type TenantUpdateOrganizationRequest = UpdateOrganizationRequest;
+export type TenantCreateRoleRequest = CreateOrganizationRoleRequest;
+export type TenantUpdateRoleRequest = UpdateOrganizationRoleRequest;
+export type TenantAddMemberRequest = AddOrganizationMemberRequest;
+export type TenantUpdateMemberRoleRequest = UpdateOrganizationMemberRoleRequest;
+
+export type TenantListOrganizationsResponse = PaginatedResult<TenantOrganizationSummary>;
+export interface TenantGetOrganizationResponse {
+  organization: TenantOrganizationSummary;
+  roles: TenantOrganizationRole[];
+  members: TenantOrganizationMember[];
+}
+export type TenantListRolesResponse = PaginatedResult<TenantOrganizationRole>;
+export interface TenantListPermissionsResponse {
+  data: TenantPermissionView[];
+}
+export type TenantListMembersResponse = PaginatedResult<TenantOrganizationMember>;

@@ -8,10 +8,10 @@ Il sert de guide rapide pour les nouveaux contributeurs afin de réemployer les 
 ## `libs/shared-types`
 
 - **Contenu**  
-  Modèles de domaine, DTO, énumérations et types utilitaires communs aux services backend et au frontend Angular.
+  Modèles de domaine, DTO, contrats REST (auth/tenant), types de pagination et énumérations partagés entre services backend et frontend.
 - **Exports clés**  
 
-  `OrganizationSummary`, `OrganizationRoleView`, `PermissionView`, DTO membres, `ISODateString`, etc.
+  `OrganizationSummary`, `OrganizationRoleView`, `PermissionView`, `AuthLoginResponse`, `PaginatedResult`, `ISODateString`, etc.
 - **Quand l’utiliser**  
   Dès que des données typées traversent les frontières entre services ou entre backend et frontend.
 
@@ -40,34 +40,6 @@ Exemple d’usage :
 ```ts
 import { TenantDbModule } from '@sass-hub-v2/backend';
 import { BackendAuthModule } from '@sass-hub-v2/backend/auth';
-```
-
----
-
-## `libs/contracts`
-
-- **Contenu**  
-  Définitions des contrats REST (payloads requêtes/réponses), helpers de pagination, alias des DTO tenant/auth.
-- **Objectif**  
-  Servir de référence contractuelle pour les SDKs et intégrateurs externes.
-- **Exemples**  
-  `AuthLoginRequest`, `TenantListOrganizationsResponse`, `normalizePageRequest`.
-
----
-
-## `libs/sdk`
-
-- **Contenu**  
-  SDK front ↔ backend avec client HTTP (`FetchHttpClient`), client Auth, client Tenant et fabrique `createSaasHubSdk`.
-- **Cas d’usage**  
-  Applications frontend, scripts d’intégration ou outils ayant besoin d’un client typé pour appeler les APIs Hub/Tenant.
-- **Exemple**
-
-```ts
-import { createSaasHubSdk } from '@sass-hub-v2/sdk';
-
-const sdk = createSaasHubSdk({ baseUrl: 'https://hub.local', fetch });
-const session = await sdk.auth.login({ email, password });
 ```
 
 ---

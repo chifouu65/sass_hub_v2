@@ -50,12 +50,12 @@
 ### 📚 Bibliothèques Partagées
 - [x] Créer libs/shared-types (Types partagés entre services)
 - [x] Créer libs/utils (Fonctions utilitaires)
-- [x] Créer libs/sdk (SDK front ↔ backend)
+- [ ] Créer libs/sdk (SDK front ↔ backend) — abandonné (les frontends passeront uniquement par les backends Nest)
 - [x] Créer lib backend pour la gestion multi-tenant (pool de connexions réutilisable)
 - [x] Créer lib backend auth commune (decorators, guards, stratégies OAuth)
-- [x] Créer lib de contrats/DTO partagés entre services et frontend
+- [x] Créer lib de contrats/DTO partagés entre services et frontend (désormais regroupés dans `libs/shared-types`)
 - [ ] Créer lib UI Angular partagée (tableaux, modals, composants transverses)
-- [x] Étendre libs/sdk avec les clients tenant-service et auth-service
+- [ ] Étendre libs/sdk avec les clients tenant-service et auth-service — sans objet tant que la lib SDK n’est pas nécessaire
 
 ### 🐳 Docker et Infrastructure
 - [x] Créer docker-compose.yml
