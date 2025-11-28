@@ -52,7 +52,8 @@
       "options": {
         "buildTarget": "auth-service:build",
         "runBuildTargetDependencies": false,
-        "port": 3001
+        "port": 3331,
+        "inspect": false
       },
       "configurations": {
         "development": {

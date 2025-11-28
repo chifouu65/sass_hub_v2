@@ -1,0 +1,21 @@
+{
+  "name": "auth-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/auth-client/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": ["scope:shared type:lib"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/auth-client/jest.config.ts",
+        "tsConfig": "libs/auth-client/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

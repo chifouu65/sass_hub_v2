@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, RegisterDto } from '../../../../core/services/auth.service';
+import { AuthService, RegisterDto } from '@sass-hub-v2/auth-client';
 
 @Component({
   selector: 'app-register',

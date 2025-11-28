@@ -22,7 +22,7 @@ import { OrganizationRolesService } from '../organization-roles/organization-rol
     {
       provide: TENANT_SERVICE_BASE_URL,
       useFactory: () =>
-        process.env.TENANT_SERVICE_URL ?? 'http://localhost:3002/api',
+        process.env.TENANT_SERVICE_URL ?? 'http://localhost:3332/api',
     },
   ],
   exports: [OrganizationsService, OrganizationRolesService],

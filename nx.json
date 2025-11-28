@@ -13,7 +13,7 @@
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": ["{workspaceRoot}/.github/workflows/sass-hub-v2.yml"]
   },
   "targetDefaults": {
     "@angular/build:application": {
@@ -72,7 +72,8 @@
       "exclude": [
         "apps/hub-backend-e2e/**/*",
         "apps/auth-service-e2e/**/*",
-        "apps/tenant-service-e2e/**/*"
+        "apps/tenant-service-e2e/**/*",
+        "deepnews-backend-e2e/**/*"
       ]
     },
     {
@@ -96,6 +97,13 @@
       "linter": "eslint",
       "style": "css",
       "unitTestRunner": "vitest"
+    },
+    "@nx/angular:library": {
+      "linter": "eslint",
+      "unitTestRunner": "jest"
+    },
+    "@nx/angular:component": {
+      "style": "css"
     }
   }
 }

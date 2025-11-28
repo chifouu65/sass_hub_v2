@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeepNews Backend Test</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        input, textarea, button { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        button { background: #2563eb; color: white; border: none; cursor: pointer; }
+        pre { background: #f4f4f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h2>🛠️ Backend Test: Inject News</h2>
+    <form id="newsForm">
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="url" name="link" placeholder="Link URL" required>
+        <input type="text" name="source" placeholder="Source (e.g. Manual)" value="Manual">
+        <textarea name="content" placeholder="Content / Snippet" rows="4"></textarea>
+        <input type="text" name="tags" placeholder="Tags (comma separated)">
+        <button type="submit">Send POST /api/news</button>
+    </form>
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('newsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.tags = data.tags ? data.tags.split(',').map(t => t.trim()) : [];
+
+            const res = await fetch('/api/news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            document.getElementById('result').innerText = JSON.stringify(json, null, 2);
+        });
+    </script>
+</body>
+</html>
+

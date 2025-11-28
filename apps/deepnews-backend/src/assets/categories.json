@@ -1,0 +1,59 @@
+[
+  {
+    "id": "tech",
+    "label": "Technology",
+    "children": [
+      {
+        "id": "ai",
+        "label": "Artificial Intelligence",
+        "keywords": ["LLM", "GPT", "Neural Network", "Machine Learning", "OpenAI", "Anthropic"]
+      },
+      {
+        "id": "crypto",
+        "label": "Cryptocurrency",
+        "children": [
+          { "id": "btc", "label": "Bitcoin", "keywords": ["BTC", "Satoshi", "Halving"] },
+          { "id": "eth", "label": "Ethereum", "keywords": ["ETH", "Vitalik", "Smart Contract"] },
+          { "id": "defi", "label": "DeFi", "keywords": ["Yield Farming", "Liquidity Pool"] }
+        ]
+      },
+      {
+        "id": "startups",
+        "label": "Startups & VC",
+        "keywords": ["Funding", "Series A", "IPO", "Unicorn"]
+      }
+    ]
+  },
+  {
+    "id": "finance",
+    "label": "Finance",
+    "children": [
+      {
+        "id": "markets",
+        "label": "Stock Markets",
+        "keywords": ["S&P 500", "Nasdaq", "Wall Street", "Stocks"]
+      },
+      {
+        "id": "economy",
+        "label": "Global Economy",
+        "keywords": ["Inflation", "Fed", "Interest Rates", "GDP"]
+      }
+    ]
+  },
+  {
+    "id": "science",
+    "label": "Science",
+    "children": [
+      {
+        "id": "space",
+        "label": "Space Exploration",
+        "keywords": ["NASA", "SpaceX", "Mars", "Rocket"]
+      },
+      {
+        "id": "biotech",
+        "label": "Biotech & Health",
+        "keywords": ["CRISPR", "Genetics", "Pharma"]
+      }
+    ]
+  }
+]

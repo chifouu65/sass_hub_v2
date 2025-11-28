@@ -52,6 +52,7 @@
       "options": {
         "buildTarget": "hub-backend:build",
         "runBuildTargetDependencies": false,
+        "port": 3330,
         "inspect": false
       },
       "configurations": {

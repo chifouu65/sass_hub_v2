@@ -1,0 +1,18 @@
+<div class="min-h-screen bg-gray-100 p-8 font-sans">
+  <header class="mb-8 text-center relative">
+    <div class="absolute top-0 right-0 flex items-center gap-4">
+        <ng-container *ngIf="authService.isAuthenticated(); else loginBtn">
+            <span class="text-sm font-medium text-gray-700">{{ authService.currentUser()?.firstName || authService.currentUser()?.email }}</span>
+            <button (click)="authService.logout()" class="text-sm text-red-600 hover:underline bg-white px-3 py-1 rounded border border-red-100">Logout</button>
+        </ng-container>
+        <ng-template #loginBtn>
+            <a routerLink="/login" class="text-sm text-blue-600 hover:underline font-medium bg-white px-3 py-1 rounded border border-blue-100">Login</a>
+        </ng-template>
+    </div>
+
+    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight cursor-pointer" routerLink="/">DeepNews AI 🧠</h1>
+    <p class="text-gray-600 mt-2">Actualités curées et classées par Intelligence Artificielle.</p>
+  </header>
+
+<router-outlet></router-outlet>
+</div>

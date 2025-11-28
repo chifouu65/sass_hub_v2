@@ -39,7 +39,7 @@ import {
     {
       provide: AUTH_SERVICE_BASE_URL,
       useFactory: () =>
-        process.env.AUTH_SERVICE_URL ?? 'http://localhost:3001/api',
+        process.env.AUTH_SERVICE_URL ?? 'http://localhost:3331/api',
     },
     {
       provide: AUTH_SERVICE_INTERNAL_API_KEY,

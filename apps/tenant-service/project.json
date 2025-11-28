@@ -52,7 +52,8 @@
       "options": {
         "buildTarget": "tenant-service:build",
         "runBuildTargetDependencies": false,
-        "port": 3002
+        "port": 3332,
+        "inspect": false
       },
       "configurations": {
         "development": {

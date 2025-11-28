@@ -1,7 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '@sass-hub-v2/auth-client';
+import { AuthenticatedUserView } from '@sass-hub-v2/shared-types';
 
 @Component({
   selector: 'app-callback',
@@ -32,14 +33,19 @@ export class Callback implements OnInit {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
 
-      const userData = {
+      const user: AuthenticatedUserView = {
         id: payload.sub,
         email: payload.email,
-        firstName: undefined,
-        lastName: undefined,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        roles: payload.roles || [],
+        organizations: [],
+        permissions: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      this.authService.setTokensAndUser(userData, token, refreshToken);
+      this.authService.setTokensAndUser(user, token, refreshToken);
 
       this.router.navigate(['/dashboard']);
     } catch (error) {

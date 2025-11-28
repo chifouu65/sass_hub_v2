@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, LoginDto } from '../../../../core/services/auth.service';
+import { AuthService } from '@sass-hub-v2/auth-client';
+import { AuthLoginRequest } from '@sass-hub-v2/shared-types';
 
 type OAuthProvider = 'google' | 'github' | 'microsoft';
 
@@ -16,6 +17,7 @@ type OAuthProvider = 'google' | 'github' | 'microsoft';
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
 
   loginForm = this.fb.group({
@@ -34,11 +36,17 @@ export class Login {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const credentials: LoginDto = this.loginForm.value as LoginDto;
+    const credentials: AuthLoginRequest = this.loginForm.value as AuthLoginRequest;
 
     this.authService.login(credentials).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
+      next: (response) => {
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        if (returnUrl) {
+             const separator = returnUrl.includes('?') ? '&' : '?';
+             window.location.href = `${returnUrl}${separator}token=${response.accessToken}&refreshToken=${response.refreshToken}`;
+        } else {
+             this.router.navigate(['/dashboard']);
+        }
       },
       error: (error) => {
         this.isLoading = false;
@@ -49,7 +57,7 @@ export class Login {
   }
 
   loginWithOAuth(provider: OAuthProvider): void {
-    const backendUrl = 'http://localhost:3000';
-    window.location.href = `${backendUrl}/api/auth/${provider}`;
+    const backendUrl = 'http://localhost:4200/api'; 
+    window.location.href = `${backendUrl}/auth/${provider}`;
   }
 }

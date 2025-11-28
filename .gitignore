@@ -159,3 +159,8 @@ scripts/temp-*.ps1
 # System Files
 .DS_Store
 Thumbs.db
+
+.angular
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

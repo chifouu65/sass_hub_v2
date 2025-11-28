@@ -1,0 +1,124 @@
+<div class="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Sidebar (Desktop) -->
+  <aside class="hidden lg:block w-64 flex-shrink-0">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 sticky top-8">
+      <h2 class="font-bold text-gray-400 mb-4 uppercase text-xs tracking-wider">Explore</h2>
+      <ul class="space-y-1">
+         <li (click)="filter(null)" 
+             class="cursor-pointer px-3 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-3"
+             [class.bg-blue-50]="!selectedTag()"
+             [class.text-blue-700]="!selectedTag()"
+             [class.text-gray-600]="selectedTag()"
+             [class.hover:bg-gray-50]="selectedTag()">
+             <span class="text-lg">🌍</span>
+             <span>À la une</span>
+         </li>
+         @for (cat of categories(); track cat.id) {
+           <li class="mt-4 first:mt-2">
+              <div (click)="filter(cat.id)" 
+                   class="cursor-pointer px-3 py-2 rounded-lg font-semibold text-gray-800 hover:text-blue-600 transition-colors flex items-center justify-between group">
+                   <span>{{ cat.label }}</span>
+                   <span class="text-gray-300 group-hover:text-blue-400 transition-colors text-xs">▼</span>
+              </div>
+              <ul class="ml-3 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
+                 @for (sub of cat.children; track sub.id) {
+                   <li (click)="filter(sub.id)"
+                       class="text-sm cursor-pointer px-3 py-1.5 rounded-lg transition-all duration-200 relative"
+                       [class.text-blue-600]="selectedTag() === sub.id"
+                       [class.font-medium]="selectedTag() === sub.id"
+                       [class.bg-blue-50]="selectedTag() === sub.id"
+                       [class.text-gray-500]="selectedTag() !== sub.id"
+                       [class.hover:text-gray-800]="selectedTag() !== sub.id">
+                       {{ sub.label }}
+                   </li>
+                 }
+              </ul>
+           </li>
+         }
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Mobile Filters (Horizontal Scroll) -->
+  <div class="lg:hidden overflow-x-auto pb-4 -mx-4 px-4 flex gap-2 no-scrollbar">
+      <button (click)="filter(null)" 
+          class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border"
+          [class.bg-blue-600]="!selectedTag()"
+          [class.text-white]="!selectedTag()"
+          [class.border-blue-600]="!selectedTag()"
+          [class.bg-white]="selectedTag()"
+          [class.text-gray-700]="selectedTag()"
+          [class.border-gray-200]="selectedTag()">
+          🌍 À la une
+      </button>
+      @for (cat of categories(); track cat.id) {
+           @for (sub of cat.children; track sub.id) {
+             <button (click)="filter(sub.id)"
+                class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border"
+                [class.bg-blue-600]="selectedTag() === sub.id"
+                [class.text-white]="selectedTag() === sub.id"
+                [class.border-blue-600]="selectedTag() === sub.id"
+                [class.bg-white]="selectedTag() !== sub.id"
+                [class.text-gray-700]="selectedTag() !== sub.id"
+                [class.border-gray-200]="selectedTag() !== sub.id">
+                {{ sub.label }}
+             </button>
+           }
+      }
+  </div>
+
+  <!-- News Feed -->
+  <main class="flex-1 space-y-6">
+    
+    @if (loading()) {
+      <!-- Loading Skeleton -->
+      <div class="space-y-6 animate-pulse">
+        @for (i of [1,2,3]; track i) {
+          <div class="bg-white p-6 rounded-2xl border border-gray-100">
+              <div class="flex gap-3 mb-4">
+                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
+                  <div class="h-4 w-32 bg-gray-200 rounded"></div>
+              </div>
+              <div class="h-6 w-3/4 bg-gray-200 rounded mb-3"></div>
+              <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
+              <div class="h-4 w-2/3 bg-gray-200 rounded"></div>
+          </div>
+        }
+      </div>
+    } @else {
+      @for (article of articles(); track article.id) {
+        <app-article-card [article]="article" (onTagClick)="filter($any($event))" />
+      } @empty {
+        <!-- Empty State -->
+        <div class="bg-white p-16 rounded-2xl shadow-sm text-center border border-gray-100">
+            <div class="text-6xl mb-6 animate-bounce">🔭</div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Aucune actualité trouvée</h3>
+            <p class="text-gray-500 mb-8">Essayez de sélectionner une autre catégorie.</p>
+            <button (click)="filter(null)" class="px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors font-medium shadow-lg shadow-gray-200">
+              Retourner à l'accueil
+            </button>
+        </div>
+      }
+
+      <!-- Infinite Scroll Trigger -->
+      @if (hasMore()) {
+          @if (!isLoadingMore()) {
+              @defer (on viewport) {
+                  <app-infinite-trigger (trigger)="loadMore()" />
+              } @placeholder {
+                  <div class="h-10 w-full"></div>
+              }
+          } @else {
+              <div class="h-10 flex justify-center items-center mt-4 mb-8">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+          }
+      } @else {
+          @if (articles().length > 0) {
+              <div class="text-center text-xs text-gray-400 mt-4 mb-8">Vous avez tout vu ! 🎉</div>
+          }
+      }
+    }
+  </main>
+</div>
+

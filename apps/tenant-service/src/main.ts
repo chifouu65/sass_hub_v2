@@ -25,9 +25,7 @@ async function bootstrap() {
     }),
   );
 
-  const port = Number(
-    process.env.TENANT_SERVICE_PORT ?? process.env.PORT ?? 3002,
-  );
+  const port = Number(process.env.TENANT_SERVICE_PORT || 3332);
   await app.listen(port);
   Logger.log(
     `🚀 Tenant service running at http://localhost:${port}/${globalPrefix}`,
