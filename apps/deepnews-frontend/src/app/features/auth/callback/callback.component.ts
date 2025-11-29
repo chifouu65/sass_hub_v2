@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@sass-hub-v2/auth-client';
 import { AuthenticatedUserView } from '@sass-hub-v2/shared-types';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-callback',
@@ -10,29 +11,34 @@ import { AuthenticatedUserView } from '@sass-hub-v2/shared-types';
   templateUrl: './callback.component.html'
 })
 export class CallbackComponent implements OnInit {
-  route = inject(ActivatedRoute);
-  router = inject(Router);
-  authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+    const sub = this.route.queryParams.subscribe(params => {
       const token = params['token'];
       const refreshToken = params['refreshToken'];
 
       if (token && refreshToken) {
-        try {
-             const base64Url = token.split('.')[1];
-             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-             const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-             }).join(''));
+        // 1. CLEAN URL IMMEDIATELY to hide tokens from browser history/shoulder surfing
+        window.history.replaceState({}, document.title, window.location.pathname);
 
-             const payload = JSON.parse(jsonPayload);
+        try {
+             // 2. SAFE DECODE
+             const payload: any = jwtDecode(token);
              
+             // 3. VALIDATE EXPIRATION (Basic check)
+             const now = Math.floor(Date.now() / 1000);
+             if (payload.exp && payload.exp < now) {
+                 throw new Error('Token expired');
+             }
+
+             // 4. MAP USER
              const user: AuthenticatedUserView = {
                  id: payload.sub,
                  email: payload.email,
-                 firstName: payload.firstName || payload.email.split('@')[0],
+                 firstName: payload.firstName || payload.email?.split('@')[0] || 'User',
                  lastName: payload.lastName || '',
                  roles: payload.roles || [],
                  organizations: [],
@@ -41,17 +47,23 @@ export class CallbackComponent implements OnInit {
                  updatedAt: new Date().toISOString()
              };
 
+             // 5. STORE
              this.authService.setTokensAndUser(user, token, refreshToken);
              
-             setTimeout(() => this.router.navigate(['/']), 500);
+             // 6. REDIRECT
+             this.router.navigate(['/']);
              
         } catch (e) {
-            console.error('Token invalide', e);
+            console.error('Login processing failed:', e);
             this.router.navigate(['/login']);
         }
       } else {
+        // No tokens found, redirect to login
         this.router.navigate(['/login']);
       }
+      
+      // Unsubscribe to prevent leaks (though mostly handled by router destruction)
+      sub.unsubscribe();
     });
   }
 }

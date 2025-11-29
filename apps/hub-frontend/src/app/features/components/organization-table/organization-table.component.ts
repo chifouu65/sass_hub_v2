@@ -7,7 +7,7 @@ import {
 import { SkeletonComponent } from '../skeleton/skeleton';
 import { OrganizationSummary } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
-import { ModalService } from '../../services/modal/modal.service';
+import { ModalService } from '@sass-hub-v2/ui-kit';
 import {
   OrganizationManageModalComponent,
   OrganizationManageModalData,

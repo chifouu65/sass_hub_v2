@@ -2,58 +2,46 @@
   {
     "id": "tech",
     "label": "Technology",
-    "children": [
-      {
-        "id": "ai",
-        "label": "Artificial Intelligence",
-        "keywords": ["LLM", "GPT", "Neural Network", "Machine Learning", "OpenAI", "Anthropic"]
-      },
-      {
-        "id": "crypto",
-        "label": "Cryptocurrency",
-        "children": [
-          { "id": "btc", "label": "Bitcoin", "keywords": ["BTC", "Satoshi", "Halving"] },
-          { "id": "eth", "label": "Ethereum", "keywords": ["ETH", "Vitalik", "Smart Contract"] },
-          { "id": "defi", "label": "DeFi", "keywords": ["Yield Farming", "Liquidity Pool"] }
-        ]
-      },
-      {
-        "id": "startups",
-        "label": "Startups & VC",
-        "keywords": ["Funding", "Series A", "IPO", "Unicorn"]
-      }
-    ]
+    "keywords": ["Tech", "Innovation", "Digital", "Future"]
   },
   {
     "id": "finance",
-    "label": "Finance",
-    "children": [
-      {
-        "id": "markets",
-        "label": "Stock Markets",
-        "keywords": ["S&P 500", "Nasdaq", "Wall Street", "Stocks"]
-      },
-      {
-        "id": "economy",
-        "label": "Global Economy",
-        "keywords": ["Inflation", "Fed", "Interest Rates", "GDP"]
-      }
-    ]
+    "label": "Finance & Economy",
+    "keywords": ["Money", "Market", "Business", "Economy"]
   },
   {
     "id": "science",
     "label": "Science",
-    "children": [
-      {
-        "id": "space",
-        "label": "Space Exploration",
-        "keywords": ["NASA", "SpaceX", "Mars", "Rocket"]
-      },
-      {
-        "id": "biotech",
-        "label": "Biotech & Health",
-        "keywords": ["CRISPR", "Genetics", "Pharma"]
-      }
-    ]
+    "keywords": ["Research", "Discovery", "Nature", "Space"]
+  },
+  {
+    "id": "health",
+    "label": "Health & Medicine",
+    "keywords": ["Medical", "Wellness", "Doctor", "Healthcare"]
+  },
+  {
+    "id": "politics",
+    "label": "Politics & Society",
+    "keywords": ["Government", "Law", "Policy", "Social"]
+  },
+  {
+    "id": "environment",
+    "label": "Environment & Energy",
+    "keywords": ["Climate", "Green", "Earth", "Sustainability"]
+  },
+  {
+    "id": "culture",
+    "label": "Lifestyle & Culture",
+    "keywords": ["Life", "Art", "Travel", "Style"]
+  },
+  {
+    "id": "entertainment",
+    "label": "Entertainment",
+    "keywords": ["Media", "Show", "Fun", "Celebrity"]
+  },
+  {
+    "id": "sports",
+    "label": "Sports",
+    "keywords": ["Game", "Match", "Team", "Athlete"]
   }
 ]

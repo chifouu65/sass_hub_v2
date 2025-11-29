@@ -6,8 +6,8 @@ import {
   model,
   output,
 } from '@angular/core';
-import { ModalRef } from '../../services/modal/modal-ref';
-import { MODAL_DATA } from '../../services/modal/modal.tokens';
+import { ModalRef } from './modal-ref';
+import { MODAL_DATA } from './modal.tokens';
 
 export interface ConfirmModalData {
   title?: string;
@@ -18,7 +18,7 @@ export interface ConfirmModalData {
 
 @Component({
   standalone: true,
-  selector: 'app-confirm-modal',
+  selector: 'lib-confirm-modal',
   imports: [CommonModule],
   template: `
     <div class="space-y-6">
@@ -31,7 +31,7 @@ export interface ConfirmModalData {
       <div class="flex justify-end gap-3">
         <button
           type="button"
-          class="btn btn-secondary"
+          class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-medium text-sm text-gray-700 transition-colors"
           (click)="cancelEvent.emit()"
         >
           {{ cancelLabel() }}
@@ -39,7 +39,7 @@ export interface ConfirmModalData {
 
         <button
           type="button"
-          class="btn btn-danger"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium text-sm transition-colors"
           (click)="confirmEvent.emit()"
         >
           {{ confirmLabel() }}
@@ -59,7 +59,7 @@ export class ConfirmModalComponent {
   readonly confirmEvent = output<void>();
 
   readonly #modalRef = inject(ModalRef<ConfirmModalComponent, boolean>);
-  readonly #data = inject<ConfirmModalData>(MODAL_DATA);
+  readonly #data = inject<ConfirmModalData>(MODAL_DATA, { optional: true });
 
   constructor() {
     if (this.#data) {

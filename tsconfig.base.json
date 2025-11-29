@@ -20,7 +20,8 @@
       "@sass-hub-v2/backend": ["libs/backend/src/index.ts"],
       "@sass-hub-v2/backend/auth": ["libs/backend/src/lib/auth/index.ts"],
       "@sass-hub-v2/tenant-db": ["libs/backend/src/index.ts"],
-      "@sass-hub-v2/auth-client": ["libs/auth-client/src/index.ts"]
+      "@sass-hub-v2/auth-client": ["libs/auth-client/src/index.ts"],
+      "@sass-hub-v2/ui-kit": ["libs/ui-kit/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -9,13 +9,9 @@ import {
 import { finalize, firstValueFrom } from 'rxjs';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { GenericTableComponent, GenericTableHeader } from '../generic-table/generic-table.component';
-import { ModalService } from '../../services/modal/modal.service';
+import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
-import {
-  OrganizationApplicationSubscribeModalComponent,
-  OrganizationApplicationSubscribeModalResult,
-} from './organization-application-subscribe-modal.component';
-import { ConfirmModalComponent, ConfirmModalData } from '../confirm-modal/confirm-modal.component';
+import { OrganizationApplicationSubscribeModalComponent, OrganizationApplicationSubscribeModalResult } from './organization-application-subscribe-modal.component';
 
 @Component({
   selector: 'app-organization-applications',

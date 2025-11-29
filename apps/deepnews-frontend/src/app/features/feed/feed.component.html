@@ -1,28 +1,37 @@
-<div class="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
   <!-- Sidebar (Desktop) -->
   <aside class="hidden lg:block w-64 flex-shrink-0">
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 sticky top-8">
-      <h2 class="font-bold text-gray-400 mb-4 uppercase text-xs tracking-wider">Explore</h2>
-      <ul class="space-y-1">
-         <li (click)="filter(null)" 
-             class="cursor-pointer px-3 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-3"
-             [class.bg-blue-50]="!selectedTag()"
-             [class.text-blue-700]="!selectedTag()"
-             [class.text-gray-600]="selectedTag()"
-             [class.hover:bg-gray-50]="selectedTag()">
-             <span class="text-lg">🌍</span>
-             <span>À la une</span>
-         </li>
+      
+      <div class="mb-6 pb-6 border-b border-gray-100">
+          <button (click)="filter(null)" 
+              class="w-full text-left px-3 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-3"
+              [class.bg-purple-50]="!selectedTag()"
+              [class.text-purple-700]="!selectedTag()"
+              [class.text-gray-600]="selectedTag()"
+              [class.hover:bg-gray-50]="selectedTag()">
+              <span class="text-lg">📰</span>
+              <span>Mon Flux</span>
+          </button>
+      </div>
+
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-gray-400 uppercase text-xs tracking-wider">Mes Sujets</h2>
+        <!-- Settings button moved to navbar -->
+      </div>
+
+      <ul class="space-y-1 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
          @for (cat of categories(); track cat.id) {
            <li class="mt-4 first:mt-2">
-              <div (click)="filter(cat.id)" 
-                   class="cursor-pointer px-3 py-2 rounded-lg font-semibold text-gray-800 hover:text-blue-600 transition-colors flex items-center justify-between group">
+              <div (click)="filter(cat.id)" tabindex="0" role="button" (keydown.enter)="filter(cat.id)" (keydown.space)="filter(cat.id)" (keydown.arrow-right)="filter(cat.id)" (keydown.arrow-left)="filter(cat.id)" (keydown.arrow-up)="filter(cat.id)" (keydown.arrow-down)="filter(cat.id)"
+                   class="cursor-pointer px-3 py-2 rounded-lg font-semibold text-gray-800 hover:text-blue-600 transition-colors flex items-center justify-between group"
+                   [class.text-blue-600]="selectedTag() === cat.id">
                    <span>{{ cat.label }}</span>
                    <span class="text-gray-300 group-hover:text-blue-400 transition-colors text-xs">▼</span>
               </div>
               <ul class="ml-3 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
                  @for (sub of cat.children; track sub.id) {
-                   <li (click)="filter(sub.id)"
+                   <li (click)="filter(sub.id)" tabindex="0" role="button" (keydown.enter)="filter(sub.id)" (keydown.space)="filter(sub.id)" (keydown.arrow-right)="filter(sub.id)" (keydown.arrow-left)="filter(sub.id)" (keydown.arrow-up)="filter(sub.id)" (keydown.arrow-down)="filter(sub.id)"
                        class="text-sm cursor-pointer px-3 py-1.5 rounded-lg transition-all duration-200 relative"
                        [class.text-blue-600]="selectedTag() === sub.id"
                        [class.font-medium]="selectedTag() === sub.id"
@@ -43,13 +52,12 @@
   <div class="lg:hidden overflow-x-auto pb-4 -mx-4 px-4 flex gap-2 no-scrollbar">
       <button (click)="filter(null)" 
           class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border"
-          [class.bg-blue-600]="!selectedTag()"
+          [class.bg-purple-600]="!selectedTag()"
           [class.text-white]="!selectedTag()"
-          [class.border-blue-600]="!selectedTag()"
+          [class.border-purple-600]="!selectedTag()"
           [class.bg-white]="selectedTag()"
-          [class.text-gray-700]="selectedTag()"
-          [class.border-gray-200]="selectedTag()">
-          🌍 À la une
+          [class.text-gray-700]="selectedTag()">
+          📰 Mon Flux
       </button>
       @for (cat of categories(); track cat.id) {
            @for (sub of cat.children; track sub.id) {
@@ -67,13 +75,87 @@
       }
   </div>
 
-  <!-- News Feed -->
-  <main class="flex-1 space-y-6">
+    <!-- Scroll to Top Button -->
+    @if (showScrollTop()) {
+        <button (click)="scrollToTop()" 
+                class="fixed bottom-6 animate-bounce right-8 z-50 p-3 md:p-4 bg-black/20 backdrop-blur-sm text-white rounded-full shadow-lg hover:bg-black/60 transition-all duration-300 transform hover:scale-110"
+                aria-label="Retour en haut">
+            <span class="text-lg md:text-xl">⬆️</span>
+        </button>
+    }
+
+    <!-- News Feed -->
+    <main class="flex-1 space-y-6">
     
-    @if (loading()) {
+    <!-- Search Bar & Filters Unified -->
+    <div class="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 sticky top-4 z-20 mb-6">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <!-- Search Area -->
+            <div class="relative flex-1 flex items-center gap-3 px-4 py-2.5 bg-gray-50/80 rounded-xl hover:bg-gray-50 transition-colors group focus-within:bg-white focus-within:ring-2 focus-within:ring-purple-100 focus-within:shadow-sm border border-transparent focus-within:border-purple-200">
+                <span class="text-gray-400 group-focus-within:text-purple-500 transition-colors">🔍</span>
+                <input type="text" 
+                       placeholder="Rechercher..." 
+                       [value]="searchQuery()"
+                       class="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400 font-medium w-full"
+                       (input)="onSearchInput($event)">
+                @if (loading() && searchQuery()) {
+                    <span class="animate-spin text-purple-500 text-xs">⏳</span>
+                }
+                @if (searchQuery()) {
+                    <button (click)="onSearchInput($any({target: {value: ''}}))" class="text-gray-400 hover:text-gray-600">✕</button>
+                }
+            </div>
+
+            <!-- Filters Area -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                 <!-- Date Sort Dropdown -->
+                 <div class="relative flex items-center bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2.5 transition-colors border border-transparent hover:border-gray-200 min-w-[120px] sm:min-w-fit">
+                    <span class="text-gray-500 text-xs font-bold uppercase mr-2 tracking-wider whitespace-nowrap">Date</span>
+                    <select (change)="setSortDate($any($event.target).value)" 
+                            class="appearance-none bg-transparent border-none text-sm font-bold text-gray-800 focus:ring-0 cursor-pointer outline-none w-full pl-1 pr-6 z-10">
+                        <option value="desc" [selected]="sortDate() === 'desc'">Récents</option>
+                        <option value="asc" [selected]="sortDate() === 'asc'">Anciens</option>
+                        <option value="null" [selected]="sortDate() === null">Par défaut</option>
+                    </select>
+                    <!-- Custom Arrow -->
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                 </div>
+
+                 <!-- Name Sort Dropdown -->
+                 <div class="relative flex items-center bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2.5 transition-colors border border-transparent hover:border-gray-200 min-w-[120px] sm:min-w-fit">
+                    <span class="text-gray-500 text-xs font-bold uppercase mr-2 tracking-wider whitespace-nowrap">Nom</span>
+                    <select (change)="setSortName($any($event.target).value)" 
+                            class="appearance-none bg-transparent border-none text-sm font-bold text-gray-800 focus:ring-0 cursor-pointer outline-none w-full pl-1 pr-6 z-10">
+                        <option value="null" [selected]="sortName() === null">Aucun</option>
+                        <option value="asc" [selected]="sortName() === 'asc'">A-Z</option>
+                        <option value="desc" [selected]="sortName() === 'desc'">Z-A</option>
+                    </select>
+                    <!-- Custom Arrow -->
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                 </div>
+
+                 <!-- Time Dropdown (Renamed Label) -->
+                 <div class="relative flex items-center bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2.5 transition-colors border border-transparent hover:border-gray-200 min-w-[140px] sm:min-w-fit">
+                    <span class="text-gray-500 text-xs font-bold uppercase mr-2 tracking-wider whitespace-nowrap">Période</span>
+                    <select (change)="setTimeRange($any($event.target).value)" 
+                            class="appearance-none bg-transparent border-none text-sm font-bold text-gray-800 focus:ring-0 cursor-pointer outline-none w-full pl-1 pr-6 z-10">
+                        <option value="all" [selected]="currentTimeRange() === 'all'">Tout</option>
+                        <option value="1d" [selected]="currentTimeRange() === '1d'">24h</option>
+                        <option value="1w" [selected]="currentTimeRange() === '1w'">1 Sem.</option>
+                        <option value="1m" [selected]="currentTimeRange() === '1m'">1 Mois</option>
+                        <option value="1y" [selected]="currentTimeRange() === '1y'">1 An</option>
+                    </select>
+                    <!-- Custom Arrow -->
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    @if (loading() && !articles().length) {
       <!-- Loading Skeleton -->
       <div class="space-y-6 animate-pulse">
-        @for (i of [1,2,3]; track i) {
+        @for (i of [1,2,3,4,5,6,7,8,9]; track i) {
           <div class="bg-white p-6 rounded-2xl border border-gray-100">
               <div class="flex gap-3 mb-4">
                   <div class="h-4 w-20 bg-gray-200 rounded"></div>
@@ -86,18 +168,20 @@
         }
       </div>
     } @else {
-      @for (article of articles(); track article.id) {
-        <app-article-card [article]="article" (onTagClick)="filter($any($event))" />
-      } @empty {
-        <!-- Empty State -->
-        <div class="bg-white p-16 rounded-2xl shadow-sm text-center border border-gray-100">
-            <div class="text-6xl mb-6 animate-bounce">🔭</div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">Aucune actualité trouvée</h3>
-            <p class="text-gray-500 mb-8">Essayez de sélectionner une autre catégorie.</p>
-            <button (click)="filter(null)" class="px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors font-medium shadow-lg shadow-gray-200">
-              Retourner à l'accueil
+      @if (articles().length === 0 && !hasMore()) {
+          <!-- Empty State -->
+          <div class="bg-white p-16 rounded-2xl shadow-sm text-center border border-gray-100">
+            <div class="text-6xl mb-6">🎯</div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Votre flux est vide</h3>
+            <p class="text-gray-500 mb-8">Vos catégories préférées n'ont pas de nouvelles récentes ou sont trop restreintes.</p>
+            <button (click)="openPreferences()" class="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-lg shadow-purple-200">
+              Élargir mes préférences
             </button>
         </div>
+      } @else {
+            @for (article of articles(); track article.id) {
+              <app-article-card [article]="article" (onTagClick)="filter($event)" (onArticleClick)="openArticle($event)" />
+            }
       }
 
       <!-- Infinite Scroll Trigger -->
@@ -109,9 +193,15 @@
                   <div class="h-10 w-full"></div>
               }
           } @else {
-              <div class="h-10 flex justify-center items-center mt-4 mb-8">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div class="bg-white p-6 rounded-2xl border border-gray-100">
+              <div class="flex gap-3 mb-4">
+                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
+                  <div class="h-4 w-32 bg-gray-200 rounded"></div>
               </div>
+              <div class="h-6 w-3/4 bg-gray-200 rounded mb-3"></div>
+              <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
+              <div class="h-4 w-2/3 bg-gray-200 rounded"></div>
+            </div>
           }
       } @else {
           @if (articles().length > 0) {
@@ -121,4 +211,3 @@
     }
   </main>
 </div>
-

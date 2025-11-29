@@ -9,11 +9,7 @@ import { finalize } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { slugify } from '@sass-hub-v2/utils';
-import { ModalService } from '../../services/modal/modal.service';
-import {
-  ConfirmModalComponent,
-  ConfirmModalData,
-} from '../confirm-modal/confirm-modal.component';
+import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
 
 @Component({

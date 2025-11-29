@@ -8,9 +8,8 @@ import { GenericTableComponent } from '../generic-table/generic-table.component'
 import { GenericTableHeader } from '../generic-table/generic-table.component';
 import { OrganizationMemberRoleModalComponent, OrganizationMemberRoleModalData } from './organization-member-role-modal.component';
 import { OrganizationMemberCreateModalComponent, OrganizationMemberCreateModalResult } from './organization-member-create-modal.component';
-import { ModalService } from '../../services/modal/modal.service';
+import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
-import { ConfirmModalComponent, ConfirmModalData } from '../confirm-modal/confirm-modal.component';
 import { finalize, firstValueFrom } from 'rxjs';
 
 type AssignmentValue = string;

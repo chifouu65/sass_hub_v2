@@ -6,8 +6,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ModalRef } from '../../services/modal/modal-ref';
-import { MODAL_DATA } from '../../services/modal/modal.tokens';
+import { ModalRef } from '@sass-hub-v2/ui-kit';
+import { MODAL_DATA } from '@sass-hub-v2/ui-kit';
 
 export interface OrganizationMemberRoleModalOption {
   value: string;

@@ -9,14 +9,8 @@ import { firstValueFrom } from 'rxjs';
 import { PermissionView } from '@sass-hub-v2/shared-types';
 import { slugify } from '@sass-hub-v2/utils';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
-import { ModalRef } from '../../services/modal/modal-ref';
-import { MODAL_DATA } from '../../services/modal/modal.tokens';
+import { ModalRef, MODAL_DATA, ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
-import {
-  ConfirmModalComponent,
-  ConfirmModalData,
-} from '../confirm-modal/confirm-modal.component';
-import { ModalService } from '../../services/modal/modal.service';
 
 export interface OrganizationRoleCreateModalData {
   organizationId: string;

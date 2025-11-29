@@ -3,11 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { OrganizationRoleView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { SkeletonComponent } from '../skeleton/skeleton';
-import { ModalService } from '../../services/modal/modal.service';
-import {
-  ConfirmModalComponent,
-  ConfirmModalData,
-} from '../confirm-modal/confirm-modal.component';
+import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
 import { firstValueFrom } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { OrganizationRoleCreateModalComponent } from './organization-role-create-modal.component';

@@ -1,0 +1,79 @@
+  <div class="mb-6">
+    <p class="text-gray-500">Sélectionnez les sujets qui vous intéressent pour que l'IA construise votre fil d'actualité sur mesure.</p>
+  </div>
+      <div class="space-y-8 pb-4 md:max-h-[60vh] max-h-[73vh] overflow-y-auto custom-scrollbar pr-2">
+          @for (cat of categories(); track cat.id) {
+              <div>
+                  <h3 class="font-bold text-gray-800 mb-4 text-lg border-b pb-2 sticky -top-2 bg-white z-10">{{ cat.label }}</h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <!-- Catégorie parente -->
+                      <div (click)="toggleTag(cat.id)" 
+                           class="cursor-pointer px-4 py-3 rounded-xl border transition-all duration-200 flex items-center gap-3"
+                           [class.bg-blue-600]="isTagSelected(cat.id)"
+                           [class.text-white]="isTagSelected(cat.id)"
+                           [class.border-blue-600]="isTagSelected(cat.id)"
+                           [class.bg-gray-50]="!isTagSelected(cat.id)"
+                           [class.text-gray-700]="!isTagSelected(cat.id)"
+                           [class.border-gray-200]="!isTagSelected(cat.id)"
+                           [class.hover:border-blue-300]="!isTagSelected(cat.id)"
+                           tabindex="0"
+                           role="button"
+                           (keydown.enter)="toggleTag(cat.id)"
+                           (keydown.space)="toggleTag(cat.id)"
+                           (keydown.arrow-right)="toggleTag(cat.id)"
+                           (keydown.arrow-left)="toggleTag(cat.id)"
+                           (keydown.arrow-up)="toggleTag(cat.id)"
+                           (keydown.arrow-down)="toggleTag(cat.id)">
+                          <div class="w-5 h-5 rounded border flex items-center justify-center flex-shrink-0"
+                               [class.bg-white]="isTagSelected(cat.id)"
+                               [class.border-white]="isTagSelected(cat.id)"
+                               [class.border-gray-300]="!isTagSelected(cat.id)">
+                               @if (isTagSelected(cat.id)) { <span class="text-blue-600 text-xs font-bold">✓</span> }
+                          </div>
+                          <span class="font-medium">Tout {{ cat.label }}</span>
+                      </div>
+
+                      <!-- Sous-catégories -->
+                      @for (sub of cat.children; track sub.id) {
+                          <button (click)="toggleTag(sub.id)" 
+                               class="cursor-pointer px-4 py-3 rounded-xl border transition-all duration-200 flex items-center gap-3"
+                               [class.bg-blue-600]="isTagSelected(sub.id)"
+                               [class.text-white]="isTagSelected(sub.id)"
+                               [class.border-blue-600]="isTagSelected(sub.id)"
+                               [class.bg-gray-50]="!isTagSelected(sub.id)"
+                               [class.text-gray-700]="!isTagSelected(sub.id)"
+                               [class.border-gray-200]="!isTagSelected(sub.id)"
+                               [class.hover:border-blue-300]="!isTagSelected(sub.id)"
+                               tabindex="0"
+                               role="button"
+                               (keydown.enter)="toggleTag(sub.id)"
+                               (keydown.space)="toggleTag(sub.id)"
+                               (keydown.arrow-right)="toggleTag(sub.id)"
+                               (keydown.arrow-left)="toggleTag(sub.id)"
+                               (keydown.arrow-up)="toggleTag(sub.id)"
+                               (keydown.arrow-down)="toggleTag(sub.id)">
+                              <div class="w-5 h-5 rounded border flex items-center justify-center flex-shrink-0"
+                                   [class.bg-white]="isTagSelected(sub.id)"
+                                   [class.border-white]="isTagSelected(sub.id)"
+                                   [class.border-gray-300]="!isTagSelected(sub.id)">
+                                   @if (isTagSelected(sub.id)) { <span class="text-blue-600 text-xs font-bold">✓</span> }
+                              </div>
+                              <span class="font-medium truncate">{{ sub.label }}</span>
+                          </button>
+                      }
+                  </div>
+              </div>
+          }
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button (click)="close()" class="px-4 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors">Annuler</button>
+          <button (click)="save()" 
+                  [disabled]="saving()"
+                  class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              @if (saving()) {
+                  <span class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+              }
+              Enregistrer
+          </button>
+      </div>

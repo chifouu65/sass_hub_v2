@@ -11,7 +11,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { ModalRef } from '../../services/modal/modal-ref';
+import { ModalRef } from '../modal-ref';
 
 export interface ModalHostOptions {
   title?: string | null;
@@ -89,19 +89,18 @@ export class ModalHostComponent implements OnDestroy {
   showCloseButton = true;
   closeOnBackdrop = true;
 
-  constructor(
-  ) {
-    this.#disableScroll();
-  }
-
   #document = inject(DOCUMENT);
   #envInjector = inject(EnvironmentInjector);
   #modalRef = inject(ModalRef);
 
+  constructor() {
+    this.#disableScroll();
+  }
+
   attachComponent<T>(
     componentType: Type<T>,
     options: ModalHostOptions,
-  componentInjector: Injector,
+    componentInjector: Injector,
   ): ViewContainerRef['createComponent'] extends (...args: infer P) => infer R
     ? R
     : never {

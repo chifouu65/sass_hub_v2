@@ -11,30 +11,18 @@ import { DOCUMENT } from '@angular/common';
 import { EventEmitter, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import { ModalHostComponent, ModalHostOptions } from '../../components/modal-host.component.ts/modal-host.component';
+import { ModalHostComponent, ModalHostOptions } from './modal-host.component';
 import { ModalRef } from './modal-ref';
 import { MODAL_DATA } from './modal.tokens';
 
 export interface ModalOptions<TComponent extends object> {
-  /**
-   * Values assigned directly on the component instance.
-   */
   componentInputs?: Partial<TComponent>;
-  /**
-   * Map outputs (EventEmitter) to handlers.
-   */
   componentOutputs?: {
     [K in keyof TComponent]?: TComponent[K] extends EventEmitter<infer R>
       ? (value: R) => void
       : never;
   };
-  /**
-   * Data provided through the `MODAL_DATA` injection token.
-   */
   data?: unknown;
-  /**
-   * Modal presentation options (title, close button, backdrop behaviour).
-   */
   host?: ModalHostOptions;
 }
 
@@ -105,7 +93,9 @@ export class ModalService {
     }
 
     modalRef._registerOutputs(outputsSub);
-    modalRef._registerOnDestroy(() => {
+    modalRef._registerOnDestroy(async () => {
+      await hostComponentRef.instance.animateClose();
+      
       outputsSub?.unsubscribe();
       componentRef.destroy();
       this.#appRef.detachView(hostComponentRef.hostView);
@@ -120,3 +110,4 @@ export class ModalService {
     return modalRef;
   }
 }
+

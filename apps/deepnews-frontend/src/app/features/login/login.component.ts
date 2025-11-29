@@ -12,8 +12,10 @@ export class LoginComponent implements OnInit {
   }
 
   loginWithHub() {
+    const currentOrigin = window.location.origin;
     const hubUrl = 'http://localhost:4200/login';
-    const returnUrl = encodeURIComponent('http://localhost:4201/callback');
+    const returnUrl = encodeURIComponent(`${currentOrigin}/callback`);
+    
     window.location.href = `${hubUrl}?returnUrl=${returnUrl}`;
   }
 }

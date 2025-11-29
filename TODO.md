@@ -37,6 +37,28 @@
 - [ ] Implémenter la gestion des applications souscrites
 - [ ] Créer l'interface de gestion des entités
 
+### 📰 DeepNews AI (Module)
+
+#### Infrastructure & Backend
+- [x] Générer les projets DeepNews (Backend & Frontend)
+- [x] Configurer le port 3003 (via 3333) pour deepnews-backend
+- [x] Configurer la connexion Database (MySQL `deepnews_db`)
+- [x] Configurer le port management (Ports 3330-3333)
+- [x] Créer le Knowledge Graph (`categories.json`)
+- [x] Implémenter le ClassifierService (OpenAI/Mock)
+- [x] Implémenter le service d'Ingestion (Fetcher/Scraper)
+- [x] Créer l'API REST (`/api/news`, `/api/categories`) et endpoint POST manuel
+- [x] Mettre en place WebSockets pour les news en temps réel
+
+#### Frontend (DeepNews)
+- [x] Initialiser le Frontend DeepNews (Angular Standalone)
+- [x] Créer NewsFeedComponent avec UI avancée (Skeleton, Badges, Favicons)
+- [x] Mettre en place le chargement dynamique (Infinite Scroll `@defer`)
+- [x] Intégrer les notifications WebSocket
+- [x] Intégrer l'Auth via librairie partagée `libs/auth-client`
+- [x] Configurer le SSO (Redirection Hub <-> DeepNews) avec nettoyage URL
+- [x] Activer la persistance de session et reconnexion auto
+
 ### 📦 Applications Modulaires
 
 - [ ] Créer hotel-manager-backend (NestJS)
@@ -57,12 +79,10 @@
 
 - [x] Créer libs/shared-types (Types partagés entre services)
 - [x] Créer libs/utils (Fonctions utilitaires)
-- [ ] Créer libs/sdk (SDK front ↔ backend) — abandonné (les frontends passeront uniquement par les backends Nest)
+- [x] Créer libs/auth-client (Client Auth Angular partagé pour SSO)
 - [x] Créer lib backend pour la gestion multi-tenant (pool de connexions réutilisable)
 - [x] Créer lib backend auth commune (decorators, guards, stratégies OAuth)
-- [x] Créer lib de contrats/DTO partagés entre services et frontend (désormais regroupés dans `libs/shared-types`)
 - [ ] Créer lib UI Angular partagée (tableaux, modals, composants transverses)
-- [ ] Étendre libs/sdk avec les clients tenant-service et auth-service — sans objet tant que la lib SDK n’est pas nécessaire
 
 ### 🐳 Docker et Infrastructure
 
@@ -100,13 +120,11 @@
 
 ---
 
-## ✅ Terminé
+## ✅ Terminé (Historique récent)
 
-- [x] Création du fichier TODO.md pour suivi de l'avancement
-- [x] Initialisation du workspace Nx avec preset 'apps'
-- [x] Installation des plugins @nx/angular et @nx/nest
-- [x] Création de la structure de dossiers (apps/, services/, libs/, docker/)
-- [x] Configuration TailwindCSS pour Angular (automatique lors de la création)
+- [x] **DeepNews MVP** : Backend (Ingestion, IA, API) et Frontend (Feed, WebSocket, SSO) complets.
+- [x] **Auth Client Lib** : Refactoring de l'auth frontend en librairie partagée (`libs/auth-client`).
+- [x] **SSO Flow** : Connexion unifiée via Hub avec redirection sécurisée et persistance de session.
 - [x] Création de hub-frontend (Angular 20 avec routing, standalone, TailwindCSS)
 - [x] Création de hub-backend (NestJS avec proxy configuré vers frontend)
 - [x] Installation et configuration de TypeORM avec MySQL
@@ -134,32 +152,33 @@
 - **Containerisation** : Docker + Docker Compose
 - **Nx Version** : 22.0.2
 
-Roadmap
+### Roadmap
 
-Phase 1 
+#### Phase 1 
 – Consolidation Hub (en cours d’achèvement)
 - Finaliser la gestion des applications souscrites (hub-frontend)
 - Créer l’interface de gestion des entités (hub-frontend)
 - Stabiliser le tenant-service et les libs partagées (fait en grande partie)
 
-Phase 1 bis – Socle transverse
-Créer l’API Gateway (NestJS) pour centraliser l’accès aux microservices et préparer la sécurité transversale
+#### Phase 1 bis – Socle transverse
+- Créer l’API Gateway (NestJS) pour centraliser l’accès aux microservices et préparer la sécurité transversale
 
-Phase 2 – Services business & front dédiés
-Billing-service (paiements, abonnements)
-Notification-service (emails/alertes)
-UI d’activation/désactivation d’apps
-Gestion d’abonnements et intégration paiement dans le hub
+#### Phase 2 – Services business & front dédiés
+- Billing-service (paiements, abonnements)
+- Notification-service (emails/alertes)
+- UI d’activation/désactivation d’apps
+- Gestion d’abonnements et intégration paiement dans le hub
 
-Phase 3 – Suites applicatives verticales
-Hotel-manager backend/frontend
-Booking-portal backend/frontend
-HR-manager backend/frontend
+#### Phase 3 – Suites applicatives verticales
+- Hotel-manager backend/frontend
+- Booking-portal backend/frontend
+- HR-manager backend/frontend
 
-Phase 4 – Communication & interop
-gRPC pour la communication inter-services
-RabbitMQ pour le messaging
-Clients REST (si nécessaire après gRPC)
-Phase 5 – Industrialisation & docs
-Lib UI Angular partagée
-Documentation architecture/APIs + guides install & dev
+#### Phase 4 – Communication & interop
+- gRPC pour la communication inter-services
+- RabbitMQ pour le messaging
+- Clients REST (si nécessaire après gRPC)
+
+#### Phase 5 – Industrialisation & docs
+- Lib UI Angular partagée
+- Documentation architecture/APIs + guides install & dev

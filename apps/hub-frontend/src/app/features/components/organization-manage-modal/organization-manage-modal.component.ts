@@ -17,8 +17,8 @@ import { firstValueFrom } from 'rxjs';
 import { OrganizationSummary } from '@sass-hub-v2/shared-types';
 import { slugify } from '@sass-hub-v2/utils';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
-import { ModalRef } from '../../services/modal/modal-ref';
-import { MODAL_DATA } from '../../services/modal/modal.tokens';
+import { ModalRef } from '@sass-hub-v2/ui-kit';
+import { MODAL_DATA } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
 
 export interface OrganizationManageModalData {
