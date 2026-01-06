@@ -1,96 +1,259 @@
-# SassHubV2
+# SaaS Hub V2
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Plateforme SaaS multi-tenant moderne construite avec **NestJS**, **Angular** et **Nx** dans une architecture microservices.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## 📋 Table des matières
 
-## Run tasks
+- [Vue d'ensemble](#-vue-densemble)
+- [Architecture](#-architecture)
+- [Structure du projet](#-structure-du-projet)
+- [Technologies utilisées](#-technologies-utilisées)
+- [Prérequis](#-prérequis)
+- [Installation](#-installation)
+- [Démarrage](#-démarrage)
+- [Scripts disponibles](#-scripts-disponibles)
+- [Documentation](#-documentation)
 
-To run tasks with Nx use:
+## 🎯 Vue d'ensemble
 
-```sh
-npx nx <target> <project-name>
+**SaaS Hub V2** est une plateforme SaaS complète conçue pour gérer plusieurs organisations (tenants) avec une architecture microservices robuste. Le projet implémente :
+
+- 🔐 **Authentification complète** : JWT, OAuth (Google, GitHub, Microsoft), refresh tokens
+- 🏢 **Gestion multi-tenant** : Organisations, membres, rôles et permissions
+- 🎨 **Interface moderne** : Frontend Angular avec Tailwind CSS
+- 🔄 **Architecture découplée** : Microservices spécialisés avec façade BFF
+- 🗄️ **Bases de données dynamiques** : MySQL par organisation avec pooling avancé
+- 📦 **Monorepo Nx** : Gestion optimisée des dépendances et du code partagé
+
+## 🏗 Architecture
+
+Le projet suit une **architecture microservices** avec un pattern **BFF (Backend for Frontend)** :
+
+```
+┌─────────────────┐
+│  Hub Frontend   │ (Angular - Port 4200)
+│    (Client)     │
+└────────┬────────┘
+         │ HTTP
+         ▼
+┌─────────────────┐
+│  Hub Backend    │ (NestJS - Port 3000)
+│     (Façade)    │ ◄── Orchestration, Sécurité, Agrégation
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+┌─────────┐ ┌──────────────┐
+│  Auth   │ │   Tenant     │
+│ Service │ │   Service    │
+│ :3001   │ │   :3002      │
+└─────────┘ └──────────────┘
 ```
 
-For example:
+### Avantages de cette architecture
 
-```sh
-npx nx build myproject
+1. **Sécurité renforcée** : Les secrets et tokens sensibles restent côté serveur
+2. **Orchestration centralisée** : Le hub-backend agrège les données de multiples services
+3. **Contrat API stable** : Le frontend consomme une API unifiée sans connaître le découpage interne
+4. **Évolutivité** : Chaque service peut évoluer et scaler indépendamment
+5. **Observabilité** : Traçabilité centralisée des requêtes et des logs
+
+👉 Pour plus de détails : [Architecture microservices](docs/microservices-architecture.md)
+
+## 📁 Structure du projet
+
+```
+sass_hub_v2/
+│
+├── apps/                          # Applications
+│   ├── hub-frontend/             # 🎨 Application Angular (Client SaaS)
+│   ├── hub-backend/              # 🔄 Façade BFF (Orchestration)
+│   ├── auth-service/             # 🔐 Microservice d'authentification
+│   ├── tenant-service/           # 🏢 Microservice de gestion des tenants
+│   └── *-e2e/                    # Tests end-to-end
+│
+├── libs/                          # Bibliothèques partagées
+│   ├── shared-types/             # 📦 Types TypeScript partagés (DTO, modèles)
+│   ├── backend/                  # 🔧 Modules backend communs (auth, tenant DB)
+│   └── utils/                    # 🛠️ Utilitaires purs (slugify, normalizeEmail)
+│
+├── docker/                        # 🐳 Configuration Docker
+│   ├── docker-compose.yml        # MySQL, Redis, RabbitMQ
+│   ├── Dockerfile.*              # Images de build
+│   └── nginx*.conf               # Configuration nginx pour le reverse proxy
+│
+├── scripts/                       # 📜 Scripts d'automatisation
+│   ├── start-local.sh            # Démarrage de tous les services
+│   ├── stop-local.sh             # Arrêt de tous les services
+│   └── check-ports.sh            # Vérification des ports disponibles
+│
+└── docs/                          # 📚 Documentation
+    ├── microservices-architecture.md
+    └── libraries-structure.md
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Applications principales
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+| Application | Port | Description |
+|------------|------|-------------|
+| **hub-frontend** | 4200 | Interface Angular avec Tailwind CSS |
+| **hub-backend** | 3000 | Façade BFF, orchestrateur des microservices |
+| **auth-service** | 3001 | Gestion des comptes, tokens JWT, OAuth |
+| **tenant-service** | 3002 | Gestion des organisations, membres, rôles |
 
-## Add new projects
+### Bibliothèques partagées
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+- **`@sass-hub-v2/shared-types`** : Modèles de domaine, DTO, contrats REST partagés
+- **`@sass-hub-v2/backend`** : Modules NestJS réutilisables (TenantDbModule, BackendAuthModule)
+- **`@sass-hub-v2/utils`** : Fonctions utilitaires pures (framework-agnostic)
 
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+👉 Détails complets : [Structure des bibliothèques](docs/libraries-structure.md)
+
+## 🛠 Technologies utilisées
+
+### Frontend
+- **Angular** 20.3 - Framework frontend
+- **Tailwind CSS** - Framework CSS utility-first
+- **Vite** - Build tool rapide
+
+### Backend
+- **NestJS** 11.0 - Framework Node.js progressif
+- **TypeORM** - ORM pour TypeScript
+- **Passport JWT** - Authentification
+- **MySQL** - Base de données relationnelle
+- **Redis** - Cache et sessions
+- **RabbitMQ** - Message broker (prévu)
+
+### DevOps & Tooling
+- **Nx** 22.0 - Monorepo intelligent
+- **Docker & Docker Compose** - Containerisation
+- **Jest & Playwright** - Tests unitaires et E2E
+- **ESLint & Prettier** - Linting et formatage
+
+## ✅ Prérequis
+
+- **Node.js** >= 18.x
+- **npm** ou **yarn**
+- **Docker** & **Docker Compose** (pour MySQL, Redis, RabbitMQ)
+- **Git**
+
+## 📦 Installation
+
+1. **Cloner le repository**
+   ```bash
+   git clone <repository-url>
+   cd sass_hub_v2
+   ```
+
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
+
+3. **Configurer les variables d'environnement**
+   
+   Créer les fichiers `.env` nécessaires dans chaque application :
+   - `apps/hub-backend/.env`
+   - `apps/auth-service/.env`
+   - `apps/tenant-service/.env`
+
+   Voir [OAuth_SETUP.md](OAuth_SETUP.md) pour la configuration OAuth.
+
+4. **Démarrer les services Docker**
+   ```bash
+   npm run docker:up
+   ```
+
+## 🚀 Démarrage
+
+### Démarrage rapide (tous les services)
+
+```bash
+npm start
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+Cette commande démarre automatiquement :
+- Hub Frontend (port 4200)
+- Hub Backend (port 3000)
+- Auth Service (port 3001)
+- Tenant Service (port 3002)
 
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
+### Démarrage manuel par service
 
-# Generate a library
-npx nx g @nx/react:lib some-lib
+```bash
+# Frontend uniquement
+npm run dev:frontend
+
+# Backend uniquement
+npm run dev:backend
+
+# Auth service
+npm run dev:auth-service
+
+# Tenant service
+npm run dev:tenant-service
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+### Accès aux applications
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- **Frontend** : http://localhost:4200
+- **Hub Backend API** : http://localhost:3000
+- **Auth Service API** : http://localhost:3001
+- **Tenant Service API** : http://localhost:3002
 
-## Set up CI!
+## 📜 Scripts disponibles
 
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+### Développement
+```bash
+npm start                    # Démarre tous les services
+npm run dev:all             # Alternative avec Nx parallel
+npm run stop                # Arrête tous les services (Linux/Mac)
+npm run stop:windows        # Arrête tous les services (Windows)
+npm run check-ports         # Vérifie la disponibilité des ports
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+### Docker
+```bash
+npm run docker:up           # Démarre MySQL, Redis, RabbitMQ
+npm run docker:down         # Arrête les conteneurs Docker
+npm run docker:logs         # Affiche les logs des conteneurs
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Tests
+```bash
+npx nx test <project>       # Tests unitaires d'un projet
+npx nx e2e <project>-e2e    # Tests E2E d'un projet
+npx nx run-many -t test     # Tests de tous les projets
+```
 
-## Install Nx Console
+### Build
+```bash
+npx nx build <project>               # Build d'un projet
+npx nx run-many -t build --all       # Build de tous les projets
+```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+### Nx utilities
+```bash
+npx nx graph                # Visualise le graphe des dépendances
+npx nx list                 # Liste les plugins installés
+npx nx affected:test        # Teste uniquement les projets affectés
+```
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 📚 Documentation
 
-## Useful links
+- [Architecture microservices](docs/microservices-architecture.md) - Détails de l'architecture et flux de données
+- [Structure des bibliothèques](docs/libraries-structure.md) - Guide d'utilisation des libs partagées
+- [Configuration OAuth](OAuth_SETUP.md) - Setup Google, GitHub, Microsoft OAuth
+- [TODO](TODO.md) - Tâches en cours et roadmap
 
-Learn more:
+## 🔗 Ressources Nx
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Documentation Nx](https://nx.dev)
+- [Nx Console pour VS Code](https://nx.dev/getting-started/editor-setup)
+- [Communauté Nx Discord](https://go.nx.dev/community)
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 📄 Licence
+
+MIT
