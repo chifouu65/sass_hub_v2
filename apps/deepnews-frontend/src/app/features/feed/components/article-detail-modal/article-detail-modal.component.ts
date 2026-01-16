@@ -1,14 +1,33 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Pipe, PipeTransform } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ModalRef, MODAL_DATA } from '@sass-hub-v2/ui-kit';
 import { Article } from '../../../../services/news';
+
+@Pipe({
+  name: 'safeHtml',
+  standalone: true
+})
+export class SafeHtmlPipe implements PipeTransform {
+  private sanitizer = inject(DomSanitizer);
+  transform(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+}
 
 @Component({
   selector: 'app-article-detail-modal',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, SafeHtmlPipe],
   template: `
     <div class="space-y-6">
+        @if (article.imageUrl) {
+            <div class="rounded-xl overflow-hidden -mt-2 mb-6 h-64 relative shadow-sm">
+                <img [src]="article.imageUrl" class="w-full h-full object-cover" alt="Cover Image">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            </div>
+        }
+
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 uppercase tracking-wide">{{ article.source }}</span>
@@ -21,8 +40,28 @@ import { Article } from '../../../../services/news';
             {{ article.title }}
         </h2>
 
+        @if (article.keyPoints && article.keyPoints.length > 0) {
+            <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
+                <h3 class="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Points Clés
+                </h3>
+                <ul class="space-y-2">
+                    @for (point of article.keyPoints; track point) {
+                        <li class="flex items-start gap-2 text-blue-800 text-sm leading-relaxed">
+                            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>
+                            {{ point }}
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
         <div class="prose prose-blue max-w-none text-gray-600 leading-relaxed">
-            <p>{{ article.content || article.summary }}</p>
+            @if (article.summary) {
+                <p class="font-medium text-gray-800 mb-4">{{ article.summary }}</p>
+            }
+            <div [innerHTML]="article.content | safeHtml"></div>
         </div>
 
         <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100">

@@ -8,6 +8,10 @@ export interface Article {
   link: string;
   content: string;
   summary?: string;
+  keyPoints?: string[];
+  sentiment?: 'positive' | 'negative' | 'neutral';
+  readingTime?: number;
+  imageUrl?: string;
   source: string;
   tags: string[];
   publishedAt: Date;

@@ -80,6 +80,9 @@ export class FeedComponent implements OnInit {
     });
 
     this.newsSocket.onNewArticle().subscribe(article => {
+        // Add new article to the top of the list without full reload
+        this.articles.update(current => [article, ...current]);
+        // Optionally reload categories if tags changed
         this.loadCategories();
     });
     

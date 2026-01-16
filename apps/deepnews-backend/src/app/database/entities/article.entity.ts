@@ -23,6 +23,18 @@ export class Article {
   @Column({ type: 'json', nullable: true })
   tags: string[];
 
+  @Column({ type: 'json', nullable: true })
+  keyPoints: string[];
+
+  @Column({ nullable: true })
+  sentiment: string; // 'positive', 'negative', 'neutral'
+
+  @Column({ nullable: true })
+  readingTime: number; // in minutes
+
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({ nullable: true })
   publishedAt: Date;
 

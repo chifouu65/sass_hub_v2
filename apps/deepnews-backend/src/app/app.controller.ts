@@ -33,6 +33,13 @@ export class AppController {
       return { status: 'success', message: `Scraped topic: ${query}` };
   }
 
+  @Post('admin/reset-articles')
+  async resetArticles() {
+      this.logger.warn('Clearing all articles from database...');
+      await this.articleRepo.clear();
+      return { status: 'success', message: 'All articles deleted' };
+  }
+
   private getUserIdFromHeader(authHeader: string): string | null {
       if (!authHeader) return null;
       try {
