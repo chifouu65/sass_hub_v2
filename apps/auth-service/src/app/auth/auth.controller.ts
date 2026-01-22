@@ -145,6 +145,31 @@ export class AuthController {
   }
 
   @Public()
+  @Get('mock/login')
+  async mockLogin(@Res() res: Response) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException();
+    }
+
+    const mockUser = {
+      email: 'mock.user@example.com',
+      firstName: 'Mock',
+      lastName: 'User',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mock',
+      provider: 'mock',
+      providerId: 'mock-123',
+    };
+
+    const user = await this.authService.findOrCreateOAuthUser(mockUser);
+    const tokens = this.authService.generateTokens(user);
+    
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+    res.redirect(
+      `${frontendUrl}/auth/callback?token=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+    );
+  }
+
+  @Public()
   @Get('internal/users/:id')
   async getInternalUser(
     @Param('id') id: string,

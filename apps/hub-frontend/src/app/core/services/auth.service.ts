@@ -74,38 +74,88 @@ export class AuthService {
   restoring = computed(() => this.#restoring());
   error = computed(() => this.#error());
 
+  #log(message: string, data?: Record<string, unknown>): void {
+    if (data) {
+      console.log(`[AuthService] ${message}`, data);
+      return;
+    }
+    console.log(`[AuthService] ${message}`);
+  }
+
+  #tokenInfo(token: string | null): { present: boolean; length: number } {
+    return { present: Boolean(token), length: token?.length ?? 0 };
+  }
+
   async initialize(): Promise<void> {
+    this.#log('initialize:start', {
+      storedAccess: this.#tokenInfo(localStorage.getItem('accessToken')),
+      storedRefresh: this.#tokenInfo(localStorage.getItem('refreshToken')),
+      storedUser: Boolean(localStorage.getItem('user')),
+    });
     this.#restoring.set(true);
     this.#error.set(null);
 
     try {
       const restored = await this.#restoreAuthState();
       this.#state.set(restored);
+      this.#log('initialize:restored', {
+        user: restored.user?.email ?? null,
+        accessToken: this.#tokenInfo(restored.accessToken),
+        refreshToken: this.#tokenInfo(restored.refreshToken),
+      });
 
       if (restored.refreshToken) {
+        this.#log('initialize:refreshTokens:call');
         await firstValueFrom(this.refreshTokens());
+        this.#log('initialize:refreshTokens:success');
         this.#error.set(null);
       }
     } catch (error) {
+      this.#log('initialize:error', { error });
       this.#error.set(this.#resolveError(error));
     } finally {
       this.#restoring.set(false);
+      this.#log('initialize:end', {
+        isAuthenticated: this.isAuthenticated(),
+        restoring: this.restoring(),
+      });
     }
   }
 
   login(credentials: LoginDto): Observable<AuthResponse> {
+    this.#log('login:call', { email: credentials.email });
     return this.#http
       .post<AuthResponse>(`${this.#API_URL}/login`, credentials)
-      .pipe(tap((response) => this.#setAuthData(response)));
+      .pipe(
+        tap((response) => {
+          this.#log('login:success', {
+            user: response.user?.email ?? null,
+            accessToken: this.#tokenInfo(response.accessToken),
+            refreshToken: this.#tokenInfo(response.refreshToken),
+          });
+          this.#setAuthData(response);
+        }),
+      );
   }
 
   register(data: RegisterDto): Observable<AuthResponse> {
+    this.#log('register:call', { email: data.email });
     return this.#http
       .post<AuthResponse>(`${this.#API_URL}/register`, data)
-      .pipe(tap((response) => this.#setAuthData(response)));
+      .pipe(
+        tap((response) => {
+          this.#log('register:success', {
+            user: response.user?.email ?? null,
+            accessToken: this.#tokenInfo(response.accessToken),
+            refreshToken: this.#tokenInfo(response.refreshToken),
+          });
+          this.#setAuthData(response);
+        }),
+      );
   }
 
   logout(): void {
+    this.#log('logout');
     this.#state.set(EMPTY_STATE);
     this.#error.set(null);
     localStorage.removeItem('accessToken');
@@ -115,6 +165,11 @@ export class AuthService {
   }
 
   setTokensAndUser(user: User, accessToken: string, refreshToken: string): void {
+    this.#log('setTokensAndUser', {
+      user: user?.email ?? null,
+      accessToken: this.#tokenInfo(accessToken),
+      refreshToken: this.#tokenInfo(refreshToken),
+    });
     this.#setAuthData({ user, accessToken, refreshToken });
   }
 
@@ -134,6 +189,9 @@ export class AuthService {
 
   refreshTokens(): Observable<AuthResponse> {
     const refreshToken = this.#state().refreshToken;
+    this.#log('refreshTokens:call', {
+      refreshToken: this.#tokenInfo(refreshToken),
+    });
     if (!refreshToken) {
       return throwError(() => new Error('Aucun refresh token disponible'));
     }
@@ -145,8 +203,16 @@ export class AuthService {
             refreshToken,
           })
           .pipe(
-            tap((response) => this.#setAuthData(response)),
+            tap((response) => {
+              this.#log('refreshTokens:success', {
+                user: response.user?.email ?? null,
+                accessToken: this.#tokenInfo(response.accessToken),
+                refreshToken: this.#tokenInfo(response.refreshToken),
+              });
+              this.#setAuthData(response);
+            }),
             catchError((error) => {
+              this.#log('refreshTokens:error', { error });
               this.logout();
               return throwError(() => error);
             }),
@@ -165,6 +231,11 @@ export class AuthService {
   }
 
    #setAuthData(response: AuthResponse): void {
+    this.#log('setAuthData', {
+      user: response.user?.email ?? null,
+      accessToken: this.#tokenInfo(response.accessToken),
+      refreshToken: this.#tokenInfo(response.refreshToken),
+    });
     const nextState: AuthState = {
       user: response.user,
       accessToken: response.accessToken,
@@ -185,16 +256,27 @@ export class AuthService {
       const storedUser = localStorage.getItem('user');
 
       if (!storedToken || !storedUser) {
+        this.#log('restoreAuthState:empty', {
+          storedAccess: this.#tokenInfo(storedToken),
+          storedRefresh: this.#tokenInfo(storedRefresh),
+          storedUser: Boolean(storedUser),
+        });
         return EMPTY_STATE;
       }
 
       const parsedUser: User = JSON.parse(storedUser);
+      this.#log('restoreAuthState:success', {
+        user: parsedUser?.email ?? null,
+        storedAccess: this.#tokenInfo(storedToken),
+        storedRefresh: this.#tokenInfo(storedRefresh),
+      });
       return {
         user: parsedUser,
         accessToken: storedToken,
         refreshToken: storedRefresh ?? null,
       } satisfies AuthState;
     } catch {
+      this.#log('restoreAuthState:error');
       return EMPTY_STATE;
     }
   }
