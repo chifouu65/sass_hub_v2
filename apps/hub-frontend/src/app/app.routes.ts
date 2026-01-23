@@ -50,6 +50,13 @@ export const appRoutes: Route[] = [
           import('./features/views/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'organizations/empty',
+        loadComponent: () =>
+          import('./features/views/organizations-empty/organizations-empty').then(
+            (m) => m.OrganizationsEmptyComponent,
+          ),
+      },
+      {
         path: 'organizations',
         loadComponent: () =>
           import('./features/views/organizations/organizations').then(

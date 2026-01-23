@@ -11,19 +11,16 @@ export class ToastService {
   readonly #timers = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor() {
-    effect(
-      () => {
-        const current = this.#toasts();
-        const activeIds = new Set(current.map((toast) => toast.id));
-        for (const [id, timer] of this.#timers.entries()) {
-          if (!activeIds.has(id)) {
-            clearTimeout(timer);
-            this.#timers.delete(id);
-          }
+    effect(() => {
+      const current = this.#toasts();
+      const activeIds = new Set(current.map((toast) => toast.id));
+      for (const [id, timer] of this.#timers.entries()) {
+        if (!activeIds.has(id)) {
+          clearTimeout(timer);
+          this.#timers.delete(id);
         }
-      },
-      { allowSignalWrites: true }
-    );
+      }
+    });
   }
 
   success(message: string, config?: ToastConfig): string {

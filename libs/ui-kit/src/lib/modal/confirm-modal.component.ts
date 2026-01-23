@@ -31,7 +31,7 @@ export interface ConfirmModalData {
       <div class="flex justify-end gap-3">
         <button
           type="button"
-          class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-medium text-sm text-gray-700 transition-colors"
+          class="btn btn-secondary"
           (click)="cancelEvent.emit()"
         >
           {{ cancelLabel() }}
@@ -39,7 +39,7 @@ export interface ConfirmModalData {
 
         <button
           type="button"
-          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium text-sm transition-colors"
+          class="btn btn-danger"
           (click)="confirmEvent.emit()"
         >
           {{ confirmLabel() }}

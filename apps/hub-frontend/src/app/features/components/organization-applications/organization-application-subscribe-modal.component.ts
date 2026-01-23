@@ -3,10 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
-  OnInit,
   signal,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
   ReactiveFormsModule,
@@ -15,6 +16,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { AvailableApplicationView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
+import { ErrorMessageService } from '../../../core/services/error-message.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { ModalRef } from '@sass-hub-v2/ui-kit';
 import { MODAL_DATA } from '@sass-hub-v2/ui-kit';
@@ -96,25 +98,7 @@ export interface OrganizationApplicationSubscribeModalResult {
           [disabled]="form.invalid || submitting() || !availableApplications().length"
         >
           @if (submitting()) {
-            <svg
-              class="mr-2 h-4 w-4 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              ></path>
-            </svg>
+            <i class="mdi mdi-loading mdi-spin text-sm"></i>
           }
           Installer
         </button>
@@ -123,19 +107,28 @@ export interface OrganizationApplicationSubscribeModalResult {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OrganizationApplicationSubscribeModalComponent implements OnInit {
+export class OrganizationApplicationSubscribeModalComponent {
   readonly #data = inject<OrganizationApplicationSubscribeModalData>(MODAL_DATA);
   readonly #organizationStore = inject(OrganizationRolesService);
   readonly #toastService = inject(ToastService);
+  readonly #errorMessage = inject(ErrorMessageService);
   readonly #modalRef =
     inject<ModalRef<OrganizationApplicationSubscribeModalComponent, OrganizationApplicationSubscribeModalResult | undefined>>(
       ModalRef,
     );
   readonly #fb = inject(FormBuilder);
 
-  readonly loading = signal(true);
   readonly submitting = signal(false);
-  readonly available = signal<AvailableApplicationView[]>([]);
+  readonly availableApplicationsResource = rxResource<
+    AvailableApplicationView[],
+    void
+  >({
+    stream: () =>
+      this.#organizationStore.fetchAvailableApplications(
+        this.#data.organizationId,
+      ),
+    defaultValue: [],
+  });
 
   readonly form = this.#fb.group({
     applicationId: this.#fb.control<string>('', {
@@ -144,14 +137,29 @@ export class OrganizationApplicationSubscribeModalComponent implements OnInit {
     }),
   });
 
-  readonly availableApplications = this.available.asReadonly();
+  readonly availableApplications = computed(
+    () => this.availableApplicationsResource.value() ?? [],
+  );
+  readonly loading = computed(() => this.availableApplicationsResource.isLoading());
   readonly selectedApplication = computed(() => {
     const id = this.form.controls.applicationId.value;
     return this.availableApplications().find((app) => app.id === id) ?? null;
   });
 
-  ngOnInit(): void {
-    this.#loadAvailableApplications();
+  constructor() {
+    effect(() => {
+      const apps = this.availableApplications();
+      if (apps.length === 1 && !this.form.controls.applicationId.value) {
+        this.form.controls.applicationId.setValue(apps[0].id);
+      }
+    });
+
+    effect(() => {
+      const error = this.availableApplicationsResource.error();
+      if (error) {
+        this.#toastService.error(this.#errorMessage.getMessage(error));
+      }
+    });
   }
 
   async onSubmit(): Promise<void> {
@@ -172,7 +180,7 @@ export class OrganizationApplicationSubscribeModalComponent implements OnInit {
       );
       this.close({ applicationId });
     } catch (error) {
-      this.#toastService.error(this.#extractErrorMessage(error));
+      this.#toastService.error(this.#errorMessage.getMessage(error));
     } finally {
       this.submitting.set(false);
     }
@@ -182,39 +190,5 @@ export class OrganizationApplicationSubscribeModalComponent implements OnInit {
     this.#modalRef.close(result);
   }
 
-   async #loadAvailableApplications(): Promise<void> {
-    this.loading.set(true);
-    try {
-      const apps = await firstValueFrom(
-        this.#organizationStore.fetchAvailableApplications(this.#data.organizationId),
-      );
-      this.available.set(apps);
-      if (apps.length === 1) {
-        this.form.controls.applicationId.setValue(apps[0].id);
-      }
-    } catch (error) {
-      this.#toastService.error(this.#extractErrorMessage(error));
-    } finally {
-      this.loading.set(false);
-    }
-  }
-
-   #extractErrorMessage(error: unknown): string {
-    if (!error) {
-      return 'Une erreur inattendue est survenue.';
-    }
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'error' in error &&
-      typeof (error as { error: unknown }).error === 'object'
-    ) {
-      const payload = (error as { error: { message?: string } }).error;
-      if (payload?.message) {
-        return payload.message;
-      }
-    }
-    return 'Impossible de traiter la requête.';
-  }
 }
 

@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, RegisterDto } from '@sass-hub-v2/auth-client';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -27,7 +28,7 @@ export class Register {
   errorMessage = '';
   successMessage = '';
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
       return;
     }
@@ -38,16 +39,15 @@ export class Register {
 
     const data: RegisterDto = this.registerForm.value as RegisterDto;
 
-    this.authService.register(data).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage =
-          error.error?.message ||
-          "Une erreur est survenue lors de la création du compte";
-      },
-    });
+    try {
+      await firstValueFrom(this.authService.register(data));
+      this.router.navigate(['/dashboard']);
+    } catch (error: any) {
+      this.errorMessage =
+        error?.error?.message ||
+        'Une erreur est survenue lors de la création du compte';
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

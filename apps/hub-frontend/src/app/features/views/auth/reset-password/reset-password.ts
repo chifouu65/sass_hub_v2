@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, ResetPasswordDto } from '../../../../core/services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
@@ -37,7 +38,7 @@ export class ResetPassword {
     return this.resetPasswordForm.controls.token.value;
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.resetPasswordForm.invalid) {
       return;
     }
@@ -61,16 +62,15 @@ export class ResetPassword {
       token: token ?? '',
     };
 
-    this.authService.resetPassword(data).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.successMessage = 'Mot de passe mis à jour avec succès';
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage =
-          error.error?.message || 'Une erreur est survenue lors de la mise à jour du mot de passe';
-      },
-    });
+    try {
+      await firstValueFrom(this.authService.resetPassword(data));
+      this.successMessage = 'Mot de passe mis à jour avec succès';
+    } catch (error: any) {
+      this.errorMessage =
+        error?.error?.message ||
+        'Une erreur est survenue lors de la mise à jour du mot de passe';
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

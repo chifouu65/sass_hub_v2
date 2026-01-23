@@ -3,9 +3,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { OrganizationRoleView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { SkeletonComponent } from '../skeleton/skeleton';
-import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
+import {
+  ModalService,
+  ConfirmModalComponent,
+  ConfirmModalData,
+  SearchTableToolbarComponent,
+  SectionShellComponent,
+} from '@sass-hub-v2/ui-kit';
 import { firstValueFrom } from 'rxjs';
-import { finalize } from 'rxjs/operators';
 import { OrganizationRoleCreateModalComponent } from './organization-role-create-modal.component';
 import { OrganizationRolePermissionsModalComponent } from './organization-role-permissions-modal.component';
 import { OrganizationRoleUpdateModalComponent } from './organization-role-update-modal.component';
@@ -51,7 +56,13 @@ const PERMISSION_METADATA: Record<
 @Component({
   selector: 'app-organization-roles',
   standalone: true,
-  imports: [CommonModule, SkeletonComponent, GenericTableComponent],
+  imports: [
+    CommonModule,
+    SkeletonComponent,
+    GenericTableComponent,
+    SearchTableToolbarComponent,
+    SectionShellComponent,
+  ],
   templateUrl: './organization-roles.component.html',
 })
 export class OrganizationRolesComponent {
@@ -168,10 +179,13 @@ export class OrganizationRolesComponent {
     }
 
     this.deleteRoleInProgress.set(role.id);
-    this.#organizationRolesStore
-      .deleteRole(organizationId, role.id)
-      .pipe(finalize(() => this.deleteRoleInProgress.set(null)))
-      .subscribe();
+    try {
+      await firstValueFrom(
+        this.#organizationRolesStore.deleteRole(organizationId, role.id),
+      );
+    } finally {
+      this.deleteRoleInProgress.set(null);
+    }
   }
 
   async #confirmAction(data: ConfirmModalData): Promise<boolean> {

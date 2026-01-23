@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, ForgotPasswordDto } from '../../../../core/services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-forgot-password',
@@ -23,7 +24,7 @@ export class ForgotPassword {
   errorMessage = '';
   successMessage = '';
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.forgotPasswordForm.invalid) {
       return;
     }
@@ -35,17 +36,14 @@ export class ForgotPassword {
     const data: ForgotPasswordDto =
       this.forgotPasswordForm.value as ForgotPasswordDto;
 
-    this.authService.forgotPassword(data).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.successMessage =
-          "Si cet email existe, un lien de réinitialisation a été envoyé";
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage =
-          error.error?.message || 'Une erreur est survenue';
-      },
-    });
+    try {
+      await firstValueFrom(this.authService.forgotPassword(data));
+      this.successMessage =
+        'Si cet email existe, un lien de réinitialisation a été envoyé';
+    } catch (error: any) {
+      this.errorMessage = error?.error?.message || 'Une erreur est survenue';
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

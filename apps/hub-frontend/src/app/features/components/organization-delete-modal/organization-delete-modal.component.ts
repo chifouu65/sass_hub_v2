@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { OrganizationSummary } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
+import { ErrorMessageService } from '../../../core/services/error-message.service';
 import { ModalRef } from '@sass-hub-v2/ui-kit';
 import { MODAL_DATA } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
@@ -54,25 +55,7 @@ export interface OrganizationDeleteModalData {
           [disabled]="submitting()"
         >
           @if (submitting()) {
-            <svg
-              class="mr-2 h-4 w-4 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              ></path>
-            </svg>
+            <i class="mdi mdi-loading mdi-spin text-sm"></i>
           }
           Supprimer
         </button>
@@ -87,6 +70,7 @@ export class OrganizationDeleteModalComponent {
     inject<ModalRef<OrganizationDeleteModalComponent, boolean>>(ModalRef);
   readonly #store = inject(OrganizationRolesService);
   readonly #toast = inject(ToastService);
+  readonly #errorMessage = inject(ErrorMessageService);
 
   readonly submitting = signal(false);
 
@@ -104,7 +88,7 @@ export class OrganizationDeleteModalComponent {
       this.#toast.success('Organisation supprimée.');
       this.close(true);
     } catch (error) {
-      this.#toast.error(this.#extractErrorMessage(error));
+      this.#toast.error(this.#errorMessage.getMessage(error));
       this.submitting.set(false);
     }
   }
@@ -113,24 +97,5 @@ export class OrganizationDeleteModalComponent {
     this.#modalRef.close(result);
   }
 
-  #extractErrorMessage(error: unknown): string {
-    if (!error) {
-      return 'Une erreur inattendue est survenue.';
-    }
-
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'error' in error &&
-      typeof (error as { error: unknown }).error === 'object'
-    ) {
-      const payload = (error as { error: { message?: string } }).error;
-      if (payload?.message) {
-        return payload.message;
-      }
-    }
-
-    return 'Impossible de traiter la requête.';
-  }
 }
 

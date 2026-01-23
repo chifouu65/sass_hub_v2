@@ -1,16 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OrganizationMemberView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
+import { ErrorMessageService } from '../../../core/services/error-message.service';
 import { SkeletonComponent } from '../skeleton/skeleton';
 import { GenericTableComponent } from '../generic-table/generic-table.component';
 import { GenericTableHeader } from '../generic-table/generic-table.component';
 import { OrganizationMemberRoleModalComponent, OrganizationMemberRoleModalData } from './organization-member-role-modal.component';
 import { OrganizationMemberCreateModalComponent, OrganizationMemberCreateModalResult } from './organization-member-create-modal.component';
-import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
+import {
+  ModalService,
+  ConfirmModalComponent,
+  ConfirmModalData,
+  SearchTableToolbarComponent,
+  SectionShellComponent,
+} from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
-import { finalize, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 type AssignmentValue = string;
 
@@ -22,6 +29,8 @@ type AssignmentValue = string;
     FormsModule,
     SkeletonComponent,
     GenericTableComponent,
+    SearchTableToolbarComponent,
+    SectionShellComponent,
   ],
   templateUrl: './organization-members.component.html',
 })
@@ -29,6 +38,7 @@ export class OrganizationMembersComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);
   readonly #modalService = inject(ModalService);
   readonly #toastService = inject(ToastService);
+  readonly #errorMessage = inject(ErrorMessageService);
 
   readonly organizations = this.#organizationRolesStore.organizations;
   readonly selectedOrganizationId =
@@ -78,7 +88,14 @@ export class OrganizationMembersComponent {
   });
 
   readonly addMemberSubmitting = signal(false);
-  readonly memberAssignments = signal<Record<string, AssignmentValue>>({});
+  readonly memberAssignments = linkedSignal({
+    source: this.members,
+    computation: (members) =>
+      members.reduce((acc, member) => {
+        acc[member.userId] = member.organizationRoleId ?? '';
+        return acc;
+      }, {} as Record<string, AssignmentValue>),
+  });
   readonly memberUpdating = signal<Record<string, boolean>>({});
   readonly roleOptions = computed(() => {
     const roles = this.#organizationRolesStore.roles();
@@ -87,19 +104,6 @@ export class OrganizationMembersComponent {
       label: `${role.name}${role.isSystem ? ' (Système)' : ''}`,
     }));
   });
-
-  constructor() {
-    effect(
-      () => {
-        const assignments = this.members().reduce((acc, member) => {
-          acc[member.userId] = member.organizationRoleId ?? '';
-          return acc;
-        }, {} as Record<string, AssignmentValue>);
-        this.memberAssignments.set(assignments);
-      },
-      { allowSignalWrites: true }
-    );
-  }
 
   onAssignmentChange(userId: string, value: string): void {
     const current = { ...this.memberAssignments() };
@@ -136,23 +140,22 @@ export class OrganizationMembersComponent {
     map[member.userId] = true;
     this.memberUpdating.set(map);
 
-    this.#organizationRolesStore
-      .updateMemberRole(organizationId, member.userId, payload)
-      .pipe(
-        finalize(() => {
-          const nextMap = { ...this.memberUpdating() };
-          delete nextMap[member.userId];
-          this.memberUpdating.set(nextMap);
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.#toastService.success('Rôle du membre mis à jour.');
-        },
-        error: (error) => {
-          this.#toastService.error(this.#extractErrorMessage(error));
-        },
-      });
+    try {
+      await firstValueFrom(
+        this.#organizationRolesStore.updateMemberRole(
+          organizationId,
+          member.userId,
+          payload,
+        ),
+      );
+      this.#toastService.success('Rôle du membre mis à jour.');
+    } catch (error) {
+      this.#toastService.error(this.#errorMessage.getMessage(error));
+    } finally {
+      const nextMap = { ...this.memberUpdating() };
+      delete nextMap[member.userId];
+      this.memberUpdating.set(nextMap);
+    }
   }
 
   async openAddMemberModal(): Promise<void> {
@@ -247,23 +250,21 @@ export class OrganizationMembersComponent {
     map[member.userId] = true;
     this.memberUpdating.set(map);
 
-    this.#organizationRolesStore
-      .removeMember(organizationId, member.userId)
-      .pipe(
-        finalize(() => {
-          const nextMap = { ...this.memberUpdating() };
-          delete nextMap[member.userId];
-          this.memberUpdating.set(nextMap);
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.#toastService.success('Membre retiré de l’organisation.');
-        },
-        error: (error) => {
-          this.#toastService.error(this.#extractErrorMessage(error));
-        },
-      });
+    try {
+      await firstValueFrom(
+        this.#organizationRolesStore.removeMember(
+          organizationId,
+          member.userId,
+        ),
+      );
+      this.#toastService.success('Membre retiré de l’organisation.');
+    } catch (error) {
+      this.#toastService.error(this.#errorMessage.getMessage(error));
+    } finally {
+      const nextMap = { ...this.memberUpdating() };
+      delete nextMap[member.userId];
+      this.memberUpdating.set(nextMap);
+    }
   }
 
   onSearchTermChange(term: string): void {
@@ -332,7 +333,7 @@ export class OrganizationMembersComponent {
 
       this.#toastService.success('Utilisateur ajouté à l’organisation.');
     } catch (error) {
-      this.#toastService.error(this.#extractErrorMessage(error));
+      this.#toastService.error(this.#errorMessage.getMessage(error));
     } finally {
       this.addMemberSubmitting.set(false);
     }
@@ -357,23 +358,4 @@ export class OrganizationMembersComponent {
     return {};
   }
 
-  #extractErrorMessage(error: unknown): string {
-    if (!error) {
-      return 'Une erreur inattendue est survenue.';
-    }
-
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'error' in error &&
-      typeof (error as { error: unknown }).error === 'object'
-    ) {
-      const payload = (error as { error: { message?: string } }).error;
-      if (payload?.message) {
-        return payload.message;
-      }
-    }
-
-    return 'Impossible de traiter la requête.';
-  }
 }

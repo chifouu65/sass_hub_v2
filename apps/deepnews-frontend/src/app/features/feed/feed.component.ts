@@ -10,7 +10,7 @@ import { NewsService, Article, Category } from '../../services/news';
 import { NewsSocket } from '../../services/socket';
 import { ArticleCardComponent } from './components/article-card/article-card.component';
 import { RouterModule, Router } from '@angular/router';
-import { ModalService } from '@sass-hub-v2/ui-kit';
+import { ModalService, SearchTableToolbarComponent } from '@sass-hub-v2/ui-kit';
 import { PreferencesComponent } from '../preferences/preferences.component';
 import { firstValueFrom } from 'rxjs';
 import { SettingsService } from '../../services/settings';
@@ -33,7 +33,13 @@ export class InfiniteTriggerComponent implements OnInit {
 
 @Component({
   selector: 'app-feed',
-  imports: [InfiniteTriggerComponent, ArticleCardComponent, RouterModule, FormsModule],
+  imports: [
+    InfiniteTriggerComponent,
+    ArticleCardComponent,
+    RouterModule,
+    FormsModule,
+    SearchTableToolbarComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './feed.component.html'
 })
@@ -101,6 +107,10 @@ export class FeedComponent implements OnInit {
   
   onSearchInput(event: Event) {
       const value = (event.target as HTMLInputElement).value;
+      this.searchSubject.next(value);
+  }
+
+  onSearchValueChange(value: string) {
       this.searchSubject.next(value);
   }
   

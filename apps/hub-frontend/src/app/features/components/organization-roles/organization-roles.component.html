@@ -1,106 +1,66 @@
-<section class="space-y-6">
-  <div
-    class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-  >
-    <div class="space-y-2">
-      <div>
-        <h2 class="text-lg font-semibold text-slate-900">Rôles</h2>
-        <p class="text-xs text-slate-500">
-          Consultez les rôles disponibles et leurs permissions pour chaque
-          organisation.
-        </p>
-      </div>
-      <div class="text-xs text-slate-500">
-        {{ roles().length }} rôle{{
-          roles().length > 1 ? 's' : ''
-        }}
-        disponible{{ roles().length > 1 ? 's' : '' }}
-      </div>
-    </div>
-    <div class="flex items-center gap-2 md:justify-end">
-      <button
-        type="button"
-        class="btn btn-primary btn-sm"
-        (click)="openCreateRoleModal()"
-        [disabled]="!selectedOrganizationId() || permissions().length === 0"
-      >
-        Créer un rôle
-      </button>
-    </div>
+<app-section-shell>
+  <h2 section-title class="text-lg font-semibold text-slate-900">Rôles</h2>
+  <p section-subtitle class="text-xs text-slate-500">
+    Consultez les rôles disponibles et leurs permissions pour chaque organisation.
+  </p>
+  <div section-actions>
+    <button
+      type="button"
+      class="btn btn-primary btn-sm"
+      (click)="openCreateRoleModal()"
+      [disabled]="!selectedOrganizationId() || permissions().length === 0"
+    >
+      Créer un rôle
+    </button>
   </div>
 
-  <form
-    class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
-    role="search"
-    (submit)="$event.preventDefault()"
-  >
-    <div class="relative w-full md:max-w-md">
-      <label class="sr-only" for="role-search">Rechercher un rôle</label>
-      <div
-        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
-      >
-        <svg
-          aria-hidden="true"
-          class="h-5 w-5"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </div>
-      <input
-        id="role-search"
-        type="search"
-        class="form-input w-full pl-10 pr-3"
-        placeholder="Rechercher par nom, slug ou permission"
-        autocomplete="off"
-        [value]="roleSearchTerm()"
-        (input)="onRoleSearchChange($any($event.target).value)"
-      />
-    </div>
-    <div class="flex items-center gap-3 text-sm text-slate-500 md:justify-end">
-      <span>
+  <div section-search>
+    <app-search-table-toolbar
+      searchId="role-search"
+      label="Rechercher un rôle"
+      placeholder="Rechercher par nom, slug ou permission"
+      [value]="roleSearchTerm()"
+      (valueChange)="onRoleSearchChange($event)"
+    >
+      <span search-right>
         {{ filteredRoles().length }} résultat{{
           filteredRoles().length > 1 ? 's' : ''
         }}
         sur {{ roles().length }}
       </span>
-    </div>
-  </form>
+    </app-search-table-toolbar>
+  </div>
 
-  @if (error(); as message) {
-  <div
-    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-  >
-    {{ message }}
+  <div section-body>
+    @if (error(); as message) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      {{ message }}
+    </div>
+    } @if (organizations().length === 0 && !loading()) {
+    <div
+      class="rounded-xl border border-dashed border-slate-200 bg-white py-12 text-center text-sm text-slate-500"
+    >
+      Créez une organisation pour commencer à définir des rôles personnalisés.
+    </div>
+    } @else {
+    <app-generic-table
+      [headers]="tableHeaders"
+      [data]="filteredRoles()"
+      [loading]="loading()"
+      [skeletonRows]="tableSkeletonRows"
+      [rowTemplate]="roleRow"
+      [skeletonTemplate]="roleSkeleton"
+      [emptyTemplate]="rolesEmpty"
+      [footerTemplate]="rolesFooter"
+      [trackBy]="trackRole"
+      [showToolbar]="false"
+    >
+    </app-generic-table>
+    }
   </div>
-  } @if (organizations().length === 0 && !loading()) {
-  <div
-    class="rounded-xl border border-dashed border-slate-200 bg-white py-12 text-center text-sm text-slate-500"
-  >
-    Créez une organisation pour commencer à définir des rôles personnalisés.
-  </div>
-  } @else {
-  <app-generic-table
-    [headers]="tableHeaders"
-    [data]="filteredRoles()"
-    [loading]="loading()"
-    [skeletonRows]="tableSkeletonRows"
-    [rowTemplate]="roleRow"
-    [skeletonTemplate]="roleSkeleton"
-    [emptyTemplate]="rolesEmpty"
-    [footerTemplate]="rolesFooter"
-    [trackBy]="trackRole"
-    [showToolbar]="false"
-  >
-  </app-generic-table>
-  }
-</section>
+</app-section-shell>
 
 <ng-template #roleRow let-role>
   <tr
@@ -141,10 +101,18 @@
         </span>
         <button
           type="button"
-          class="btn btn-secondary btn-xs self-start"
+          class="btn btn-secondary btn-xs self-start hidden sm:inline-flex"
           (click)="openRolePermissionsModal(role)"
         >
           Voir les détails
+        </button>
+        <button
+          type="button"
+          class="btn btn-icon sm:hidden"
+          aria-label="Voir les détails"
+          (click)="openRolePermissionsModal(role)"
+        >
+          <i class="mdi mdi-information-outline text-base"></i>
         </button>
       </div>
       } @else {
@@ -163,34 +131,41 @@
       <div class="flex justify-end gap-2">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
+          class="btn btn-secondary btn-sm hidden sm:inline-flex"
           (click)="openUpdateRoleModal(role)"
         >
           Modifier
         </button>
         <button
           type="button"
-          class="btn btn-danger btn-sm"
+          class="btn btn-danger btn-sm hidden sm:inline-flex"
           [disabled]="deleteRoleInProgress() === role.id"
           (click)="deleteRole(role)"
         >
           @if (deleteRoleInProgress() === role.id) {
-          <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            ></circle>
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            ></path>
-          </svg>
+          <i class="mdi mdi-loading mdi-spin text-sm"></i>
           } Supprimer
+        </button>
+        <button
+          type="button"
+          class="btn btn-icon sm:hidden"
+          aria-label="Modifier"
+          (click)="openUpdateRoleModal(role)"
+        >
+          <i class="mdi mdi-pencil text-base"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-icon sm:hidden text-red-600 hover:text-red-700 hover:bg-red-50"
+          aria-label="Supprimer"
+          [disabled]="deleteRoleInProgress() === role.id"
+          (click)="deleteRole(role)"
+        >
+          @if (deleteRoleInProgress() === role.id) {
+            <i class="mdi mdi-loading mdi-spin text-base"></i>
+          } @else {
+            <i class="mdi mdi-delete text-base"></i>
+          }
         </button>
       </div>
       }

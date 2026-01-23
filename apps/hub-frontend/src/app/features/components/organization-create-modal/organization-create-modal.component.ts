@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   NonNullableFormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { finalize } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
+import { ErrorMessageService } from '../../../core/services/error-message.service';
 import { slugify } from '@sass-hub-v2/utils';
 import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
@@ -23,6 +23,7 @@ export class OrganizationCreateModalComponent {
   readonly #fb = inject(NonNullableFormBuilder);
   readonly #modalService = inject(ModalService);
   readonly #toastService = inject(ToastService);
+  readonly #errorMessage = inject(ErrorMessageService);
 
   readonly createOrganizationForm = this.#fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -40,17 +41,6 @@ export class OrganizationCreateModalComponent {
   } | null>(null);
 
   readonly #slugManuallyEditedCreate = signal(false);
-
-  constructor() {
-    effect(
-      () => {
-        if (!this.createSubmitting()) {
-          this.formMessage.set(null);
-        }
-      },
-      { allowSignalWrites: true }
-    );
-  }
 
   onNameInput(): void {
     if (this.#slugManuallyEditedCreate()) {
@@ -90,22 +80,21 @@ export class OrganizationCreateModalComponent {
     }
 
     this.createSubmitting.set(true);
-    this.#organizationRolesStore
-      .createOrganization({
-        name: name.trim(),
-        slug: slug.trim(),
-        databaseName: databaseName?.trim() || undefined,
-      })
-      .pipe(finalize(() => this.createSubmitting.set(false)))
-      .subscribe({
-        next: () => {
-          this.#toastService.success('Organisation créée avec succès.');
-          this.#slugManuallyEditedCreate.set(false);
-        },
-        error: (error) => {
-          this.#toastService.error(this.#extractErrorMessage(error));
-        },
-      });
+    try {
+      await firstValueFrom(
+        this.#organizationRolesStore.createOrganization({
+          name: name.trim(),
+          slug: slug.trim(),
+          databaseName: databaseName?.trim() || undefined,
+        }),
+      );
+      this.#toastService.success('Organisation créée avec succès.');
+      this.#slugManuallyEditedCreate.set(false);
+    } catch (error) {
+      this.#toastService.error(this.#errorMessage.getMessage(error));
+    } finally {
+      this.createSubmitting.set(false);
+    }
   }
 
   async #confirmAction(
@@ -126,23 +115,4 @@ export class OrganizationCreateModalComponent {
     return result ?? false;
   }
 
-  #extractErrorMessage(error: unknown): string {
-    if (!error) {
-      return 'Une erreur inattendue est survenue.';
-    }
-
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'error' in error &&
-      typeof (error as { error: unknown }).error === 'object'
-    ) {
-      const payload = (error as { error: { message?: string } }).error;
-      if (payload?.message) {
-        return payload.message;
-      }
-    }
-
-    return 'Impossible de traiter la requête.';
-  }
 }

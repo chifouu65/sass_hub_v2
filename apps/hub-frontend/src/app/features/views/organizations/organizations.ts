@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, effect, inject, Signal, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import {
   OrganizationRolesService,
 } from '../../../core/services/organization-roles.service';
@@ -8,6 +8,7 @@ import { OrganizationMembersComponent } from '../../components/organization-memb
 import { OrganizationRolesComponent } from '../../components/organization-roles/organization-roles.component';
 import { OrganizationTableComponent } from '../../components/organization-table/organization-table.component';
 import { OrganizationApplicationsComponent } from '../../components/organization-applications/organization-applications.component';
+import { OrganizationSummary } from '@sass-hub-v2/shared-types';
 
 type TabId = 'organizations' | 'applications' | 'members' | 'roles';
 
@@ -26,22 +27,29 @@ type TabId = 'organizations' | 'applications' | 'members' | 'roles';
 })
 export class OrganizationsComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);
+  readonly #router = inject(Router);
 
-  readonly organizations = this.#organizationRolesStore.organizations;
-  readonly selectedOrganizationId =
-    this.#organizationRolesStore.selectedOrganizationId;
+  readonly organizations: Signal<OrganizationSummary[]> = this.#organizationRolesStore.organizations;
+  readonly selectedOrganizationId = this.#organizationRolesStore.selectedOrganizationId;
   readonly loading = this.#organizationRolesStore.loading;
   readonly error = this.#organizationRolesStore.error;
+
   readonly tabs: ReadonlyArray<{ id: TabId; label: string }> = [
     { id: 'organizations', label: 'Organisations' },
     { id: 'applications', label: 'Applications' },
     { id: 'members', label: 'Membres' },
     { id: 'roles', label: 'Rôles' },
   ];
+
   readonly activeTab = signal<TabId>('organizations');
 
   constructor() {
     this.#organizationRolesStore.loadOrganizations();
+    effect(() => {
+      if (!this.loading() && !this.organizations().length) {
+        this.#router.navigate(['/organizations/empty']);
+      }
+    });
   }
 
   setActiveTab(tab: TabId): void {

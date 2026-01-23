@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import {
   computed,
-  effect,
   inject,
   Injectable,
-  resource,
+  linkedSignal,
   signal,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import {
   AddOrganizationMemberRequest,
   AvailableApplicationView,
@@ -21,7 +21,7 @@ import {
   UpdateOrganizationRequest,
   UpdateOrganizationRoleRequest,
 } from '@sass-hub-v2/shared-types';
-import { firstValueFrom, forkJoin, Observable, throwError } from 'rxjs';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
@@ -46,19 +46,42 @@ export class OrganizationRolesService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly baseUrl = '/api/organizations';
-
-  private readonly _selectedOrganizationId = signal<string | null>(null);
   private readonly _error = signal<string | null>(null);
 
-  private readonly organizationsResource = resource<OrganizationSummary[], undefined>({
-    loader: () => this.fetchOrganizations(),
+  private readonly organizationsResource = rxResource<
+    OrganizationSummary[],
+    void
+  >({
+    stream: () => this.fetchOrganizations$(),
     defaultValue: [],
   });
 
-  private readonly organizationContextResource = resource<OrganizationContext, string | null>({
+  private readonly _selectedOrganizationId = linkedSignal<
+    OrganizationSummary[],
+    string | null
+  >({
+    source: this.organizationsResource.value,
+    computation: (organizations, previous) => {
+      if (!organizations.length) {
+        return null;
+      }
+
+      const current = previous?.value;
+      if (current && organizations.some((org) => org.id === current)) {
+        return current;
+      }
+
+      return organizations[0].id;
+    },
+  });
+
+  private readonly organizationContextResource = rxResource<
+    OrganizationContext,
+    string | null
+  >({
     params: () => this._selectedOrganizationId(),
-    loader: ({ params }) =>
-      params ? this.fetchOrganizationContext(params) : Promise.resolve(EMPTY_CONTEXT),
+    stream: ({ params }) =>
+      params ? this.fetchOrganizationContext$(params) : of(EMPTY_CONTEXT),
     defaultValue: EMPTY_CONTEXT,
   });
 
@@ -95,24 +118,6 @@ export class OrganizationRolesService {
       !!this._selectedOrganizationId() &&
       this.organizationContextResource.isLoading(),
   );
-
-  constructor() {
-    effect(() => {
-      const organizations = this.organizations();
-      const current = this._selectedOrganizationId();
-
-      if (!organizations.length) {
-        if (current !== null) {
-          this._selectedOrganizationId.set(null);
-        }
-        return;
-      }
-
-      if (!current || !organizations.some((org) => org.id === current)) {
-        this._selectedOrganizationId.set(organizations[0].id);
-      }
-    });
-  }
 
   loadOrganizations(): void {
     this.organizationsResource.reload();
@@ -350,10 +355,6 @@ export class OrganizationRolesService {
       );
   }
 
-  private fetchOrganizations(): Promise<OrganizationSummary[]> {
-    return firstValueFrom(this.fetchOrganizations$());
-  }
-
   private fetchOrganizations$(): Observable<OrganizationSummary[]> {
     return this.http
       .get<OrganizationSummary[]>(`${this.baseUrl}/my`, {
@@ -363,15 +364,9 @@ export class OrganizationRolesService {
         tap(() => this._error.set(null)),
         catchError((error) => {
           this._error.set(this.resolveError(error));
-          return throwError(() => error);
+          return of([]);
         }),
       );
-  }
-
-  private fetchOrganizationContext(
-    organizationId: string,
-  ): Promise<OrganizationContext> {
-    return firstValueFrom(this.fetchOrganizationContext$(organizationId));
   }
 
   private fetchOrganizationContext$(
@@ -399,7 +394,7 @@ export class OrganizationRolesService {
       tap(() => this._error.set(null)),
       catchError((error) => {
         this._error.set(this.resolveError(error));
-        return throwError(() => error);
+        return of(EMPTY_CONTEXT);
       }),
     );
   }
@@ -419,7 +414,7 @@ export class OrganizationRolesService {
         tap(() => this._error.set(null)),
         catchError((error) => {
           this._error.set(this.resolveError(error));
-          return throwError(() => error);
+          return of([]);
         }),
       );
   }

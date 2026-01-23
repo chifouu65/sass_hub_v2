@@ -16,17 +16,17 @@ interface NavLink {
   templateUrl: './app-layout.html',
 })
 export class AppLayoutComponent {
-  private readonly authService = inject(AuthService);
+   readonly #authService = inject(AuthService);
 
   navLinks: NavLink[] = [
     { path: 'dashboard', label: 'Tableau de bord', exact: true },
     { path: 'organizations', label: 'Organisations' },
   ];
 
-  currentUser = this.authService.currentUser;
+  currentUser = this.#authService.currentUser;
 
   logout(): void {
-    this.authService.logout();
+    this.#authService.logout();
   }
 }
 

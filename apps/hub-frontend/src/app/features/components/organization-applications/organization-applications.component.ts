@@ -1,28 +1,38 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  AvailableApplicationView,
-  SubscribedApplicationView,
-  SubscriptionStatus,
-} from '@sass-hub-v2/shared-types';
-import { finalize, firstValueFrom } from 'rxjs';
+import { SubscribedApplicationView, SubscriptionStatus } from '@sass-hub-v2/shared-types';
+import { firstValueFrom } from 'rxjs';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
+import { ErrorMessageService } from '../../../core/services/error-message.service';
 import { GenericTableComponent, GenericTableHeader } from '../generic-table/generic-table.component';
-import { ModalService, ConfirmModalComponent, ConfirmModalData } from '@sass-hub-v2/ui-kit';
+import {
+  ModalService,
+  ConfirmModalComponent,
+  ConfirmModalData,
+  SearchTableToolbarComponent,
+  SectionShellComponent,
+} from '@sass-hub-v2/ui-kit';
 import { ToastService } from '../../services/toast/toast.service';
 import { OrganizationApplicationSubscribeModalComponent, OrganizationApplicationSubscribeModalResult } from './organization-application-subscribe-modal.component';
 
 @Component({
   selector: 'app-organization-applications',
   standalone: true,
-  imports: [CommonModule, FormsModule, GenericTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    GenericTableComponent,
+    SearchTableToolbarComponent,
+    SectionShellComponent,
+  ],
   templateUrl: './organization-applications.component.html',
 })
 export class OrganizationApplicationsComponent {
   readonly #organizationStore = inject(OrganizationRolesService);
   readonly #modalService = inject(ModalService);
   readonly #toastService = inject(ToastService);
+  readonly #errorMessage = inject(ErrorMessageService);
 
   readonly applications = this.#organizationStore.applications;
   readonly applicationsLoading = this.#organizationStore.applicationsLoading;
@@ -141,26 +151,24 @@ export class OrganizationApplicationsComponent {
     current[application.subscriptionId] = true;
     this.unsubscribeState.set(current);
 
-    this.#organizationStore
-      .unsubscribeFromApplication(organizationId, application.subscriptionId)
-      .pipe(
-        finalize(() => {
-          const map = { ...this.unsubscribeState() };
-          delete map[application.subscriptionId];
-          this.unsubscribeState.set(map);
-        }),
-      )
-      .subscribe({
-        next: () => {
-          this.#toastService.success('Application désinstallée.');
-        },
-        error: (error) => {
-          this.#toastService.error(this.#extractErrorMessage(error));
-        },
-      });
+    try {
+      await firstValueFrom(
+        this.#organizationStore.unsubscribeFromApplication(
+          organizationId,
+          application.subscriptionId,
+        ),
+      );
+      this.#toastService.success('Application désinstallée.');
+    } catch (error) {
+      this.#toastService.error(this.#errorMessage.getMessage(error));
+    } finally {
+      const map = { ...this.unsubscribeState() };
+      delete map[application.subscriptionId];
+      this.unsubscribeState.set(map);
+    }
   }
 
-   async #confirmAction(data: ConfirmModalData, title: string): Promise<boolean> {
+  async #confirmAction(data: ConfirmModalData, title: string): Promise<boolean> {
     const ref = this.#modalService.open<ConfirmModalComponent, boolean>(ConfirmModalComponent, {
       data,
       host: { title },
@@ -169,22 +177,5 @@ export class OrganizationApplicationsComponent {
     return result ?? false;
   }
 
-   #extractErrorMessage(error: unknown): string {
-    if (!error) {
-      return 'Une erreur inattendue est survenue.';
-    }
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'error' in error &&
-      typeof (error as { error: unknown }).error === 'object'
-    ) {
-      const payload = (error as { error: { message?: string } }).error;
-      if (payload?.message) {
-        return payload.message;
-      }
-    }
-    return 'Impossible de traiter la requête.';
-  }
 }
 

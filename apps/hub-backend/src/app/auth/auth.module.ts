@@ -38,8 +38,24 @@ import {
     AuthServiceClient,
     {
       provide: AUTH_SERVICE_BASE_URL,
-      useFactory: () =>
-        process.env.AUTH_SERVICE_URL ?? 'http://localhost:3331/api',
+      useFactory: () => {
+        const envUrl = process.env.AUTH_SERVICE_URL;
+        const fallbackPort = Number(process.env.AUTH_SERVICE_PORT || 3331);
+        const fallbackUrl = `http://localhost:${fallbackPort}/api`;
+
+        if (!envUrl) {
+          return fallbackUrl;
+        }
+
+        if (
+          process.env.NODE_ENV !== 'production' &&
+          envUrl.includes('localhost:3001')
+        ) {
+          return fallbackUrl;
+        }
+
+        return envUrl;
+      },
     },
     {
       provide: AUTH_SERVICE_INTERNAL_API_KEY,

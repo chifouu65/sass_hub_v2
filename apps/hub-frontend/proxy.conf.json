@@ -6,7 +6,7 @@
     "logLevel": "debug"
   },
   "/api/organizations": {
-    "target": "http://localhost:3332",
+    "target": "http://localhost:3330",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

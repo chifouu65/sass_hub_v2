@@ -4,6 +4,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@sass-hub-v2/auth-client';
 import { AuthLoginRequest } from '@sass-hub-v2/shared-types';
+import { firstValueFrom } from 'rxjs';
 
 type OAuthProvider = 'google' | 'github' | 'microsoft';
 
@@ -28,7 +29,7 @@ export class Login {
   isLoading = false;
   errorMessage = '';
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
       return;
     }
@@ -37,23 +38,21 @@ export class Login {
     this.errorMessage = '';
 
     const credentials: AuthLoginRequest = this.loginForm.value as AuthLoginRequest;
-
-    this.authService.login(credentials).subscribe({
-      next: (response) => {
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-        if (returnUrl) {
-             const separator = returnUrl.includes('?') ? '&' : '?';
-             window.location.href = `${returnUrl}${separator}token=${response.accessToken}&refreshToken=${response.refreshToken}`;
-        } else {
-             this.router.navigate(['/dashboard']);
-        }
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage =
-          error.error?.message || 'Une erreur est survenue lors de la connexion';
-      },
-    });
+    try {
+      const response = await firstValueFrom(this.authService.login(credentials));
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+      if (returnUrl) {
+        const separator = returnUrl.includes('?') ? '&' : '?';
+        window.location.href = `${returnUrl}${separator}token=${response.accessToken}&refreshToken=${response.refreshToken}`;
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+    } catch (error: any) {
+      this.errorMessage =
+        error?.error?.message || 'Une erreur est survenue lors de la connexion';
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   loginWithOAuth(provider: OAuthProvider): void {

@@ -1,93 +1,53 @@
-<div class="rounded-lg bg-gray-50 p-6 shadow-sm space-y-6">
-  <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <div class="space-y-1">
-      <h2 class="text-lg font-semibold text-slate-900">Organisations</h2>
-      <p class="text-xs text-slate-500">
-        Gérez vos organisations multi-tenant et leurs métadonnées.
-      </p>
-    </div>
-    <div class="flex items-center gap-2 md:justify-end">
-      <button
-        type="button"
-        class="btn btn-primary btn-sm"
-        (click)="openCreateModal()"
-      >
-        <svg
-          class="mr-2 h-3.5 w-3.5"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-          />
-        </svg>
-        Créer une organisation
-      </button>
-    </div>
+<app-section-shell>
+  <h2 section-title class="text-lg font-semibold text-slate-900">
+    Organisations
+  </h2>
+  <p section-subtitle class="text-xs text-slate-500">
+    Gérez vos organisations multi-tenant et leurs métadonnées.
+  </p>
+  <div section-actions>
+    <button
+      type="button"
+      class="btn btn-primary btn-sm"
+      (click)="openCreateModal()"
+    >
+      <i class="mdi mdi-plus text-sm"></i>
+      Créer une organisation
+    </button>
   </div>
 
-  <form
-    class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
-    role="search"
-    (submit)="$event.preventDefault()"
-  >
-    <div class="relative w-full max-w-md">
-      <label class="sr-only" for="organization-search"
-        >Rechercher une organisation</label
-      >
-      <div
-        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
-      >
-        <svg
-          aria-hidden="true"
-          class="h-5 w-5"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-          />
-        </svg>
-      </div>
-      <input
-        id="organization-search"
-        type="search"
-        class="form-input w-full pl-10 pr-3"
-        placeholder="Rechercher par nom, slug ou base de données"
-        autocomplete="off"
-        [value]="searchTerm()"
-        (input)="onSearchChange($any($event.target).value)"
-      />
-    </div>
+  <div section-search>
+    <app-search-table-toolbar
+      searchId="organization-search"
+      label="Rechercher une organisation"
+      placeholder="Rechercher par nom, slug ou base de données"
+      [value]="searchTerm()"
+      (valueChange)="onSearchChange($event)"
+    >
+      <span search-right>
+        {{ filteredOrganizations().length }}
+        résultat{{ filteredOrganizations().length > 1 ? 's' : '' }} sur
+        {{ organizations().length }}
+      </span>
+    </app-search-table-toolbar>
+  </div>
 
-    <div class="text-sm text-slate-500 md:text-right">
-      {{ filteredOrganizations().length }}
-      résultat{{ filteredOrganizations().length > 1 ? 's' : '' }} sur
-      {{ organizations().length }}
-    </div>
-  </form>
-
-  <app-generic-table
-    [headers]="tableHeaders"
-    [data]="filteredOrganizations()"
-    [loading]="loading()"
-    [skeletonRows]="tableSkeletonRows"
-    [rowTemplate]="organizationRow"
-    [skeletonTemplate]="organizationSkeleton"
-    [emptyTemplate]="organizationEmpty"
-    [footerTemplate]="organizationFooter"
-    [trackBy]="trackOrganization"
-    [showToolbar]="false"
-  >
-  </app-generic-table>
-</div>
+  <div section-body>
+    <app-generic-table
+      [headers]="tableHeaders"
+      [data]="filteredOrganizations()"
+      [loading]="loading()"
+      [skeletonRows]="tableSkeletonRows"
+      [rowTemplate]="organizationRow"
+      [skeletonTemplate]="organizationSkeleton"
+      [emptyTemplate]="organizationEmpty"
+      [footerTemplate]="organizationFooter"
+      [trackBy]="trackOrganization"
+      [showToolbar]="false"
+    >
+    </app-generic-table>
+  </div>
+</app-section-shell>
 
 <ng-template #organizationRow let-organization>
   <tr
@@ -129,17 +89,33 @@
     <td class="px-4 py-4 text-right space-x-2">
       <button
         type="button"
-        class="btn btn-secondary btn-sm"
+        class="btn btn-secondary btn-sm hidden sm:inline-flex"
         (click)="openUpdateModal(organization)"
       >
         Modifier
       </button>
       <button
         type="button"
-        class="btn btn-danger btn-sm"
+        class="btn btn-danger btn-sm hidden sm:inline-flex"
         (click)="openDeleteModal(organization)"
       >
         Supprimer
+      </button>
+      <button
+        type="button"
+        class="btn btn-icon sm:hidden"
+        aria-label="Modifier"
+        (click)="openUpdateModal(organization)"
+      >
+        <i class="mdi mdi-pencil text-base"></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-icon sm:hidden text-red-600 hover:text-red-700 hover:bg-red-50"
+        aria-label="Supprimer"
+        (click)="openDeleteModal(organization)"
+      >
+        <i class="mdi mdi-delete text-base"></i>
       </button>
     </td>
   </tr>
