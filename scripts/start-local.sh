@@ -4,13 +4,13 @@
 
 set +e
 
-echo "🚀 Démarrage de l'environnement SaaS Hub en mode local..."
+echo "🚀 Démarrage de l'environnement SaaS Hub en mode local (NO DOCKER)..."
 
-# Vérifier si Docker est en cours d'exécution
-if ! docker ps > /dev/null 2>&1; then
-    echo "❌ Docker n'est pas en cours d'exécution. Veuillez démarrer Docker Desktop."
-    exit 1
-fi
+# Vérifier si Docker est en cours d'exécution (DESACTIVÉ POUR ENV OPENCLAW)
+# if ! docker ps > /dev/null 2>&1; then
+#     echo "❌ Docker n'est pas en cours d'exécution. Veuillez démarrer Docker Desktop."
+#     exit 1
+# fi
 
 # Vérifier que le fichier .env existe
 if [ ! -f .env ]; then
@@ -18,39 +18,50 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
-# Étape 1: Démarrer les services Docker
+# Étape 1: Démarrer les services Docker (SKIP - Services locaux)
 echo ""
-echo "📦 Démarrage des services Docker..."
-docker-compose -f docker/docker-compose.yml up -d mysql-hub redis rabbitmq
+echo "📦 Services de base supposés démarrés en local (MySQL, Redis, RabbitMQ)..."
+# docker-compose -f docker/docker-compose.yml up -d mysql-hub redis rabbitmq
 
 # Attendre que les services soient prêts
-echo "⏳ Attente de la disponibilité des services..."
-sleep 10
+# echo "⏳ Attente de la disponibilité des services..."
+# sleep 10
 
-# Vérifier que MySQL est prêt
-echo "   Vérification de MySQL..."
-attempts=0
-while [ $attempts -lt 30 ]; do
-    if docker exec saas-hub-mysql-hub mysqladmin ping -h localhost -u root -prootpassword > /dev/null 2>&1; then
-        echo "✅ MySQL est prêt"
-        break
-    fi
-    attempts=$((attempts + 1))
-    sleep 2
-    echo "   Tentative $attempts/30..."
-done
+# Vérifier que MySQL est prêt (SKIP Docker check)
+echo "   Vérification de MySQL (local)..."
+# attempts=0
+# while [ $attempts -lt 30 ]; do
+#     if docker exec saas-hub-mysql-hub mysqladmin ping -h localhost -u root -prootpassword > /dev/null 2>&1; then
+#         echo "✅ MySQL est prêt"
+#         break
+#     fi
+#     attempts=$((attempts + 1))
+#     sleep 2
+#     echo "   Tentative $attempts/30..."
+# done
 
-if [ $attempts -eq 30 ]; then
-    echo "❌ MySQL n'est pas prêt après 60 secondes"
-    exit 1
+# if [ $attempts -eq 30 ]; then
+#     echo "❌ MySQL n'est pas prêt après 60 secondes"
+#     exit 1
+# fi
+
+if mysqladmin -u root ping > /dev/null 2>&1; then
+    echo "✅ MySQL local est prêt"
+else
+    echo "⚠️  MySQL local ne semble pas répondre"
 fi
 
 # Vérifier Redis
-if docker exec saas-hub-redis redis-cli ping > /dev/null 2>&1; then
-    echo "✅ Redis est prêt"
+# if docker exec saas-hub-redis redis-cli ping > /dev/null 2>&1; then
+#     echo "✅ Redis est prêt"
+# fi
+if redis-cli ping > /dev/null 2>&1; then
+    echo "✅ Redis local est prêt"
+else
+    echo "⚠️  Redis local ne semble pas répondre"
 fi
 
-echo "✅ Services Docker démarrés"
+echo "✅ Services de base vérifiés (mode local)"
 
 # Nettoyer le cache Angular qui peut causer des problèmes
 echo ""

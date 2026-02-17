@@ -18,7 +18,7 @@ export interface ConfirmModalData {
 
 @Component({
   standalone: true,
-  selector: 'app-confirm-modal',
+  selector: 'lib-confirm-modal',
   imports: [CommonModule],
   template: `
     <div class="space-y-6">
@@ -50,7 +50,6 @@ export interface ConfirmModalData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmModalComponent {
-
   readonly description = model<string>('Voulez-vous continuer ?');
   readonly confirmLabel = model<string>('Confirmer');
   readonly cancelLabel = model<string>('Annuler');
@@ -72,4 +71,3 @@ export class ConfirmModalComponent {
     this.cancelEvent.subscribe(() => this.#modalRef.close(false));
   }
 }
-

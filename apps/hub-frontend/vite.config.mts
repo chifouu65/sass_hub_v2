@@ -7,6 +7,10 @@ import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/hub-frontend',
+  server: {
+    allowedHosts: ['1213ea795c21e833-195-35-3-108.serveousercontent.com'],
+    host: '0.0.0.0',
+  },
   plugins: [angular(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   // Uncomment this if you are using workers.
   // worker: {
