@@ -26,7 +26,7 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private mailerService: MailerService,
+    private mailerService: MailerService
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
@@ -121,7 +121,9 @@ export class AuthService {
     return user;
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
+  async refreshToken(
+    refreshTokenDto: RefreshTokenDto
+  ): Promise<AuthResponseDto> {
     const { refreshToken } = refreshTokenDto;
 
     try {
@@ -137,12 +139,14 @@ export class AuthService {
 
       // Vérifier le hash du refresh token
       if (!user.currentHashedRefreshToken) {
-        throw new UnauthorizedException('Token de rafraîchissement révoqué ou non valide');
+        throw new UnauthorizedException(
+          'Token de rafraîchissement révoqué ou non valide'
+        );
       }
 
       const isRefreshTokenMatching = await bcrypt.compare(
         refreshToken,
-        user.currentHashedRefreshToken,
+        user.currentHashedRefreshToken
       );
 
       if (!isRefreshTokenMatching) {
@@ -179,11 +183,17 @@ export class AuthService {
       email: user.email,
     };
 
-    const accessTokenSecret = this.configService.get<string>('jwt.secret') || 'your-super-secret-jwt-key';
-    const accessTokenExpiresIn = this.configService.get<string>('jwt.expiresIn') || '24h';
-    
-    const refreshTokenSecret = this.configService.get<string>('jwt.refreshSecret') || 'your-super-secret-refresh-key';
-    const refreshTokenExpiresIn = this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
+    const accessTokenSecret =
+      this.configService.get<string>('jwt.secret') ||
+      'your-super-secret-jwt-key';
+    const accessTokenExpiresIn =
+      this.configService.get<string>('jwt.expiresIn') || '24h';
+
+    const refreshTokenSecret =
+      this.configService.get<string>('jwt.refreshSecret') ||
+      'your-super-secret-refresh-key';
+    const refreshTokenExpiresIn =
+      this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
 
     const accessToken = this.jwtService.sign(payload, {
       secret: accessTokenSecret,
@@ -205,7 +215,9 @@ export class AuthService {
       email: user.email,
     };
 
-    const secret = this.configService.get<string>('jwt.secret') || 'your-super-secret-jwt-key';
+    const secret =
+      this.configService.get<string>('jwt.secret') ||
+      'your-super-secret-jwt-key';
     const expiresIn = this.configService.get<string>('jwt.expiresIn') || '24h';
 
     return this.jwtService.sign(payload, {
@@ -216,7 +228,9 @@ export class AuthService {
   /**
    * Demande de réinitialisation de mot de passe
    */
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto
+  ): Promise<{ message: string }> {
     const { email } = forgotPasswordDto;
 
     const user = await this.userRepository.findOne({
@@ -226,7 +240,8 @@ export class AuthService {
     // Pour la sécurité, on ne révèle pas si l'email existe ou non
     if (!user) {
       return {
-        message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
+        message:
+          'Si cet email existe, un lien de réinitialisation a été envoyé',
       };
     }
 
@@ -250,7 +265,9 @@ export class AuthService {
   /**
    * Réinitialisation de mot de passe avec token
    */
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto
+  ): Promise<{ message: string }> {
     const { token, newPassword } = resetPasswordDto;
 
     const user = await this.userRepository.findOne({
@@ -336,4 +353,3 @@ export class AuthService {
     return await this.userRepository.save(newUser);
   }
 }
-

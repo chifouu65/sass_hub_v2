@@ -26,14 +26,14 @@ export class MailerService {
       this.logger.log('Mailer initialized with SMTP configuration');
     } else {
       this.logger.warn(
-        'SMTP configuration missing. Emails will be logged to console (Development Mode)',
+        'SMTP configuration missing. Emails will be logged to console (Development Mode)'
       );
     }
   }
 
   async sendResetPasswordEmail(to: string, token: string): Promise<void> {
     const resetLink = `${this.configService.get<string>(
-      'FRONTEND_URL',
+      'FRONTEND_URL'
     )}/reset-password?token=${token}`;
 
     const subject = 'Réinitialisation de votre mot de passe - SaaS Hub';
@@ -49,7 +49,9 @@ export class MailerService {
     if (this.transporter) {
       try {
         await this.transporter.sendMail({
-          from: this.configService.get<string>('SMTP_FROM') || 'noreply@saas-hub.com',
+          from:
+            this.configService.get<string>('SMTP_FROM') ||
+            'noreply@saas-hub.com',
           to,
           subject,
           html,

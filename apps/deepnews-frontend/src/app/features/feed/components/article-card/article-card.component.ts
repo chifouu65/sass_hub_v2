@@ -10,8 +10,8 @@ import { Article } from '../../../../services/news';
 })
 export class ArticleCardComponent {
   article = input.required<Article>();
-  onTagClick = output<string>();
-  onArticleClick = output<Article>();
+  tagClick = output<string>();
+  articleClick = output<Article>();
 
   getDomain(url: string): string {
     try { return new URL(url).hostname; } catch { return ''; }
@@ -72,7 +72,7 @@ export class ArticleCardComponent {
 
   handleTitleClick(event: Event) {
     event.preventDefault();
-    this.onArticleClick.emit(this.article());
+    this.articleClick.emit(this.article());
   }
 }
 

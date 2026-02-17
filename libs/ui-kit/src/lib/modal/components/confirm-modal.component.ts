@@ -18,7 +18,7 @@ export interface ConfirmModalData {
 
 @Component({
   standalone: true,
-  selector: 'app-confirm-modal',
+  selector: 'lib-confirm-modal',
   imports: [CommonModule],
   template: `
     <div class="space-y-6">

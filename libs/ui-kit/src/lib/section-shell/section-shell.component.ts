@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-section-shell',
+  selector: 'lib-section-shell',
   standalone: true,
   imports: [CommonModule],
   template: `

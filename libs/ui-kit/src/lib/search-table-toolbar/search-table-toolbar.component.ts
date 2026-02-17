@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-  selector: 'app-search-table-toolbar',
+  selector: 'lib-search-table-toolbar',
   standalone: true,
   imports: [CommonModule],
   template: `

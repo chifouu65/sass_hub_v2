@@ -21,7 +21,7 @@ export interface ModalHostOptions {
 
 @Component({
   standalone: true,
-  selector: 'app-modal-host',
+  selector: 'lib-modal-host',
   imports: [CommonModule],
   template: `
     <div

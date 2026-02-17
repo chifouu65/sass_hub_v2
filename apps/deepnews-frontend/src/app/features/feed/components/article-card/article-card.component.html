@@ -3,7 +3,7 @@
     <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-gray-200 to-transparent group-hover:from-blue-400 group-hover:to-blue-600 transition-all duration-300 z-10"></div>
 
     @if (article().imageUrl) {
-        <div class="mb-4 -mx-6 -mt-6 relative h-48 overflow-hidden cursor-pointer" (click)="handleTitleClick($event)">
+        <div class="mb-4 -mx-6 -mt-6 relative h-48 overflow-hidden cursor-pointer" (click)="handleTitleClick($event)" (keyup.enter)="handleTitleClick($event)" tabindex="0">
              <img [src]="article().imageUrl" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Article Image" loading="lazy" onError="this.style.display='none'">
              <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
         </div>
@@ -57,13 +57,13 @@
              }
         </div>
 
-        <button class="text-gray-600 mb-5 leading-relaxed text-sm line-clamp-3 cursor-pointer text-left" (click)="handleTitleClick($event)">
+        <button class="text-gray-600 mb-5 leading-relaxed text-sm line-clamp-3 cursor-pointer text-left" (click)="handleTitleClick($event)" (keyup.enter)="handleTitleClick($event)" tabindex="0">
             {{ article().summary || article().content }}
         </button>
         
         <div class="flex flex-wrap gap-2 mt-auto pt-2">
             @for (tag of getProcessedTags(); track tag) {
-              <button (click)="onTagClick.emit(tag)"
+              <button (click)="tagClick.emit(tag)"
                     [class]="getTagClass(tag)"
                     class="cursor-pointer text-[11px] font-bold px-2.5 py-1 rounded-full transition-transform hover:scale-105 border select-none">
                  #{{ tag }}

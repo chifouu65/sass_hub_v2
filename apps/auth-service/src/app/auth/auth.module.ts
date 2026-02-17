@@ -47,4 +47,3 @@ import { MailerModule } from '../mailer/mailer.module';
   exports: [AuthService],
 })
 export class AuthModule {}
-
