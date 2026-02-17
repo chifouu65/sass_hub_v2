@@ -8,7 +8,9 @@ module.exports = async function () {
   try {
     await killPort(port);
   } catch (e) {
-    console.warn(`Could not kill port ${port}, it might have already been closed.`);
+    console.warn(
+      `Could not kill port ${port}, it might have already been closed.`
+    );
   }
   console.log(globalThis.__TEARDOWN_MESSAGE__);
 };

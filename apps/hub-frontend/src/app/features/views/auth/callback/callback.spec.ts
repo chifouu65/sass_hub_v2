@@ -16,7 +16,7 @@ describe('Callback', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
-      ]
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Callback);

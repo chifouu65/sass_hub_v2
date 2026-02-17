@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TenantDatabaseService } from "./tenant-database.service";
+import { TenantDatabaseService } from './tenant-database.service';
 import { DataSource, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
@@ -7,7 +7,8 @@ import { getDataSourceToken } from '@nestjs/typeorm';
 
 describe('TenantDatabaseService', () => {
   let service: TenantDatabaseService;
-  let mockDefaultDataSource: { // Using a more direct mock object structure
+  let mockDefaultDataSource: {
+    // Using a more direct mock object structure
     query: jest.Mock;
     isInitialized: boolean;
     initialize: jest.Mock;
@@ -16,7 +17,8 @@ describe('TenantDatabaseService', () => {
     // Add other necessary properties with dummy values or mocks if TypeORM complains about their absence
     // For example, properties accessed directly by the service that are not functions
   };
-  let mockConfigService: { // Using a more direct mock object structure
+  let mockConfigService: {
+    // Using a more direct mock object structure
     get: jest.Mock;
   };
 

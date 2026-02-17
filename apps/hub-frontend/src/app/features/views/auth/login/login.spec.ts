@@ -16,7 +16,7 @@ describe('Login', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
-      ]
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Login);

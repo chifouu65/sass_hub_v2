@@ -16,7 +16,7 @@ describe('Register', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
-      ]
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Register);

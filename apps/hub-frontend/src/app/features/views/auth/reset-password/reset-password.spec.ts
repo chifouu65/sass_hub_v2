@@ -16,7 +16,7 @@ describe('ResetPassword', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
-      ]
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ResetPassword);
