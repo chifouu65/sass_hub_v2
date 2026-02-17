@@ -13,10 +13,12 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { User } from '../entities/user.entity';
 import jwtConfig from '../config/jwt.config';
+import { MailerModule } from '../mailer/mailer.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
+    MailerModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

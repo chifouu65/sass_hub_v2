@@ -17,6 +17,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private mailerService: MailerService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
@@ -237,9 +239,8 @@ export class AuthService {
     user.resetPasswordExpires = resetTokenExpires;
     await this.userRepository.save(user);
 
-    // TODO: Envoyer un email avec le lien de réinitialisation
-    // Pour l'instant, on retourne juste le token dans la réponse (à retirer en production)
-    console.log(`Reset password token for ${email}: ${resetToken}`);
+    // Envoyer l'email
+    await this.mailerService.sendResetPasswordEmail(email, resetToken);
 
     return {
       message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
