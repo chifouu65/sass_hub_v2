@@ -48,6 +48,9 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'oauth_provider_id' })
   oauthProviderId!: string | null;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'current_hashed_refresh_token' })
+  currentHashedRefreshToken!: string | null;
+
   @Column({ type: 'varchar', length: 500, nullable: true, name: 'avatar_url' })
   avatarUrl!: string | null;
 

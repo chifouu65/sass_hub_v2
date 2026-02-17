@@ -55,6 +55,7 @@ export class AuthService {
 
     // Générer les tokens
     const tokens = this.generateTokens(savedUser);
+    await this.setCurrentRefreshToken(tokens.refreshToken, savedUser.id);
 
     return {
       ...tokens,
@@ -93,6 +94,7 @@ export class AuthService {
 
     // Générer les tokens
     const tokens = this.generateTokens(user);
+    await this.setCurrentRefreshToken(tokens.refreshToken, user.id);
 
     return {
       ...tokens,
@@ -131,7 +133,22 @@ export class AuthService {
         throw new UnauthorizedException('Utilisateur non trouvé ou inactif');
       }
 
+      // Vérifier le hash du refresh token
+      if (!user.currentHashedRefreshToken) {
+        throw new UnauthorizedException('Token de rafraîchissement révoqué ou non valide');
+      }
+
+      const isRefreshTokenMatching = await bcrypt.compare(
+        refreshToken,
+        user.currentHashedRefreshToken,
+      );
+
+      if (!isRefreshTokenMatching) {
+        throw new UnauthorizedException('Token de rafraîchissement non valide');
+      }
+
       const tokens = this.generateTokens(user);
+      await this.setCurrentRefreshToken(tokens.refreshToken, user.id);
 
       return {
         ...tokens,
@@ -145,6 +162,13 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Token de rafraîchissement invalide');
     }
+  }
+
+  async setCurrentRefreshToken(refreshToken: string, userId: string) {
+    const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.userRepository.update(userId, {
+      currentHashedRefreshToken,
+    });
   }
 
   generateTokens(user: User): { accessToken: string; refreshToken: string } {
