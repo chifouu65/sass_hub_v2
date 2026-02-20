@@ -3,6 +3,7 @@ npm-debug.log
 .git
 .gitignore
 .nx
+.angular
 dist
 coverage
 *.md
