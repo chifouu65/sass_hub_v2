@@ -19,7 +19,8 @@
     "dev:api-gateway": "bash ./scripts/dev.sh api-gateway",
     "dev:deepnews": "bash ./scripts/dev.sh deepnews-backend",
     "dev:all": "bash ./scripts/dev.sh all",
-    "kill:all": "bash ./scripts/kill.sh all"
+    "kill:all": "bash ./scripts/kill.sh all",
+    "kill:windows": "taskkill /F /IM node.exe"
   },
   "private": true,
   "devDependencies": {

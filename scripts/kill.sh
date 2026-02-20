@@ -9,10 +9,11 @@ function kill_service {
     PID_FILE=".${S}.pid"
     if [ -f "$PID_FILE" ]; then
         PID=$(cat "$PID_FILE")
-        if kill -0 "$PID" 2>/dev/null; then
-             kill "$PID" 2>/dev/null
-             echo "🛑 Arrêt de $S (PID: $PID)..."
-        fi
+        echo "🛑 Arrêt de $S (PID: $PID)..."
+        # Essayer kill standard (Linux/Mac)
+        kill "$PID" 2>/dev/null
+        # Essayer taskkill pour Windows (Git Bash / CMD)
+        taskkill //F //PID "$PID" >/dev/null 2>&1
         rm "$PID_FILE"
         echo "✅ $S arrêté"
     else
