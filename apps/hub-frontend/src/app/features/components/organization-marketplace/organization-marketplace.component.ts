@@ -7,7 +7,7 @@ import { ErrorMessageService } from '../../../core/services/error-message.servic
 import { ToastService } from '../../services/toast/toast.service';
 import { OrganizationMarketplaceAppCardComponent } from './organization-marketplace-app-card.component';
 import { SectionShellComponent, SearchTableToolbarComponent } from '@sass-hub-v2/ui-kit';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 
 @Component({
   selector: 'app-organization-marketplace',
@@ -22,8 +22,10 @@ import { firstValueFrom } from 'rxjs';
     <lib-section-shell title="Marketplace" description="Explorez et installez de nouvelles applications.">
       <div class="mb-6">
         <lib-search-table-toolbar
+          searchId="marketplace-search"
+          label="Rechercher une application"
           placeholder="Rechercher une application..."
-          (searchChange)="onSearch($event)"
+          (valueChange)="onSearch($event)"
         >
           <!-- Filtres futurs ici -->
         </lib-search-table-toolbar>
@@ -54,7 +56,7 @@ import { firstValueFrom } from 'rxjs';
           @for (app of filteredApplications(); track app.id) {
             <app-organization-marketplace-app-card
               [app]="app"
-              [processing]="installingState()[app.id] ?? false"
+              [processing]="(installingState()[app.id] || false)"
               (install)="onInstall(app)"
             />
           }
@@ -75,7 +77,7 @@ export class OrganizationMarketplaceComponent {
   readonly applicationsResource = rxResource<AvailableApplicationView[], string | null>({
     params: () => this.selectedOrganizationId(),
     stream: ({ params }) => {
-      if (!params) return [];
+      if (!params) return of([]);
       return this.#organizationStore.fetchAvailableApplications(params);
     }
   });
