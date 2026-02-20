@@ -73,7 +73,8 @@
         "apps/hub-backend-e2e/**/*",
         "apps/auth-service-e2e/**/*",
         "apps/tenant-service-e2e/**/*",
-        "deepnews-backend-e2e/**/*"
+        "deepnews-backend-e2e/**/*",
+        "apps/api-gateway-e2e/**/*"
       ]
     },
     {
