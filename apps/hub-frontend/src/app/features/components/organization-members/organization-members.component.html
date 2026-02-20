@@ -1,4 +1,4 @@
-<app-section-shell>
+<lib-section-shell>
   <h2 section-title class="text-lg font-semibold text-gray-900">Membres</h2>
   <div section-subtitle class="space-y-1 text-xs text-gray-500">
     <p>Gérez les utilisateurs associés à l’organisation sélectionnée.</p>
@@ -24,7 +24,7 @@
   </div>
 
   <div section-search>
-    <app-search-table-toolbar
+    <lib-search-table-toolbar
       searchId="member-search"
       label="Rechercher un membre"
       placeholder="Rechercher un membre"
@@ -36,7 +36,7 @@
         {{ filteredMembers().length }} résultat{{ filteredMembers().length > 1 ? 's'
         : '' }} sur {{ members().length }}
       </span>
-    </app-search-table-toolbar>
+    </lib-search-table-toolbar>
   </div>
 
   <div section-body>
@@ -61,7 +61,7 @@
       </app-generic-table>
     }
   </div>
-</app-section-shell>
+</lib-section-shell>
 
 <ng-template #memberRow let-member>
   @let actualRole = member.organizationRoleName ?? member.role ?? null;

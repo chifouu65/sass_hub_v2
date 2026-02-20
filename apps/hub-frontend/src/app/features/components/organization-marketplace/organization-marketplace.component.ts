@@ -19,14 +19,14 @@ import { firstValueFrom } from 'rxjs';
     SearchTableToolbarComponent
   ],
   template: `
-    <app-section-shell title="Marketplace" description="Explorez et installez de nouvelles applications.">
+    <lib-section-shell title="Marketplace" description="Explorez et installez de nouvelles applications.">
       <div class="mb-6">
-        <app-search-table-toolbar
+        <lib-search-table-toolbar
           placeholder="Rechercher une application..."
           (searchChange)="onSearch($event)"
         >
           <!-- Filtres futurs ici -->
-        </app-search-table-toolbar>
+        </lib-search-table-toolbar>
       </div>
 
       @if (loading()) {
@@ -60,7 +60,7 @@ import { firstValueFrom } from 'rxjs';
           }
         </div>
       }
-    </app-section-shell>
+    </lib-section-shell>
   `
 })
 export class OrganizationMarketplaceComponent {

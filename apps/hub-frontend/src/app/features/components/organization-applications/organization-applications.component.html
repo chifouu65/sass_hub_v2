@@ -1,4 +1,4 @@
-<app-section-shell>
+<lib-section-shell>
   <h2 section-title class="text-xl font-semibold text-slate-900">
     Applications souscrites
   </h2>
@@ -17,7 +17,7 @@
   </div>
 
   <div section-search>
-    <app-search-table-toolbar
+    <lib-search-table-toolbar
       searchId="applications-search"
       label="Rechercher une application"
       placeholder="Rechercher une application"
@@ -29,7 +29,7 @@
         {{ filteredApplications().length }} résultat{{ filteredApplications().length > 1 ? 's' : '' }}
         sur {{ applications().length }}
       </span>
-    </app-search-table-toolbar>
+    </lib-search-table-toolbar>
   </div>
 
   <div section-body>
@@ -47,7 +47,7 @@
       </app-generic-table>
     </div>
   </div>
-</app-section-shell>
+</lib-section-shell>
 
 <ng-template #applicationRow let-application>
   <tr class="border-t border-slate-100">

@@ -1,4 +1,4 @@
-<app-section-shell>
+<lib-section-shell>
   <h2 section-title class="text-lg font-semibold text-slate-900">
     Organisations
   </h2>
@@ -17,7 +17,7 @@
   </div>
 
   <div section-search>
-    <app-search-table-toolbar
+    <lib-search-table-toolbar
       searchId="organization-search"
       label="Rechercher une organisation"
       placeholder="Rechercher par nom, slug ou base de données"
@@ -29,7 +29,7 @@
         résultat{{ filteredOrganizations().length > 1 ? 's' : '' }} sur
         {{ organizations().length }}
       </span>
-    </app-search-table-toolbar>
+    </lib-search-table-toolbar>
   </div>
 
   <div section-body>
@@ -47,7 +47,7 @@
     >
     </app-generic-table>
   </div>
-</app-section-shell>
+</lib-section-shell>
 
 <ng-template #organizationRow let-organization>
   <tr
