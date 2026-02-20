@@ -17,6 +17,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private mailerService: MailerService
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
@@ -55,6 +57,7 @@ export class AuthService {
 
     // Générer les tokens
     const tokens = this.generateTokens(savedUser);
+    await this.setCurrentRefreshToken(tokens.refreshToken, savedUser.id);
 
     return {
       ...tokens,
@@ -93,6 +96,7 @@ export class AuthService {
 
     // Générer les tokens
     const tokens = this.generateTokens(user);
+    await this.setCurrentRefreshToken(tokens.refreshToken, user.id);
 
     return {
       ...tokens,
@@ -117,7 +121,9 @@ export class AuthService {
     return user;
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
+  async refreshToken(
+    refreshTokenDto: RefreshTokenDto
+  ): Promise<AuthResponseDto> {
     const { refreshToken } = refreshTokenDto;
 
     try {
@@ -131,7 +137,24 @@ export class AuthService {
         throw new UnauthorizedException('Utilisateur non trouvé ou inactif');
       }
 
+      // Vérifier le hash du refresh token
+      if (!user.currentHashedRefreshToken) {
+        throw new UnauthorizedException(
+          'Token de rafraîchissement révoqué ou non valide'
+        );
+      }
+
+      const isRefreshTokenMatching = await bcrypt.compare(
+        refreshToken,
+        user.currentHashedRefreshToken
+      );
+
+      if (!isRefreshTokenMatching) {
+        throw new UnauthorizedException('Token de rafraîchissement non valide');
+      }
+
       const tokens = this.generateTokens(user);
+      await this.setCurrentRefreshToken(tokens.refreshToken, user.id);
 
       return {
         ...tokens,
@@ -147,17 +170,30 @@ export class AuthService {
     }
   }
 
+  async setCurrentRefreshToken(refreshToken: string, userId: string) {
+    const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.userRepository.update(userId, {
+      currentHashedRefreshToken,
+    });
+  }
+
   generateTokens(user: User): { accessToken: string; refreshToken: string } {
     const payload = {
       sub: user.id,
       email: user.email,
     };
 
-    const accessTokenSecret = this.configService.get<string>('jwt.secret') || 'your-super-secret-jwt-key';
-    const accessTokenExpiresIn = this.configService.get<string>('jwt.expiresIn') || '24h';
-    
-    const refreshTokenSecret = this.configService.get<string>('jwt.refreshSecret') || 'your-super-secret-refresh-key';
-    const refreshTokenExpiresIn = this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
+    const accessTokenSecret =
+      this.configService.get<string>('jwt.secret') ||
+      'your-super-secret-jwt-key';
+    const accessTokenExpiresIn =
+      this.configService.get<string>('jwt.expiresIn') || '24h';
+
+    const refreshTokenSecret =
+      this.configService.get<string>('jwt.refreshSecret') ||
+      'your-super-secret-refresh-key';
+    const refreshTokenExpiresIn =
+      this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
 
     const accessToken = this.jwtService.sign(payload, {
       secret: accessTokenSecret,
@@ -179,7 +215,9 @@ export class AuthService {
       email: user.email,
     };
 
-    const secret = this.configService.get<string>('jwt.secret') || 'your-super-secret-jwt-key';
+    const secret =
+      this.configService.get<string>('jwt.secret') ||
+      'your-super-secret-jwt-key';
     const expiresIn = this.configService.get<string>('jwt.expiresIn') || '24h';
 
     return this.jwtService.sign(payload, {
@@ -190,7 +228,9 @@ export class AuthService {
   /**
    * Demande de réinitialisation de mot de passe
    */
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto
+  ): Promise<{ message: string }> {
     const { email } = forgotPasswordDto;
 
     const user = await this.userRepository.findOne({
@@ -200,7 +240,8 @@ export class AuthService {
     // Pour la sécurité, on ne révèle pas si l'email existe ou non
     if (!user) {
       return {
-        message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
+        message:
+          'Si cet email existe, un lien de réinitialisation a été envoyé',
       };
     }
 
@@ -213,9 +254,8 @@ export class AuthService {
     user.resetPasswordExpires = resetTokenExpires;
     await this.userRepository.save(user);
 
-    // TODO: Envoyer un email avec le lien de réinitialisation
-    // Pour l'instant, on retourne juste le token dans la réponse (à retirer en production)
-    console.log(`Reset password token for ${email}: ${resetToken}`);
+    // Envoyer l'email
+    await this.mailerService.sendResetPasswordEmail(email, resetToken);
 
     return {
       message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
@@ -225,7 +265,9 @@ export class AuthService {
   /**
    * Réinitialisation de mot de passe avec token
    */
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto
+  ): Promise<{ message: string }> {
     const { token, newPassword } = resetPasswordDto;
 
     const user = await this.userRepository.findOne({
@@ -311,4 +353,3 @@ export class AuthService {
     return await this.userRepository.save(newUser);
   }
 }
-

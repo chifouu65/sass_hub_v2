@@ -53,7 +53,7 @@
       "options": {
         "buildTarget": "deepnews-backend:build",
         "runBuildTargetDependencies": false,
-        "port": 3333,
+        "port": 3335,
         "inspect": false
       },
       "configurations": {

@@ -8,12 +8,14 @@ import { OrganizationMembersComponent } from '../../components/organization-memb
 import { OrganizationRolesComponent } from '../../components/organization-roles/organization-roles.component';
 import { OrganizationTableComponent } from '../../components/organization-table/organization-table.component';
 import { OrganizationApplicationsComponent } from '../../components/organization-applications/organization-applications.component';
+import { OrganizationMarketplaceComponent } from '../../components/organization-marketplace/organization-marketplace.component';
 import { OrganizationSummary } from '@sass-hub-v2/shared-types';
 
-type TabId = 'organizations' | 'applications' | 'members' | 'roles';
+type TabId = 'organizations' | 'applications' | 'marketplace' | 'members' | 'roles';
 
 @Component({
   selector: 'app-organizations',
+  standalone: true,
   imports: [
     CommonModule,
     RouterModule,
@@ -21,24 +23,26 @@ type TabId = 'organizations' | 'applications' | 'members' | 'roles';
     OrganizationMembersComponent,
     OrganizationRolesComponent,
     OrganizationApplicationsComponent,
+    OrganizationMarketplaceComponent,
   ],
   templateUrl: './organizations.html',
-  styleUrl: './organizations.css',
+  styleUrls: ['./organizations.css'],
 })
 export class OrganizationsComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);
   readonly #router = inject(Router);
 
-  readonly organizations: Signal<OrganizationSummary[]> = this.#organizationRolesStore.organizations;
+  readonly organizations = this.#organizationRolesStore.organizations;
   readonly selectedOrganizationId = this.#organizationRolesStore.selectedOrganizationId;
   readonly loading = this.#organizationRolesStore.loading;
   readonly error = this.#organizationRolesStore.error;
 
-  readonly tabs: ReadonlyArray<{ id: TabId; label: string }> = [
-    { id: 'organizations', label: 'Organisations' },
-    { id: 'applications', label: 'Applications' },
-    { id: 'members', label: 'Membres' },
-    { id: 'roles', label: 'Rôles' },
+  readonly tabs: ReadonlyArray<{ id: TabId; label: string; icon: string }> = [
+    { id: 'organizations', label: 'Organisations', icon: 'mdi-office-building' },
+    { id: 'applications', label: 'Mes Applications', icon: 'mdi-apps' },
+    { id: 'marketplace', label: 'Marketplace', icon: 'mdi-store' },
+    { id: 'members', label: 'Membres', icon: 'mdi-account-multiple' },
+    { id: 'roles', label: 'Rôles', icon: 'mdi-shield-account' },
   ];
 
   readonly activeTab = signal<TabId>('organizations');
@@ -52,11 +56,11 @@ export class OrganizationsComponent {
     });
   }
 
-  setActiveTab(tab: TabId): void {
-    this.activeTab.set(tab);
+  setActiveTab(tab: string): void {
+    this.activeTab.set(tab as TabId);
   }
 
-  isActiveTab(tab: TabId): boolean {
+  isActiveTab(tab: string): boolean {
     return this.activeTab() === tab;
   }
 

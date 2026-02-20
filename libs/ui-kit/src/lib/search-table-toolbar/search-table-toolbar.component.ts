@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-  selector: 'app-search-table-toolbar',
+  selector: 'lib-search-table-toolbar',
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -14,11 +14,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       <div [ngClass]="wrapperClass">
         <label class="sr-only" [for]="searchId">{{ label }}</label>
         @if (showIcon) {
-          <div
-            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
-          >
-            <i class="mdi mdi-magnify text-lg"></i>
-          </div>
+        <div
+          class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+        >
+          <i class="mdi mdi-magnify text-lg"></i>
+        </div>
         }
         <input
           [id]="searchId"

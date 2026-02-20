@@ -5,18 +5,18 @@
 On se concentre sur l'avancement du **Hub Frontend** et de l'**Architecture** globale.
 
 ### 1. 🎨 Hub Frontend - Gestion des Applications
-- [ ] Créer une branche `feat/hub-apps-management`
-- [ ] Implémenter l'interface de liste des applications disponibles (Marketplace view)
-- [ ] Ajouter l'interface de gestion des applications souscrites (Mes Apps)
-- [ ] Connecter au backend (mock ou réel via `hub-backend`)
-- [ ] Commit & PR : `feat(hub): add applications management interface`
+- [x] Créer une branche `feat/hub-apps-management`
+- [x] Implémenter l'interface de liste des applications disponibles (Marketplace view)
+- [x] Ajouter l'interface de gestion des applications souscrites (Mes Apps)
+- [x] Connecter au backend (mock ou réel via `hub-backend`)
+- [x] Commit & PR : `feat(hub): add applications management interface`
 
 ### 2. 🏗️ Architecture - API Gateway
-- [ ] Créer une branche `feat/api-gateway`
-- [ ] Générer une nouvelle application NestJS `api-gateway`
-- [ ] Configurer le proxy vers les microservices (`auth-service`, `tenant-service`, `hub-backend`)
-- [ ] Tester le routage basique
-- [ ] Commit & PR : `feat(arch): init api-gateway service`
+- [x] Créer une branche `feat/api-gateway`
+- [x] Générer une nouvelle application NestJS `api-gateway`
+- [x] Configurer le proxy vers les microservices (`auth-service`, `tenant-service`, `hub-backend`)
+- [x] Tester le routage basique (build OK)
+- [x] Commit & PR : `feat(arch): init api-gateway service`
 
 ### 3. 📦 Nouveaux Services - Billing Service (Skeleton)
 - [ ] Créer une branche `feat/billing-service-init`

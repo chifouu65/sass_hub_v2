@@ -5,5 +5,7 @@
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
-  "dependencies": {}
+  "dependencies": {
+    "@sass-hub-v2/shared-types": "*"
+  }
 }

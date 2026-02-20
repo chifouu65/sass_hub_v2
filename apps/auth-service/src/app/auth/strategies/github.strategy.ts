@@ -11,12 +11,14 @@ import { AuthService } from '../auth.service';
 export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
     private configService: ConfigService,
-    private authService: AuthService,
+    private authService: AuthService
   ) {
     super({
       clientID: configService.get<string>('GITHUB_CLIENT_ID') || '',
       clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET') || '',
-      callbackURL: configService.get<string>('GITHUB_CALLBACK_URL') || 'http://localhost:4200/api/auth/github/callback',
+      callbackURL:
+        configService.get<string>('GITHUB_CALLBACK_URL') ||
+        'http://localhost:4200/api/auth/github/callback',
       scope: ['user:email'],
     });
   }
@@ -25,11 +27,12 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-    done: Function,
+    done: (err: any, user: any, info?: any) => void
   ): Promise<any> {
     const emails = profile.emails || [];
     const user = {
-      email: emails[0]?.value || profile.username || `${profile.id}@github.local`,
+      email:
+        emails[0]?.value || profile.username || `${profile.id}@github.local`,
       firstName: profile.displayName?.split(' ')[0] || profile.username,
       lastName: profile.displayName?.split(' ').slice(1).join(' ') || '',
       avatarUrl: profile.photos?.[0]?.value || '',
@@ -42,4 +45,3 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     done(null, authUser);
   }
 }
-

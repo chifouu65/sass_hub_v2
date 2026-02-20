@@ -21,7 +21,7 @@ export interface ModalHostOptions {
 
 @Component({
   standalone: true,
-  selector: 'app-modal-host',
+  selector: 'lib-modal-host',
   imports: [CommonModule],
   template: `
     <div
@@ -100,7 +100,7 @@ export class ModalHostComponent implements OnDestroy {
   attachComponent<T>(
     componentType: Type<T>,
     options: ModalHostOptions,
-    componentInjector: Injector,
+    componentInjector: Injector
   ): ViewContainerRef['createComponent'] extends (...args: infer P) => infer R
     ? R
     : never {
@@ -140,7 +140,7 @@ export class ModalHostComponent implements OnDestroy {
     this.contentHost.clear();
   }
 
-   #disableScroll(): void {
+  #disableScroll(): void {
     this.#document.body.style.overflow = 'hidden';
   }
 
@@ -148,4 +148,3 @@ export class ModalHostComponent implements OnDestroy {
     this.#document.body.style.overflow = '';
   }
 }
-

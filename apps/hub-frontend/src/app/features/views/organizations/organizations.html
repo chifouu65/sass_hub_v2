@@ -1,13 +1,10 @@
-<div class="py-8 bg-slate-50">
+<div class="py-8 bg-slate-50 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-    <div
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-    >
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold text-slate-900">Organisations</h1>
         <p class="text-sm text-slate-600">
-          Créez, modifiez et gérez les membres de vos organisations
-          multi-tenant.
+          Gérez vos organisations multi-tenant, membres et applications.
         </p>
       </div>
       <div class="w-full flex flex-wrap justify-end items-center gap-2">
@@ -20,118 +17,79 @@
         </button>
         <div class="flex items-center gap-2">
           @if (organizations().length > 0) {
-          <select
-            class="form-select md:w-56"
-            [value]="selectedOrganizationId() ?? ''"
-            (change)="onOrganizationSelectChange($event)"
-          >
-            @for (organization of organizations(); track organization.id) {
-            <option [value]="organization.id">
-              {{ organization.name }}
-            </option>
-            }
-          </select>
+            <select
+              class="form-select md:w-56"
+              [value]="selectedOrganizationId() ?? ''"
+              (change)="onOrganizationSelectChange($event)"
+            >
+              @for (organization of organizations(); track organization.id) {
+                <option [value]="organization.id">
+                  {{ organization.name }}
+                </option>
+              }
+            </select>
           }
           <button
             type="button"
             (click)="onRefresh()"
-            class="btn btn-primary"
+            class="btn btn-secondary"
+            title="Rafraîchir les données"
           >
-            Rafraîchir
+            <i class="mdi mdi-refresh"></i>
           </button>
         </div>
       </div>
     </div>
 
     @if (error(); as message) {
-    <div
-      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-    >
-      {{ message }}
-    </div>
+      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+        <i class="mdi mdi-alert-circle text-lg mt-0.5"></i>
+        <span>{{ message }}</span>
+      </div>
     }
 
     <div class="md:flex md:gap-6">
-      <ul
-        class="mb-4 flex md:flex-col flex-row gap-2 text-sm font-medium text-gray-600 md:mb-0 md:me-4"
-      >
-        @for (tab of tabs; track tab.id) {
-        <li class="w-full">
-          <button
-            type="button"
-            (click)="setActiveTab(tab.id)"
-            class="inline-flex w-full md:justify-start justify-center items-center gap-2 rounded-lg px-4 py-3 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            [ngClass]="
-              isActiveTab(tab.id)
-                ? 'bg-blue-700 text-white'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-            "
-            [attr.aria-current]="isActiveTab(tab.id) ? 'page' : null"
-          >
-            @switch (tab.id) { @case ('organizations') {
-            <i
-              class="mdi mdi-office-building text-base"
-              [ngClass]="
-                isActiveTab(tab.id)
-                  ? 'text-white'
-                  : 'text-gray-500'
-              "
-              aria-hidden="true"
-            ></i>
-            } @case ('applications') {
-            <i
-              class="mdi mdi-apps text-base"
-              [ngClass]="
-                isActiveTab(tab.id)
-                  ? 'text-white'
-                  : 'text-gray-500'
-              "
-              aria-hidden="true"
-            ></i>
-            } @case ('members') {
-            <i
-              class="mdi mdi-account-multiple text-base"
-              [ngClass]="
-                isActiveTab(tab.id)
-                  ? 'text-white'
-                  : 'text-gray-500'
-              "
-              aria-hidden="true"
-            ></i>
-            } @case ('roles') {
-            <i
-              class="mdi mdi-shield-account text-base"
-              [ngClass]="
-                isActiveTab(tab.id)
-                  ? 'text-white'
-                  : 'text-gray-500'
-              "
-              aria-hidden="true"
-            ></i>
-            } }
-            <span class="truncate md:block hidden">{{ tab.label }}</span>
-          </button>
-        </li>
-        }
-      </ul>
+      <nav class="md:w-64 flex-shrink-0 mb-6 md:mb-0">
+        <ul class="flex md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0">
+          @for (tab of tabs; track tab.id) {
+            <li class="flex-shrink-0">
+              <button
+                type="button"
+                (click)="setActiveTab(tab.id)"
+                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                [ngClass]="isActiveTab(tab.id) 
+                  ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-900/5' 
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                [attr.aria-current]="isActiveTab(tab.id) ? 'page' : null"
+              >
+                <i class="mdi {{ tab.icon }} text-lg"
+                   [ngClass]="isActiveTab(tab.id) ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-500'"></i>
+                <span class="whitespace-nowrap">{{ tab.label }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </nav>
 
-      <div class="flex-1">
-        @switch (activeTab()) { @case ('organizations') {
-        <app-organization-table></app-organization-table>
-        } @case ('applications') {
-      
-          <app-organization-applications></app-organization-applications>
-        } @case ('members') {
-       
-          <app-organization-members></app-organization-members>
-        } @case ('roles') {
-       
-          <app-organization-roles></app-organization-roles>
-        } }
+      <div class="flex-1 min-w-0">
+        @switch (activeTab()) {
+          @case ('organizations') {
+            <app-organization-table></app-organization-table>
+          }
+          @case ('applications') {
+            <app-organization-applications></app-organization-applications>
+          }
+          @case ('marketplace') {
+            <app-organization-marketplace></app-organization-marketplace>
+          }
+          @case ('members') {
+            <app-organization-members></app-organization-members>
+          }
+          @case ('roles') {
+            <app-organization-roles></app-organization-roles>
+          }
+        }
       </div>
     </div>
-
   </div>
-
 </div>
-
