@@ -79,6 +79,56 @@ services:
       timeout: 5s
       retries: 5
 
+  # Hub Backend (NestJS)
+  hub-backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.hub-backend
+    container_name: saas-hub-backend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql-hub
+      DB_PORT: 3306
+      DB_USERNAME: hub_user
+      DB_PASSWORD: hub_password
+      DB_DATABASE: hub_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      mysql-hub:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - saas-hub-network
+    volumes:
+      - ../apps/hub-backend:/app/apps/hub-backend
+      - /app/node_modules
+
+  # Hub Frontend (Angular)
+  hub-frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.hub-frontend
+    container_name: saas-hub-frontend
+    ports:
+      - "4200:4200"
+    environment:
+      NODE_ENV: development
+      API_URL: http://hub-backend:3000
+    depends_on:
+      - hub-backend
+    networks:
+      - saas-hub-network
+    volumes:
+      - ../apps/hub-frontend:/app/apps/hub-frontend
+      - /app/node_modules
+
 volumes:
   mysql_hub_data:
   mysql_tenant_data:
@@ -88,3 +138,4 @@ volumes:
 networks:
   saas-hub-network:
     driver: bridge
+
