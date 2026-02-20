@@ -16,7 +16,7 @@
     "dev:tenant-service": "nx serve tenant-service",
     "dev:deepnews-backend": "nx serve deepnews-backend",
     "dev:deepnews-frontend": "nx serve deepnews-frontend",
-    "dev:all": "nx run-many --target=serve --projects=hub-frontend,hub-backend,auth-service,tenant-service --parallel --maxParallel=4"
+    "dev:all": "nx run-many --target=serve --projects=hub-frontend,hub-backend,auth-service,tenant-service,api-gateway --parallel --maxParallel=5"
   },
   "private": true,
   "devDependencies": {
