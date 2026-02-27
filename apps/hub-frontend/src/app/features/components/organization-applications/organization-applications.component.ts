@@ -18,7 +18,6 @@ import { OrganizationApplicationSubscribeModalComponent, OrganizationApplication
 
 @Component({
   selector: 'app-organization-applications',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

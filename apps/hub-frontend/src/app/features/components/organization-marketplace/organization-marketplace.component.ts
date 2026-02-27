@@ -11,7 +11,6 @@ import { firstValueFrom, of } from 'rxjs';
 
 @Component({
   selector: 'app-organization-marketplace',
-  standalone: true,
   imports: [
     CommonModule,
     OrganizationMarketplaceAppCardComponent,

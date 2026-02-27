@@ -7,7 +7,6 @@ import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.css',

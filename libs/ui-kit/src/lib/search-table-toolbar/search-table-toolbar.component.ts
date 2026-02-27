@@ -3,7 +3,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'lib-search-table-toolbar',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <form

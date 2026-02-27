@@ -20,7 +20,6 @@ export interface OrganizationMemberCreateModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-member-create-modal',
   imports: [CommonModule],
   template: `

@@ -55,7 +55,6 @@ const PERMISSION_METADATA: Record<
 
 @Component({
   selector: 'app-organization-roles',
-  standalone: true,
   imports: [
     CommonModule,
     SkeletonComponent,

@@ -22,7 +22,6 @@ export interface ModalHostOptions {
 }
 
 @Component({
-  standalone: true,
   selector: 'lib-modal-host',
   imports: [CommonModule],
   template: `

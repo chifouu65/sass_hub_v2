@@ -19,7 +19,6 @@ import {
 
 @Component({
   selector: 'app-organization-table',
-  standalone: true,
   imports: [
     CommonModule,
     GenericTableComponent,

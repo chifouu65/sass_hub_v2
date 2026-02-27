@@ -19,7 +19,6 @@ export interface OrganizationRoleCreateModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-role-create-modal',
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './organization-role-create-modal.component.html',

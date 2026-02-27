@@ -10,7 +10,6 @@ import {
 import { Toast } from './toast.types';
 
 @Component({
-  standalone: true,
   selector: 'app-toast',
   imports: [CommonModule],
   template: `

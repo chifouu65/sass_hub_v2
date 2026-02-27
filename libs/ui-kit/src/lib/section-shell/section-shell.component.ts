@@ -3,7 +3,6 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'lib-section-shell',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div [ngClass]="containerClass">

@@ -9,7 +9,6 @@ import { ToastService } from './toast.service';
 import { ToastComponent } from './toast.component';
 
 @Component({
-  standalone: true,
   selector: 'app-toast-container',
   imports: [CommonModule, ToastComponent],
   template: `

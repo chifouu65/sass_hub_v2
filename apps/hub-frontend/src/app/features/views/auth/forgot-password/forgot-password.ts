@@ -7,7 +7,6 @@ import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-forgot-password',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.css',

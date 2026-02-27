@@ -23,7 +23,6 @@ type AssignmentValue = string;
 
 @Component({
   selector: 'app-organization-members',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

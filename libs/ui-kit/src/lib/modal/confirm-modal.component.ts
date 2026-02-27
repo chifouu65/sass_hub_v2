@@ -17,7 +17,6 @@ export interface ConfirmModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'lib-confirm-modal',
   imports: [CommonModule],
   template: `

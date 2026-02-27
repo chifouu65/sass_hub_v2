@@ -30,7 +30,6 @@ export interface OrganizationApplicationSubscribeModalResult {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-application-subscribe-modal',
   imports: [CommonModule, ReactiveFormsModule],
   template: `

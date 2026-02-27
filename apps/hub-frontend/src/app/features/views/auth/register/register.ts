@@ -7,7 +7,6 @@ import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-register',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.html',
   styleUrl: './register.css',

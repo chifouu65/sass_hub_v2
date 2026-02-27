@@ -24,7 +24,6 @@ interface TableRowContext<T> {
 
 @Component({
   selector: 'app-generic-table',
-  standalone: true,
   imports: [CommonModule, SkeletonComponent],
   templateUrl: './generic-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

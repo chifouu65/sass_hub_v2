@@ -18,7 +18,6 @@ export interface OrganizationDeleteModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-delete-modal',
   imports: [CommonModule],
   template: `

@@ -11,7 +11,6 @@ interface NavLink {
 
 @Component({
   selector: 'app-layout',
-  standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app-layout.html',
 })

@@ -15,7 +15,6 @@ type TabId = 'organizations' | 'applications' | 'marketplace' | 'members' | 'rol
 
 @Component({
   selector: 'app-organizations',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,

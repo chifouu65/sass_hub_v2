@@ -6,7 +6,6 @@ import { AuthenticatedUserView } from '@sass-hub-v2/shared-types';
 
 @Component({
   selector: 'app-callback',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './callback.html',
   styleUrl: './callback.css',

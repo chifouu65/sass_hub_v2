@@ -21,7 +21,6 @@ export interface OrganizationRolePermissionsModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-role-permissions-modal',
   imports: [CommonModule],
   template: `

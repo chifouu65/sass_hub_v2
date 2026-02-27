@@ -10,7 +10,6 @@ import { OrganizationRolesService } from '../../../core/services/organization-ro
 
 @Component({
   selector: 'app-organizations-empty',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './organizations-empty.html',
   styleUrl: './organizations-empty.css',

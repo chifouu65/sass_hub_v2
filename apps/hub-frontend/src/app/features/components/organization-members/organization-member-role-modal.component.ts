@@ -23,7 +23,6 @@ export interface OrganizationMemberRoleModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-member-role-modal',
   imports: [CommonModule],
   template: `

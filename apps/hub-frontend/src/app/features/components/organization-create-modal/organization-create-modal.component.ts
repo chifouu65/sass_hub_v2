@@ -14,7 +14,6 @@ import { ToastService } from '../../services/toast/toast.service';
 
 @Component({
   selector: 'app-organization-create-modal',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './organization-create-modal.component.html',
 })

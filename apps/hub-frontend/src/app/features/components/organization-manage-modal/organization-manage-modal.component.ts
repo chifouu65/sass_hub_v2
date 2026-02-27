@@ -29,7 +29,6 @@ export interface OrganizationManageModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-manage-modal',
   imports: [CommonModule, ReactiveFormsModule],
   template: `

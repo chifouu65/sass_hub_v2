@@ -4,7 +4,6 @@ import { AvailableApplicationView, ApplicationStatus } from '@sass-hub-v2/shared
 
 @Component({
   selector: 'app-organization-marketplace-app-card',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="flex flex-col h-full rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">

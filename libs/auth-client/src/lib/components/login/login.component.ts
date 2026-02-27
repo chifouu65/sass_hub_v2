@@ -6,7 +6,6 @@ import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'lib-auth-login',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

@@ -10,7 +10,6 @@ type OAuthProvider = 'google' | 'github' | 'microsoft';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrl: './login.css',

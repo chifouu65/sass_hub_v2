@@ -25,7 +25,6 @@ export interface OrganizationRoleUpdateModalData {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-organization-role-update-modal',
   imports: [CommonModule, ReactiveFormsModule],
   template: `

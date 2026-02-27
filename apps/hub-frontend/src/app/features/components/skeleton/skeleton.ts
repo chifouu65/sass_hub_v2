@@ -8,7 +8,6 @@ import {
 
 @Component({
   selector: 'app-skeleton',
-  standalone: true,
   imports: [CommonModule],
   template: '',
   styleUrl: './skeleton.css',
