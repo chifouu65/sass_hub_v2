@@ -57,13 +57,13 @@
                 type="button"
                 (click)="setActiveTab(tab.id)"
                 class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                [ngClass]="isActiveTab(tab.id) 
+                [class]="isActiveTab(tab.id) 
                   ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-900/5' 
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                 [attr.aria-current]="isActiveTab(tab.id) ? 'page' : null"
               >
                 <i class="mdi {{ tab.icon }} text-lg"
-                   [ngClass]="isActiveTab(tab.id) ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-500'"></i>
+                   [class]="isActiveTab(tab.id) ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-500'"></i>
                 <span class="whitespace-nowrap">{{ tab.label }}</span>
               </button>
             </li>

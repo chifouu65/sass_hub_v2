@@ -19,7 +19,7 @@ import { Toast } from './toast.types';
     >
       <div
         class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg"
-        [ngClass]="iconWrapperClasses()"
+        [class]="iconWrapperClasses()"
       >
         @switch (toast().kind) {
           @case ('success') {

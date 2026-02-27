@@ -26,7 +26,7 @@
                 <th scope="col" class="px-4 py-3 text-left">&nbsp;</th>
               } @else {
                 @for (header of headers(); track header.key ?? header.label) {
-                  <th scope="col" [ngClass]="getHeaderClass(header)">
+                  <th scope="col" [class]="getHeaderClass(header)">
                     @if (header.srOnly) {
                       <span class="sr-only">{{ header.label }}</span>
                     } @else {

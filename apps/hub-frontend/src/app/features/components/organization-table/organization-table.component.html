@@ -52,9 +52,7 @@
 <ng-template #organizationRow let-organization>
   <tr
     class="border-b border-gray-100 text-sm transition-colors"
-    [ngClass]="{
-      'bg-indigo-50/70': selectedOrganizationId() === organization.id
-    }"
+    [class.bg-indigo-50/70]="selectedOrganizationId() === organization.id"
   >
     <td class="px-4 py-4">
       <button
