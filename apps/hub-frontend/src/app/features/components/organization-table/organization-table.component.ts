@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import {
   GenericTableComponent,
   GenericTableHeader,
@@ -28,6 +28,7 @@ import {
     SectionShellComponent,
   ],
   templateUrl: './organization-table.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationTableComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);

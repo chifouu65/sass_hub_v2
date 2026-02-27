@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OrganizationMemberView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
@@ -33,6 +33,7 @@ type AssignmentValue = string;
     SectionShellComponent,
   ],
   templateUrl: './organization-members.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationMembersComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);

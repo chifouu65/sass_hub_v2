@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { OrganizationRoleView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
 import { SkeletonComponent } from '../skeleton/skeleton';
@@ -64,6 +64,7 @@ const PERMISSION_METADATA: Record<
     SectionShellComponent,
   ],
   templateUrl: './organization-roles.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationRolesComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { AvailableApplicationView } from '@sass-hub-v2/shared-types';
 import { OrganizationRolesService } from '../../../core/services/organization-roles.service';
@@ -10,6 +10,7 @@ import { SectionShellComponent, SearchTableToolbarComponent } from '@sass-hub-v2
 import { firstValueFrom, of } from 'rxjs';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-organization-marketplace',
   standalone: true,
   imports: [

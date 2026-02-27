@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -14,6 +14,7 @@ interface NavLink {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app-layout.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppLayoutComponent {
    readonly #authService = inject(AuthService);

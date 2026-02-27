@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SubscribedApplicationView, SubscriptionStatus } from '@sass-hub-v2/shared-types';
 import { firstValueFrom } from 'rxjs';
@@ -27,6 +27,7 @@ import { OrganizationApplicationSubscribeModalComponent, OrganizationApplication
     SectionShellComponent,
   ],
   templateUrl: './organization-applications.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationApplicationsComponent {
   readonly #organizationStore = inject(OrganizationRolesService);
