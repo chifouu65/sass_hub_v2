@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  HostBinding,
   inject,
 } from '@angular/core';
 import { ToastService } from './toast.service';
@@ -20,13 +19,11 @@ import { ToastComponent } from './toast.component';
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'fixed bottom-6 left-0 right-0 z-[1050] pointer-events-none flex justify-start px-4 sm:px-6'
+  }
 })
 export class ToastContainerComponent {
   readonly toastService = inject(ToastService);
-
-  @HostBinding('class')
-  protected get hostClass(): string {
-    return 'fixed bottom-6 left-0 right-0 z-[1050] pointer-events-none flex justify-start px-4 sm:px-6';
-  }
 }
 
