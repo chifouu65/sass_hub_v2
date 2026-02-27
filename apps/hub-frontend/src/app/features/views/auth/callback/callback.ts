@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@sass-hub-v2/auth-client';
@@ -9,6 +9,7 @@ import { AuthenticatedUserView } from '@sass-hub-v2/shared-types';
   imports: [CommonModule, RouterModule],
   templateUrl: './callback.html',
   styleUrl: './callback.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Callback implements OnInit {
   private readonly authService = inject(AuthService);

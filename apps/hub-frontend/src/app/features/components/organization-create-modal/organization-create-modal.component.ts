@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import {
   NonNullableFormBuilder,
   ReactiveFormsModule,
@@ -16,6 +16,7 @@ import { ToastService } from '../../services/toast/toast.service';
   selector: 'app-organization-create-modal',
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './organization-create-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationCreateModalComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { firstValueFrom } from 'rxjs';
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPassword {
   private readonly authService = inject(AuthService);

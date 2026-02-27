@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { ModalService } from '@sass-hub-v2/ui-kit';
 import {
@@ -13,6 +13,7 @@ import { OrganizationRolesService } from '../../../core/services/organization-ro
   imports: [CommonModule, RouterModule],
   templateUrl: './organizations-empty.html',
   styleUrl: './organizations-empty.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationsEmptyComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);

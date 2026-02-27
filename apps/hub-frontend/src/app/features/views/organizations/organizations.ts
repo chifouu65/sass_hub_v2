@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, Signal, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, Signal, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import {
   OrganizationRolesService,
@@ -26,6 +26,7 @@ type TabId = 'organizations' | 'applications' | 'marketplace' | 'members' | 'rol
   ],
   templateUrl: './organizations.html',
   styleUrls: ['./organizations.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationsComponent {
   readonly #organizationRolesStore = inject(OrganizationRolesService);

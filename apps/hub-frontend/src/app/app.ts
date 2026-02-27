@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@sass-hub-v2/auth-client';
 import { SkeletonComponent } from './features/components/skeleton/skeleton';
@@ -10,6 +10,7 @@ import { ToastContainerComponent } from './features/services/toast/toast-contain
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   protected title = 'hub-frontend';
