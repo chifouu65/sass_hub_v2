@@ -2,10 +2,9 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Output,
   computed,
   input,
+  output,
 } from '@angular/core';
 import { Toast } from './toast.types';
 
@@ -23,28 +22,20 @@ import { Toast } from './toast.types';
         class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg"
         [ngClass]="iconWrapperClasses()"
       >
-        <ng-container [ngSwitch]="toast().kind">
-          <i
-            *ngSwitchCase="'success'"
-            class="mdi mdi-check-circle text-lg"
-            aria-hidden="true"
-          ></i>
-          <i
-            *ngSwitchCase="'error'"
-            class="mdi mdi-close-circle text-lg"
-            aria-hidden="true"
-          ></i>
-          <i
-            *ngSwitchCase="'warning'"
-            class="mdi mdi-alert-circle text-lg"
-            aria-hidden="true"
-          ></i>
-          <i
-            *ngSwitchDefault
-            class="mdi mdi-information text-lg"
-            aria-hidden="true"
-          ></i>
-        </ng-container>
+        @switch (toast().kind) {
+          @case ('success') {
+            <i class="mdi mdi-check-circle text-lg" aria-hidden="true"></i>
+          }
+          @case ('error') {
+            <i class="mdi mdi-close-circle text-lg" aria-hidden="true"></i>
+          }
+          @case ('warning') {
+            <i class="mdi mdi-alert-circle text-lg" aria-hidden="true"></i>
+          }
+          @default {
+            <i class="mdi mdi-information text-lg" aria-hidden="true"></i>
+          }
+        }
         <span class="sr-only">{{ iconLabel() }}</span>
       </div>
 
@@ -98,6 +89,6 @@ export class ToastComponent {
     }
   });
 
-  @Output() readonly dismiss = new EventEmitter<string>();
+  readonly dismiss = output<string>();
 }
 
