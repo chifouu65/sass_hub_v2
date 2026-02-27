@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
+  input,
 } from '@angular/core';
 
 @Component({
@@ -12,14 +12,13 @@ import {
   styleUrl: './skeleton.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[style.width]': 'width',
-    '[style.height]': 'height',
-    '[style.borderRadius]': 'borderRadius',
+    '[style.width]': 'width()',
+    '[style.height]': 'height()',
+    '[style.borderRadius]': 'borderRadius()',
   },
 })
 export class SkeletonComponent {
-  @Input() width = '100%';
-  @Input() height = '1rem';
-  @Input() borderRadius = '0.75rem';
+  readonly width = input('100%');
+  readonly height = input('1rem');
+  readonly borderRadius = input('0.75rem');
 }
-
