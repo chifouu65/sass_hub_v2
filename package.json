@@ -14,8 +14,7 @@
     "dev:frontend": "bash ./scripts/dev.sh hub-frontend",
     "dev:auth": "bash ./scripts/dev.sh auth-service",
     "dev:tenant": "bash ./scripts/dev.sh tenant-service",
-    "dev:gateway": "bash ./scripts/dev.sh api-gateway",
-    "kill:windows": "taskkill /F /IM node.exe"
+    "dev:gateway": "bash ./scripts/dev.sh api-gateway"
   },
   "private": true,
   "devDependencies": {
